@@ -40,7 +40,7 @@ export default function Home() {
           
           {/* Welcome Message */}
           <p className="text-gray-600">
-            Hello! I'm Dr. Bismar's assistant. How can I help today?
+            Hello! I&apos;m Dr. Bismar&apos;s assistant. How can I help today?
           </p>
         </div>
 
