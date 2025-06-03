@@ -8,10 +8,10 @@ const openai = new OpenAI({
 
 export async function POST(request: Request) {
   try {
-    const { messages, doctorName } = await request.json();
+    const { messages, doctorName, specialty } = await request.json();
 
-    // Create system prompt based on doctor
-    const systemPrompt = `You are a friendly medical assistant for Dr. ${doctorName}'s clinic. 
+    // Create system prompt based on doctor and specialty
+    const systemPrompt = `You are a friendly medical assistant for Dr. ${doctorName}'s ${specialty || 'medical'} clinic. 
     The patient is already in the waiting room and will see Dr. ${doctorName} shortly.
     Your role is to:
     - Answer general health questions to help them prepare for their appointment
@@ -19,6 +19,7 @@ export async function POST(request: Request) {
     - Help them think about questions they might want to ask Dr. ${doctorName}
     - Provide comfort and reassurance while they wait
     - Give general wellness tips and health education
+    ${specialty ? `- Focus on topics related to ${specialty} when relevant` : ''}
     
     Keep responses helpful, warm, and educational. Since they're about to see the doctor,
     you don't need to repeatedly tell them to make an appointment. Instead, you might say

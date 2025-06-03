@@ -1,20 +1,46 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import { supabase, type Clinic } from "@/lib/supabase";
 
 export default function ChatInterface() {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Array<{role: string, content: string}>>([]);
+  const [clinic, setClinic] = useState<Clinic | null>(null);
+  const [loading, setLoading] = useState(true);
   
-  // Get doctor name from URL parameters
+  // Get clinic slug from URL parameters
   const searchParams = useSearchParams();
-  const doctorParam = searchParams.get('doctor');
+  const clinicSlug = searchParams.get('c');
+  const doctorParam = searchParams.get('doctor'); // Keep backward compatibility
   
-  // Parse doctor name, handling "dr-" prefix
+  useEffect(() => {
+    async function fetchClinic() {
+      if (clinicSlug) {
+        try {
+          const { data, error } = await supabase
+            .from('clinics')
+            .select('*')
+            .eq('slug', clinicSlug)
+            .single();
+          
+          if (error) throw error;
+          if (data) setClinic(data);
+        } catch (error) {
+          console.error('Error fetching clinic:', error);
+        }
+      }
+      setLoading(false);
+    }
+    
+    fetchClinic();
+  }, [clinicSlug]);
+  
+  // Parse doctor name for backward compatibility
   const parseDoctorName = (param: string) => {
     const parts = param.toLowerCase().startsWith('dr-') 
-      ? param.slice(3).split('-')  // Remove "dr-" prefix
+      ? param.slice(3).split('-')
       : param.split('-');
     
     return parts.map(word => 
@@ -22,14 +48,14 @@ export default function ChatInterface() {
     ).join(' ');
   };
   
-  const doctorName = doctorParam ? parseDoctorName(doctorParam) : 'Sami Bismar';
-  
-  // Customize based on doctor
+  // Use clinic data if available, otherwise fall back to URL params or defaults
   const doctorConfig = {
-    name: doctorName,
-    title: `Dr. ${doctorName}`,
-    welcomeMessage: `Hello! I'm Dr. ${doctorName.split(' ').pop()}'s assistant. How can I help today?`,
-    accentColor: doctorParam === 'dr-jones' ? '#9B59B6' : '#5BBAD5'
+    name: clinic?.doctor_name || (doctorParam ? parseDoctorName(doctorParam) : 'Sami Bismar'),
+    title: clinic?.doctor_name ? `Dr. ${clinic.doctor_name}` : (doctorParam ? `Dr. ${parseDoctorName(doctorParam)}` : 'Dr. Sami Bismar'),
+    welcomeMessage: clinic?.welcome_message || `Hello! I'm Dr. ${clinic?.doctor_name || (doctorParam ? parseDoctorName(doctorParam).split(' ').pop() : 'Bismar')}'s assistant. How can I help today?`,
+    accentColor: clinic?.primary_color || (doctorParam === 'dr-jones' ? '#9B59B6' : '#5BBAD5'),
+    logoUrl: clinic?.logo_url || null,
+    specialty: clinic?.specialty || 'General Practice'
   };
 
   const handleSend = async () => {
@@ -49,7 +75,8 @@ export default function ChatInterface() {
           },
           body: JSON.stringify({
             messages: updatedMessages,
-            doctorName: doctorName
+            doctorName: doctorConfig.name,
+            specialty: doctorConfig.specialty
           }),
         });
 
@@ -72,30 +99,55 @@ export default function ChatInterface() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 mx-auto mb-4 bg-gray-200 rounded-xl animate-pulse"></div>
+          <div className="h-8 bg-gray-200 rounded w-48 mx-auto mb-2 animate-pulse"></div>
+          <div className="h-4 bg-gray-200 rounded w-64 mx-auto animate-pulse"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-2xl bg-white rounded-2xl shadow-lg overflow-hidden">
         {/* Header */}
         <div className="text-center py-8 px-4">
-          {/* Medical Briefcase Icon */}
-          <div 
-            className="w-16 h-16 mx-auto mb-4 rounded-xl flex items-center justify-center"
-            style={{ backgroundColor: doctorConfig.accentColor }}
-          >
-            <svg 
-              className="w-8 h-8 text-white" 
-              fill="currentColor" 
-              viewBox="0 0 20 20"
+          {/* Logo or Medical Briefcase Icon */}
+          {doctorConfig.logoUrl ? (
+            <img 
+              src={doctorConfig.logoUrl} 
+              alt={`${doctorConfig.name} logo`}
+              className="w-16 h-16 mx-auto mb-4 rounded-xl object-cover"
+            />
+          ) : (
+            <div 
+              className="w-16 h-16 mx-auto mb-4 rounded-xl flex items-center justify-center"
+              style={{ backgroundColor: doctorConfig.accentColor }}
             >
-              <path d="M8 3a2 2 0 00-2 2H4a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2-2H8zm0 2h4v1H8V5zM4 7h12v9H4V7z"/>
-              <path d="M10 10a1 1 0 011 1v2a1 1 0 01-2 0v-2a1 1 0 011-1z"/>
-            </svg>
-          </div>
+              <svg 
+                className="w-8 h-8 text-white" 
+                fill="currentColor" 
+                viewBox="0 0 20 20"
+              >
+                <path d="M8 3a2 2 0 00-2 2H4a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2-2H8zm0 2h4v1H8V5zM4 7h12v9H4V7z"/>
+                <path d="M10 10a1 1 0 011 1v2a1 1 0 01-2 0v-2a1 1 0 011-1z"/>
+              </svg>
+            </div>
+          )}
           
           {/* Doctor Name */}
           <h1 className="text-2xl font-semibold text-gray-900 mb-2">
             {doctorConfig.title}
           </h1>
+          
+          {/* Specialty */}
+          <p className="text-sm text-gray-500 mb-2">
+            {doctorConfig.specialty}
+          </p>
           
           {/* Welcome Message */}
           <p className="text-gray-600">
@@ -108,7 +160,8 @@ export default function ChatInterface() {
           {messages.length === 0 && (
             <div className="text-center py-8">
               <button 
-                className="text-[#FF6B6B] hover:underline"
+                className="hover:underline"
+                style={{ color: doctorConfig.accentColor }}
                 onClick={() => setMessages([])}
               >
                 Clear Messages
@@ -129,9 +182,10 @@ export default function ChatInterface() {
                 <div 
                   className={`max-w-[80%] rounded-lg px-4 py-2 ${
                     msg.role === 'user' 
-                      ? 'bg-blue-500 text-white' 
+                      ? 'text-white' 
                       : 'bg-gray-100 text-gray-800'
                   }`}
+                  style={msg.role === 'user' ? { backgroundColor: doctorConfig.accentColor } : {}}
                 >
                   {msg.content}
                 </div>
@@ -150,10 +204,19 @@ export default function ChatInterface() {
               onKeyPress={(e) => e.key === 'Enter' && handleSend()}
               placeholder="Type a question about your symptoms..."
               className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+              style={{ 
+                focusBorderColor: doctorConfig.accentColor,
+                '&:focus': { borderColor: doctorConfig.accentColor }
+              }}
             />
             <button
               onClick={handleSend}
-              className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              className="px-6 py-2 text-white rounded-lg transition-colors"
+              style={{ 
+                backgroundColor: doctorConfig.accentColor,
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+              onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
             >
               Send
             </button>
