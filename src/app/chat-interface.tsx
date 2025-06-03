@@ -9,6 +9,7 @@ export default function ChatInterface() {
   const [messages, setMessages] = useState<Array<{role: string, content: string}>>([]);
   const [clinic, setClinic] = useState<Clinic | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAiTyping, setIsAiTyping] = useState(false);
   
   // Get clinic slug from URL parameters
   const searchParams = useSearchParams();
@@ -65,6 +66,7 @@ export default function ChatInterface() {
       const updatedMessages = [...messages, userMessage];
       setMessages(updatedMessages);
       setMessage("");
+      setIsAiTyping(true);
       
       try {
         // Call API for AI response
@@ -95,6 +97,8 @@ export default function ChatInterface() {
           role: "assistant",
           content: "I apologize, but I'm having trouble connecting right now. Please try again later."
         }]);
+      } finally {
+        setIsAiTyping(false);
       }
     }
   };
@@ -191,6 +195,19 @@ export default function ChatInterface() {
                 </div>
               </div>
             ))}
+            
+            {/* AI Typing Indicator */}
+            {isAiTyping && (
+              <div className="flex justify-start">
+                <div className="bg-gray-100 rounded-lg px-4 py-2">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
