@@ -147,8 +147,22 @@ export default function ChatInterface() {
       <div className="w-full max-w-2xl bg-white rounded-2xl shadow-lg overflow-hidden">
         {/* Header */}
         <div className="text-center py-8 px-4 relative">
-          {/* Language Toggle */}
-          <div className="absolute top-4 right-4">
+          {/* Top Right Controls */}
+          <div className="absolute top-4 right-4 flex items-center gap-2">
+            {/* Clear Chat Button */}
+            {messages.length > 0 && (
+              <button
+                onClick={() => setMessages([])}
+                className="flex items-center gap-2 px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors text-sm"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                <span className="font-medium">{t.clearMessages}</span>
+              </button>
+            )}
+            
+            {/* Language Toggle */}
             <button
               onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
               className="flex items-center gap-2 px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
@@ -199,14 +213,7 @@ export default function ChatInterface() {
         <div className="flex-1 p-4 min-h-[400px] max-h-[400px] overflow-y-auto">
           {messages.length === 0 && (
             <div className="text-center py-8">
-              <button 
-                className="hover:underline"
-                style={{ color: doctorConfig.accentColor }}
-                onClick={() => setMessages([])}
-              >
-                {t.clearMessages}
-              </button>
-              <p className="text-gray-400 text-sm mt-8">
+              <p className="text-gray-400 text-sm">
                 {t.disclaimer}
               </p>
             </div>
