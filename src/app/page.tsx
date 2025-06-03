@@ -1,18 +1,74 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 
 export default function Home() {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Array<{role: string, content: string}>>([]);
+  
+  // Get doctor name from URL parameters
+  const searchParams = useSearchParams();
+  const doctorParam = searchParams.get('doctor');
+  
+  // Parse doctor name, handling "dr-" prefix
+  const parseDoctorName = (param: string) => {
+    const parts = param.toLowerCase().startsWith('dr-') 
+      ? param.slice(3).split('-')  // Remove "dr-" prefix
+      : param.split('-');
+    
+    return parts.map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+  };
+  
+  const doctorName = doctorParam ? parseDoctorName(doctorParam) : 'Sami Bismar';
+  
+  // Customize based on doctor
+  const doctorConfig = {
+    name: doctorName,
+    title: `Dr. ${doctorName}`,
+    welcomeMessage: `Hello! I'm Dr. ${doctorName.split(' ').pop()}'s assistant. How can I help today?`,
+    accentColor: doctorParam === 'dr-jones' ? '#9B59B6' : '#5BBAD5'
+  };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (message.trim()) {
       // Add user message
-      setMessages([...messages, { role: "user", content: message }]);
+      const userMessage = { role: "user", content: message };
+      const updatedMessages = [...messages, userMessage];
+      setMessages(updatedMessages);
       setMessage("");
       
-      // TODO: Add AI response logic here
+      try {
+        // Call API for AI response
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            messages: updatedMessages,
+            doctorName: doctorName
+          }),
+        });
+
+        if (!response.ok) throw new Error('Failed to get response');
+
+        const data = await response.json();
+        
+        // Add AI response
+        setMessages([...updatedMessages, {
+          role: "assistant",
+          content: data.message
+        }]);
+      } catch (error) {
+        console.error('Error:', error);
+        setMessages([...updatedMessages, {
+          role: "assistant",
+          content: "I apologize, but I'm having trouble connecting right now. Please try again later."
+        }]);
+      }
     }
   };
 
@@ -22,7 +78,10 @@ export default function Home() {
         {/* Header */}
         <div className="text-center py-8 px-4">
           {/* Medical Briefcase Icon */}
-          <div className="w-16 h-16 mx-auto mb-4 bg-[#5BBAD5] rounded-xl flex items-center justify-center">
+          <div 
+            className="w-16 h-16 mx-auto mb-4 rounded-xl flex items-center justify-center"
+            style={{ backgroundColor: doctorConfig.accentColor }}
+          >
             <svg 
               className="w-8 h-8 text-white" 
               fill="currentColor" 
@@ -35,12 +94,12 @@ export default function Home() {
           
           {/* Doctor Name */}
           <h1 className="text-2xl font-semibold text-gray-900 mb-2">
-            Dr. Sami Bismar
+            {doctorConfig.title}
           </h1>
           
           {/* Welcome Message */}
           <p className="text-gray-600">
-            Hello! I&apos;m Dr. Bismar&apos;s assistant. How can I help today?
+            {doctorConfig.welcomeMessage}
           </p>
         </div>
 
