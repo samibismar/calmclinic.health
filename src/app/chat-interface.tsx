@@ -11,10 +11,12 @@ export default function ChatInterface() {
   const [loading, setLoading] = useState(true);
   const [isAiTyping, setIsAiTyping] = useState(false);
   
-  // Get clinic slug from URL parameters
+  // Get clinic slug and language from URL parameters
   const searchParams = useSearchParams();
   const clinicSlug = searchParams.get('c');
   const doctorParam = searchParams.get('doctor'); // Keep backward compatibility
+  const langParam = searchParams.get('lang');
+  const [language, setLanguage] = useState(langParam === 'es' ? 'es' : 'en');
   
   useEffect(() => {
     async function fetchClinic() {
@@ -38,6 +40,30 @@ export default function ChatInterface() {
     fetchClinic();
   }, [clinicSlug]);
   
+  // Translations
+  const translations = {
+    en: {
+      welcomePrefix: "Hello! I'm Dr.",
+      welcomeSuffix: "'s assistant. How can I help today?",
+      placeholder: "Type a question about your symptoms...",
+      send: "Send",
+      clearMessages: "Clear Messages",
+      disclaimer: "This assistant is for educational purposes only.",
+      errorMessage: "I apologize, but I'm having trouble connecting right now. Please try again later."
+    },
+    es: {
+      welcomePrefix: "¡Hola! Soy el asistente del Dr.",
+      welcomeSuffix: ". ¿Cómo puedo ayudarte hoy?",
+      placeholder: "Escribe una pregunta sobre tus síntomas...",
+      send: "Enviar",
+      clearMessages: "Borrar mensajes",
+      disclaimer: "Este asistente es solo para fines educativos.",
+      errorMessage: "Lo siento, tengo problemas para conectarme ahora. Por favor, inténtalo más tarde."
+    }
+  };
+  
+  const t = translations[language as keyof typeof translations];
+  
   // Parse doctor name for backward compatibility
   const parseDoctorName = (param: string) => {
     const parts = param.toLowerCase().startsWith('dr-') 
@@ -53,7 +79,7 @@ export default function ChatInterface() {
   const doctorConfig = {
     name: clinic?.doctor_name || (doctorParam ? parseDoctorName(doctorParam) : 'Sami Bismar'),
     title: clinic?.doctor_name ? `Dr. ${clinic.doctor_name}` : (doctorParam ? `Dr. ${parseDoctorName(doctorParam)}` : 'Dr. Sami Bismar'),
-    welcomeMessage: clinic?.welcome_message || `Hello! I'm Dr. ${clinic?.doctor_name || (doctorParam ? parseDoctorName(doctorParam).split(' ').pop() : 'Bismar')}'s assistant. How can I help today?`,
+    welcomeMessage: clinic?.welcome_message || `${t.welcomePrefix} ${clinic?.doctor_name || (doctorParam ? parseDoctorName(doctorParam).split(' ').pop() : 'Bismar')}${t.welcomeSuffix}`,
     accentColor: clinic?.primary_color || (doctorParam === 'dr-jones' ? '#9B59B6' : '#5BBAD5'),
     logoUrl: clinic?.logo_url || null,
     specialty: clinic?.specialty || 'General Practice'
@@ -78,7 +104,8 @@ export default function ChatInterface() {
           body: JSON.stringify({
             messages: updatedMessages,
             doctorName: doctorConfig.name,
-            specialty: doctorConfig.specialty
+            specialty: doctorConfig.specialty,
+            language: language
           }),
         });
 
@@ -95,7 +122,7 @@ export default function ChatInterface() {
         console.error('Error:', error);
         setMessages([...updatedMessages, {
           role: "assistant",
-          content: "I apologize, but I'm having trouble connecting right now. Please try again later."
+          content: t.errorMessage
         }]);
       } finally {
         setIsAiTyping(false);
@@ -119,7 +146,16 @@ export default function ChatInterface() {
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-2xl bg-white rounded-2xl shadow-lg overflow-hidden">
         {/* Header */}
-        <div className="text-center py-8 px-4">
+        <div className="text-center py-8 px-4 relative">
+          {/* Language Toggle */}
+          <div className="absolute top-4 right-4">
+            <button
+              onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
+              className="flex items-center gap-2 px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+            >
+              <span className="text-sm font-medium">{language === 'en' ? '🇺🇸 EN' : '🇪🇸 ES'}</span>
+            </button>
+          </div>
           {/* Logo or Medical Briefcase Icon */}
           {doctorConfig.logoUrl ? (
             <img 
@@ -168,10 +204,10 @@ export default function ChatInterface() {
                 style={{ color: doctorConfig.accentColor }}
                 onClick={() => setMessages([])}
               >
-                Clear Messages
+                {t.clearMessages}
               </button>
               <p className="text-gray-400 text-sm mt-8">
-                This assistant is for educational purposes only.
+                {t.disclaimer}
               </p>
             </div>
           )}
@@ -219,7 +255,7 @@ export default function ChatInterface() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Type a question about your symptoms..."
+              placeholder={t.placeholder}
               className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
             />
             <button
@@ -231,7 +267,7 @@ export default function ChatInterface() {
               onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
               onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
             >
-              Send
+              {t.send}
             </button>
           </div>
         </div>
