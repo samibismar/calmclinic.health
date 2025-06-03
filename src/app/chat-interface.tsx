@@ -204,10 +204,6 @@ export default function ChatInterface() {
               onKeyPress={(e) => e.key === 'Enter' && handleSend()}
               placeholder="Type a question about your symptoms..."
               className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-              style={{ 
-                focusBorderColor: doctorConfig.accentColor,
-                '&:focus': { borderColor: doctorConfig.accentColor }
-              }}
             />
             <button
               onClick={handleSend}
