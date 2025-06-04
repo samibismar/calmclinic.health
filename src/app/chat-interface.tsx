@@ -122,10 +122,6 @@ export default function ChatInterface() {
     return prompts[language as keyof typeof prompts] || prompts.en;
   };
 
-  const handlePromptClick = (prompt: string) => {
-    setMessage(prompt);
-    handleSend();
-  };
 
   const handleSend = async () => {
     if (message.trim()) {
