@@ -105,7 +105,8 @@ export default function ChatInterface() {
             messages: updatedMessages,
             doctorName: doctorConfig.name,
             specialty: doctorConfig.specialty,
-            language: language
+            language: language,
+            aiInstructions: clinic?.ai_instructions || null
           }),
         });
 

@@ -8,10 +8,10 @@ const openai = new OpenAI({
 
 export async function POST(request: Request) {
   try {
-    const { messages, doctorName, specialty, language = 'en' } = await request.json();
+    const { messages, doctorName, specialty, language = 'en', aiInstructions } = await request.json();
 
-    // Create system prompt based on doctor, specialty, and language
-    const systemPrompt = language === 'es' 
+    // Create system prompt based on doctor, specialty, language, and custom instructions
+    const basePrompt = language === 'es' 
       ? `Eres un asistente médico amigable para la clínica de ${specialty || 'medicina'} del Dr. ${doctorName}. 
       El paciente ya está en la sala de espera y verá al Dr. ${doctorName} en breve.
       Tu rol es:
@@ -45,6 +45,11 @@ export async function POST(request: Request) {
       when appropriate.
       
       Remember: This is for educational purposes only.`;
+
+    // Add custom AI instructions if provided
+    const systemPrompt = aiInstructions 
+      ? `${basePrompt}\n\nAdditional specialized knowledge:\n${aiInstructions}`
+      : basePrompt;
 
     // Call OpenAI API
     const completion = await openai.chat.completions.create({

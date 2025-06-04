@@ -14,5 +14,6 @@ export interface Clinic {
   primary_color: string
   welcome_message: string
   specialty: string
+  ai_instructions: string | null
   created_at: string
 }
