@@ -85,6 +85,48 @@ export default function ChatInterface() {
     specialty: clinic?.specialty || 'General Practice'
   };
 
+  // Suggested prompts based on specialty
+  const getSuggestedPrompts = () => {
+    const specialtyPrompts: Record<string, { en: string[], es: string[] }> = {
+      'Gastroenterology': {
+        en: [
+          "What should I mention about my stomach pain?",
+          "I'm nervous about this visit",
+          "What questions should I ask the doctor?",
+          "How do I describe my symptoms?"
+        ],
+        es: [
+          "¿Qué debo mencionar sobre mi dolor de estómago?",
+          "Estoy nervioso por esta visita",
+          "¿Qué preguntas debo hacerle al doctor?",
+          "¿Cómo describo mis síntomas?"
+        ]
+      },
+      'General Practice': {
+        en: [
+          "What should I tell the doctor?",
+          "I have multiple concerns today",
+          "How long will the appointment take?",
+          "Should I mention all my symptoms?"
+        ],
+        es: [
+          "¿Qué debo decirle al doctor?",
+          "Tengo varias preocupaciones hoy",
+          "¿Cuánto durará la cita?",
+          "¿Debo mencionar todos mis síntomas?"
+        ]
+      }
+    };
+    
+    const prompts = specialtyPrompts[doctorConfig.specialty] || specialtyPrompts['General Practice'];
+    return prompts[language as keyof typeof prompts] || prompts.en;
+  };
+
+  const handlePromptClick = (prompt: string) => {
+    setMessage(prompt);
+    handleSend();
+  };
+
   const handleSend = async () => {
     if (message.trim()) {
       // Add user message
@@ -93,37 +135,33 @@ export default function ChatInterface() {
       setMessages(updatedMessages);
       setMessage("");
       setIsAiTyping(true);
-      
+
       try {
-        // Call API for AI response
-        const response = await fetch('/api/chat', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             messages: updatedMessages,
             doctorName: doctorConfig.name,
             specialty: doctorConfig.specialty,
-            language: language,
-            aiInstructions: clinic?.ai_instructions || null
+            language,
+            aiInstructions: clinic?.ai_instructions || null,
           }),
         });
 
-        if (!response.ok) throw new Error('Failed to get response');
+        if (!response.ok) throw new Error("Failed to get response");
 
         const data = await response.json();
-        
-        // Add AI response
+
         setMessages([...updatedMessages, {
           role: "assistant",
-          content: data.message
+          content: data.message,
         }]);
       } catch (error) {
-        console.error('Error:', error);
+        console.error("Error:", error);
         setMessages([...updatedMessages, {
           role: "assistant",
-          content: t.errorMessage
+          content: t.errorMessage,
         }]);
       } finally {
         setIsAiTyping(false);
@@ -214,6 +252,27 @@ export default function ChatInterface() {
         <div className="flex-1 p-4 min-h-[400px] max-h-[400px] overflow-y-auto">
           {messages.length === 0 && (
             <div className="text-center py-8">
+              {/* Suggested Prompts */}
+              <div className="mb-6">
+                <p className="text-sm text-gray-500 mb-3">
+                  {language === 'en' ? 'Tap a question to get started:' : 'Toca una pregunta para comenzar:'}
+                </p>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {getSuggestedPrompts().map((prompt, index) => (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        setMessage(prompt);
+                        setTimeout(() => handleSend(), 100);
+                      }}
+                      className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm text-gray-700 transition-colors"
+                    >
+                      {prompt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
               <p className="text-gray-400 text-sm">
                 {t.disclaimer}
               </p>
@@ -282,4 +341,3 @@ export default function ChatInterface() {
       </div>
     </div>
   );
-}
