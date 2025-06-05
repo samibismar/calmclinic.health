@@ -18,7 +18,7 @@ async function createUniqueSlug(baseName: string): Promise<string> {
   
   while (true) {
     // Check if slug already exists
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('clinics')
       .select('slug')
       .eq('slug', slug)
