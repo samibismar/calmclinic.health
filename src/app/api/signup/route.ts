@@ -105,8 +105,9 @@ export async function POST(request: Request) {
 
     if (insertError) {
       console.error('Database insert error:', insertError);
+      console.error('Error details:', JSON.stringify(insertError, null, 2));
       return NextResponse.json(
-        { error: 'Failed to create clinic' },
+        { error: `Database error: ${insertError.message}` },
         { status: 500 }
       );
     }

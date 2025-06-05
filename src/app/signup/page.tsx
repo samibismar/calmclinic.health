@@ -51,8 +51,9 @@ export default function SignupPage() {
       // Redirect to success page with clinic slug
       router.push(`/signup/success?slug=${data.clinicSlug}`);
       
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Something went wrong';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
