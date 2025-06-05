@@ -51,6 +51,7 @@ export default function DashboardPage() {
           }
         });
       } catch (err) {
+        console.error('Dashboard error:', err);
         setError("Failed to load dashboard data");
       } finally {
         setLoading(false);
