@@ -16,16 +16,7 @@ export default function ChatInterface() {
   const [lastName, setLastName] = useState("");
   const [nameSubmitted, setNameSubmitted] = useState(false);
 
-  // On load, check if we already stored a name in localStorage
-  useEffect(() => {
-    const storedName = localStorage.getItem("patientName");
-    if (storedName) {
-      const [storedFirst, storedLast] = storedName.split(" ");
-      setFirstName(storedFirst);
-      setLastName(storedLast);
-      setNameSubmitted(true);
-    }
-  }, []);
+  // (localStorage reading removed)
   const [showCopiedFeedback, setShowCopiedFeedback] = useState(false);
   
   // Get clinic slug and language from URL parameters
@@ -227,7 +218,6 @@ export default function ChatInterface() {
           <button
             onClick={() => {
               if (firstName.trim() && lastName.trim()) {
-                localStorage.setItem("patientName", `${firstName.trim()} ${lastName.trim()}`);
                 setNameSubmitted(true);
               }
             }}
