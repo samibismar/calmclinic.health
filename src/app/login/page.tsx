@@ -31,7 +31,7 @@ export default function LoginPage() {
       if (data.loginUrl) {
         // In development, show the login URL as a clickable button
         setSuccess("ready");
-        window.loginUrl = data.loginUrl; // Store for the button
+        (window as Window & { loginUrl?: string }).loginUrl = data.loginUrl; // Store for the button
       } else {
         setSuccess("Login link sent to your email! Check your inbox.");
       }
@@ -72,7 +72,7 @@ export default function LoginPage() {
               <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
                 <p className="mb-3">Your dashboard is ready!</p>
                 <button
-                  onClick={() => window.open((window as any).loginUrl, '_blank')}
+                  onClick={() => window.open((window as Window & { loginUrl?: string }).loginUrl, '_blank')}
                   className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 w-full"
                 >
                   🚀 Open Dashboard
