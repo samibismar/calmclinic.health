@@ -8,12 +8,15 @@ const openai = new OpenAI({
 
 export async function POST(request: Request) {
   try {
-    const { messages, doctorName, specialty, language = 'en', aiInstructions } = await request.json();
+    const { messages, doctorName, specialty, language = 'en', aiInstructions, patientName } = await request.json();
+
+    const nameIntro = patientName ? `The patient's name is ${patientName}. ` : '';
 
     // Create system prompt based on doctor, specialty, language, and custom instructions
     const basePrompt = language === 'es' 
       ? `Eres un asistente médico amigable para la clínica de ${specialty || 'medicina'} del Dr. ${doctorName}. 
-      El paciente ya está en la sala de espera y verá al Dr. ${doctorName} en breve.
+${nameIntro}Salúdalos por su nombre si lo conoces. Por ejemplo: "Hola Sarah, estoy aquí para ayudarte mientras esperas."
+El paciente ya está en la sala de espera y verá al Dr. ${doctorName} en breve.
       Tu rol es:
       - Responder preguntas generales de salud para ayudarles a prepararse para su cita
       - Explicar síntomas y condiciones comunes en términos simples
@@ -30,7 +33,8 @@ export async function POST(request: Request) {
       IMPORTANTE: Responde SIEMPRE en español.
       Recuerda: Esto es solo para fines educativos.`
       : `You are a friendly medical assistant for Dr. ${doctorName}'s ${specialty || 'medical'} clinic. 
-      The patient is already in the waiting room and will see Dr. ${doctorName} shortly.
+${nameIntro}Greet them by name if you know it. For example: "Hi Sarah! I'm here to help while you wait."
+The patient is already in the waiting room and will see Dr. ${doctorName} shortly.
       Your role is to:
       - Answer general health questions to help them prepare for their appointment
       - Explain common symptoms and conditions in simple terms

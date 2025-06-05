@@ -10,6 +10,23 @@ export default function ChatInterface() {
   const [clinic, setClinic] = useState<Clinic | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAiTyping, setIsAiTyping] = useState(false);
+
+  // New local state for patient name collection
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [nameSubmitted, setNameSubmitted] = useState(false);
+
+  // On load, check if we already stored a name in localStorage
+  useEffect(() => {
+    const storedName = localStorage.getItem("patientName");
+    if (storedName) {
+      const [storedFirst, storedLast] = storedName.split(" ");
+      setFirstName(storedFirst);
+      setLastName(storedLast);
+      setNameSubmitted(true);
+    }
+  }, []);
+  const [showCopiedFeedback, setShowCopiedFeedback] = useState(false);
   
   // Get clinic slug and language from URL parameters
   const searchParams = useSearchParams();
@@ -48,6 +65,8 @@ export default function ChatInterface() {
       placeholder: "Type a question about your symptoms...",
       send: "Send",
       clearMessages: "Clear Messages",
+      copyChat: "Copy Chat",
+      chatCopied: "Chat copied!",
       disclaimer: "This assistant is for educational purposes only.",
       errorMessage: "I apologize, but I'm having trouble connecting right now. Please try again later."
     },
@@ -57,6 +76,8 @@ export default function ChatInterface() {
       placeholder: "Escribe una pregunta sobre tus síntomas...",
       send: "Enviar",
       clearMessages: "Borrar mensajes",
+      copyChat: "Copiar Chat",
+      chatCopied: "¡Chat copiado!",
       disclaimer: "Este asistente es solo para fines educativos.",
       errorMessage: "Lo siento, tengo problemas para conectarme ahora. Por favor, inténtalo más tarde."
     }
@@ -142,6 +163,7 @@ export default function ChatInterface() {
             specialty: doctorConfig.specialty,
             language,
             aiInstructions: clinic?.ai_instructions || null,
+            patientName: `${firstName} ${lastName}`
           }),
         });
 
@@ -165,6 +187,59 @@ export default function ChatInterface() {
     }
   };
 
+  const handleCopyChat = async () => {
+    if (messages.length === 0) return;
+    
+    const chatText = messages.map(msg => {
+      const role = msg.role === 'user' ? 'You' : doctorConfig.title;
+      return `${role}: ${msg.content}`;
+    }).join('\n\n');
+    
+    try {
+      await navigator.clipboard.writeText(chatText);
+      setShowCopiedFeedback(true);
+      setTimeout(() => setShowCopiedFeedback(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy chat:', error);
+    }
+  };
+
+  if (!nameSubmitted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
+        <div className="w-full max-w-md bg-white shadow-lg rounded-xl p-6 space-y-4">
+          <h2 className="text-xl font-semibold text-gray-800 text-center">Welcome!</h2>
+          <p className="text-sm text-gray-600 text-center">Before we begin, what’s your name?</p>
+          <input
+            type="text"
+            placeholder="First Name"
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+          />
+          <input
+            type="text"
+            placeholder="Last Name"
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+          />
+          <button
+            onClick={() => {
+              if (firstName.trim() && lastName.trim()) {
+                localStorage.setItem("patientName", `${firstName.trim()} ${lastName.trim()}`);
+                setNameSubmitted(true);
+              }
+            }}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg"
+          >
+            Start Chat
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -182,6 +257,21 @@ export default function ChatInterface() {
       <div className="w-full max-w-2xl bg-white rounded-2xl shadow-lg overflow-hidden">
         {/* Header */}
         <div className="text-center py-8 px-4 relative">
+          {/* Top Left Copy Button */}
+          <div className="absolute top-4 left-4">
+            {messages.length > 0 && (
+              <button
+                onClick={handleCopyChat}
+                className="flex items-center gap-2 px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors text-sm relative"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                <span className="font-medium">{showCopiedFeedback ? t.chatCopied : t.copyChat}</span>
+              </button>
+            )}
+          </div>
+
           {/* Top Right Controls */}
           <div className="absolute top-4 right-4 flex items-center gap-2">
             {/* Clear Chat Button */}
@@ -317,7 +407,7 @@ export default function ChatInterface() {
               type="text"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
               placeholder={t.placeholder}
               className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
             />
