@@ -61,14 +61,15 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if email already exists
-    const { data: existingClinic } = await supabase
+    // Check if email already exists  
+    const { error: emailCheckError } = await supabase
       .from('clinics')
       .select('email')
       .eq('email', email)
       .single();
 
-    if (existingClinic) {
+    // If no error, it means email exists (we found a record)
+    if (!emailCheckError) {
       return NextResponse.json(
         { error: 'A clinic with this email already exists' },
         { status: 400 }
