@@ -19,6 +19,12 @@ export default function ChatInterface() {
   // (localStorage reading removed)
   const [showCopiedFeedback, setShowCopiedFeedback] = useState(false);
   
+  // Survey state
+  const [userMessageCount, setUserMessageCount] = useState(0);
+  const [showSurvey, setShowSurvey] = useState(false);
+  const [surveySubmitted, setSurveySubmitted] = useState(false);
+  const [showThankYou, setShowThankYou] = useState(false);
+  
   // Get clinic slug and language from URL parameters
   const searchParams = useSearchParams();
   const clinicSlug = searchParams.get('c');
@@ -59,7 +65,9 @@ export default function ChatInterface() {
       copyChat: "Copy Chat",
       chatCopied: "Chat copied!",
       disclaimer: "This assistant is for educational purposes only.",
-      errorMessage: "I apologize, but I'm having trouble connecting right now. Please try again later."
+      errorMessage: "I apologize, but I'm having trouble connecting right now. Please try again later.",
+      surveyQuestion: "Did this help you prepare for your visit?",
+      thankYouMessage: "Thank you for your feedback!"
     },
     es: {
       welcomePrefix: "¡Hola! Soy el asistente del Dr.",
@@ -70,7 +78,9 @@ export default function ChatInterface() {
       copyChat: "Copiar Chat",
       chatCopied: "¡Chat copiado!",
       disclaimer: "Este asistente es solo para fines educativos.",
-      errorMessage: "Lo siento, tengo problemas para conectarme ahora. Por favor, inténtalo más tarde."
+      errorMessage: "Lo siento, tengo problemas para conectarme ahora. Por favor, inténtalo más tarde.",
+      surveyQuestion: "¿Te ayudó esto a prepararte para tu visita?",
+      thankYouMessage: "¡Gracias por tus comentarios!"
     }
   };
   
@@ -143,6 +153,15 @@ export default function ChatInterface() {
       setMessages(updatedMessages);
       setMessage("");
       setIsAiTyping(true);
+      
+      // Increment user message count
+      const newUserMessageCount = userMessageCount + 1;
+      setUserMessageCount(newUserMessageCount);
+      
+      // Show survey after 3 user messages
+      if (newUserMessageCount === 3 && !surveySubmitted) {
+        setShowSurvey(true);
+      }
 
       try {
         const response = await fetch("/api/chat", {
@@ -192,6 +211,34 @@ export default function ChatInterface() {
       setTimeout(() => setShowCopiedFeedback(false), 2000);
     } catch (error) {
       console.error('Failed to copy chat:', error);
+    }
+  };
+
+  const handleFeedbackSubmit = async (feedback: 'thumbs-up' | 'thumbs-down') => {
+    try {
+      const { error } = await supabase
+        .from('chat_feedback')
+        .insert([
+          {
+            clinic_id: clinic?.id || null,
+            patient_name: `${firstName} ${lastName}`,
+            feedback,
+            chat_messages: messages
+          }
+        ]);
+
+      if (error) throw error;
+      
+      setSurveySubmitted(true);
+      setShowSurvey(false);
+      setShowThankYou(true);
+      
+      // Hide thank you message after 2 seconds
+      setTimeout(() => {
+        setShowThankYou(false);
+      }, 2000);
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
     }
   };
 
@@ -389,6 +436,44 @@ export default function ChatInterface() {
             )}
           </div>
         </div>
+
+        {/* Survey Card */}
+        {showSurvey && (
+          <div className="border-t border-b p-4 bg-blue-50">
+            <div className="text-center">
+              <p className="text-gray-800 mb-4 font-medium">{t.surveyQuestion}</p>
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={() => handleFeedbackSubmit('thumbs-up')}
+                  className="flex items-center justify-center w-12 h-12 rounded-full bg-green-500 hover:bg-green-600 text-white transition-colors"
+                  title="Thumbs up"
+                >
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z"/>
+                  </svg>
+                </button>
+                <button
+                  onClick={() => handleFeedbackSubmit('thumbs-down')}
+                  className="flex items-center justify-center w-12 h-12 rounded-full bg-red-500 hover:bg-red-600 text-white transition-colors"
+                  title="Thumbs down"
+                >
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M18 9.5a1.5 1.5 0 11-3 0v-6a1.5 1.5 0 013 0v6zM14 9.667v-5.43a2 2 0 00-1.106-1.79l-.05-.025A4 4 0 0011.057 2H5.64a2 2 0 00-1.962 1.608l-1.2 6A2 2 0 004.44 12H8v4a2 2 0 002 2 1 1 0 001-1v-.667a4 4 0 01.8-2.4l1.4-1.866a4 4 0 00.8-2.4z"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Thank You Message */}
+        {showThankYou && (
+          <div className="border-t border-b p-4 bg-green-50">
+            <div className="text-center">
+              <p className="text-green-800 font-medium">{t.thankYouMessage}</p>
+            </div>
+          </div>
+        )}
 
         {/* Input Area */}
         <div className="border-t p-4">

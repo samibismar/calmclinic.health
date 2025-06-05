@@ -17,3 +17,13 @@ export interface Clinic {
   ai_instructions: string | null
   created_at: string
 }
+
+// Type for chat feedback data
+export interface ChatFeedback {
+  id: number
+  clinic_id: number | null
+  patient_name: string
+  feedback: 'thumbs-up' | 'thumbs-down'
+  chat_messages: Array<{role: string, content: string}>
+  created_at: string
+}
