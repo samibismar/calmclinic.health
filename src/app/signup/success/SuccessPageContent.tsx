@@ -9,7 +9,21 @@ export default function SuccessPageContent() {
   const clinicSlug = searchParams.get('slug');
   const [copied, setCopied] = useState(false);
   
-  const chatUrl = `${window.location.origin}/?c=${clinicSlug}`;
+  // Get the correct base URL for production
+  const getBaseUrl = () => {
+    if (typeof window !== 'undefined') {
+      // If we're on Vercel or your custom domain, use current origin
+      if (window.location.hostname.includes('vercel.app') || 
+          window.location.hostname === 'calmclinic.health' ||
+          window.location.hostname === 'your-custom-domain.com') {
+        return window.location.origin;
+      }
+    }
+    // Fallback to your production URL
+    return 'https://calmclinic-health.vercel.app';
+  };
+  
+  const chatUrl = `${getBaseUrl()}/?c=${clinicSlug}`;
   
   const copyToClipboard = async () => {
     try {
