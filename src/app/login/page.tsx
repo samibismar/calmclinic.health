@@ -82,7 +82,7 @@ export default function LoginPage() {
                 placeholder="Enter the email from your clinic signup"
               />
               <p className="mt-2 text-sm text-gray-500">
-                Use the same email you used to create your clinic
+                Use the same email you used to create your clinic assistant
               </p>
             </div>
 
@@ -96,7 +96,7 @@ export default function LoginPage() {
 
             <div className="text-center">
               <p className="text-sm text-gray-600">
-                Don&apos;t have a clinic yet?{" "}
+                Don&apos;t have a clinic assistant yet?{" "}
                 <Link href="/signup" className="text-blue-600 hover:text-blue-500 font-medium">
                   Sign up here
                 </Link>
