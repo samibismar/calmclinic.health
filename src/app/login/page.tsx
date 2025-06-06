@@ -4,22 +4,23 @@ import { useState } from "react";
 import Link from "next/link";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [formData, setFormData] = useState({
+    email: "",
+    password: ""
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-    setSuccess("");
 
     try {
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify(formData),
       });
 
       const data = await response.json();
@@ -28,13 +29,8 @@ export default function LoginPage() {
         throw new Error(data.error || "Something went wrong");
       }
 
-      if (data.loginUrl) {
-        // In development, show the login URL as a clickable button
-        setSuccess("ready");
-        (window as Window & { loginUrl?: string }).loginUrl = data.loginUrl; // Store for the button
-      } else {
-        setSuccess("Login link sent to your email! Check your inbox.");
-      }
+      // Redirect to dashboard
+      window.location.href = "/dashboard";
       
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Something went wrong';
@@ -55,7 +51,7 @@ export default function LoginPage() {
             </svg>
           </div>
           <h2 className="text-3xl font-bold text-gray-900">Access Your Dashboard</h2>
-          <p className="mt-2 text-gray-600">Enter your email to get a secure login link</p>
+          <p className="mt-2 text-gray-600">Sign in to manage your clinic assistant</p>
         </div>
       </div>
 
@@ -68,24 +64,6 @@ export default function LoginPage() {
               </div>
             )}
 
-            {success === "ready" && (
-              <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
-                <p className="mb-3">Your dashboard is ready!</p>
-                <button
-                  onClick={() => window.open((window as Window & { loginUrl?: string }).loginUrl, '_blank')}
-                  className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 w-full"
-                >
-                  🚀 Open Dashboard
-                </button>
-              </div>
-            )}
-
-            {success && success !== "ready" && (
-              <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
-                {success}
-              </div>
-            )}
-
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email Address
@@ -94,14 +72,26 @@ export default function LoginPage() {
                 id="email"
                 type="email"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter the email from your clinic signup"
+                placeholder="Enter your email"
               />
-              <p className="mt-2 text-sm text-gray-500">
-                Use the same email you used to create your clinic assistant
-              </p>
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                required
+                value={formData.password}
+                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter your password"
+              />
             </div>
 
             <button
@@ -109,7 +99,7 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Sending..." : "Send Login Link"}
+              {loading ? "Signing in..." : "Sign In"}
             </button>
 
             <div className="text-center">

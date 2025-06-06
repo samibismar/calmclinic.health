@@ -8,6 +8,7 @@ export default function SignupPage() {
     practiceName: "",
     doctorName: "",
     email: "",
+    password: "",
     specialty: "General Practice",
     phone: ""
   });
@@ -126,6 +127,25 @@ export default function SignupPage() {
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="doctor@smithpractice.com"
               />
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Password *
+              </label>
+              <input
+                id="password"
+                type="password"
+                required
+                minLength={6}
+                value={formData.password}
+                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Choose a secure password"
+              />
+              <p className="mt-1 text-sm text-gray-500">
+                Minimum 6 characters
+              </p>
             </div>
 
             <div>
