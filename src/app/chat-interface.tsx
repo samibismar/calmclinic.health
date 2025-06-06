@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase, type Clinic } from "@/lib/supabase";
-import Image from "next/image";
 
 export default function ChatInterface() {
   const [message, setMessage] = useState("");
@@ -11,6 +10,8 @@ export default function ChatInterface() {
   const [clinic, setClinic] = useState<Clinic | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAiTyping, setIsAiTyping] = useState(false);
+  const [userName, setUserName] = useState("");
+  const [showNamePrompt, setShowNamePrompt] = useState(true);
   
   // Get clinic slug and language from URL parameters
   const searchParams = useSearchParams();
@@ -44,6 +45,9 @@ export default function ChatInterface() {
   // Translations
   const translations = {
     en: {
+      namePromptTitle: "Welcome! What's your name?",
+      namePlaceholder: "Enter your name",
+      continueButton: "Continue",
       welcomePrefix: "Hello! I'm Dr.",
       welcomeSuffix: "'s assistant. How can I help today?",
       placeholder: "Type a question about your symptoms...",
@@ -53,6 +57,9 @@ export default function ChatInterface() {
       errorMessage: "I apologize, but I'm having trouble connecting right now. Please try again later."
     },
     es: {
+      namePromptTitle: "¡Bienvenido! ¿Cuál es tu nombre?",
+      namePlaceholder: "Ingresa tu nombre",
+      continueButton: "Continuar",
       welcomePrefix: "¡Hola! Soy el asistente del Dr.",
       welcomeSuffix: ". ¿Cómo puedo ayudarte hoy?",
       placeholder: "Escribe una pregunta sobre tus síntomas...",
@@ -84,6 +91,16 @@ export default function ChatInterface() {
     accentColor: clinic?.primary_color || (doctorParam === 'dr-jones' ? '#9B59B6' : '#5BBAD5'),
     logoUrl: clinic?.logo_url || null,
     specialty: clinic?.specialty || 'General Practice'
+  };
+
+  // Get personalized welcome message
+  const getPersonalizedWelcome = () => {
+    if (userName.trim()) {
+      return language === 'en' 
+        ? `Hello ${userName}! I'm Dr. ${doctorConfig.name}'s assistant. How can I help you today?`
+        : `¡Hola ${userName}! Soy el asistente del Dr. ${doctorConfig.name}. ¿Cómo puedo ayudarte hoy?`;
+    }
+    return doctorConfig.welcomeMessage;
   };
 
   // Suggested prompts based on specialty
@@ -143,6 +160,7 @@ export default function ChatInterface() {
             specialty: doctorConfig.specialty,
             language,
             aiInstructions: clinic?.ai_instructions || null,
+            userName: userName.trim(),
           }),
         });
 
@@ -180,6 +198,71 @@ export default function ChatInterface() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
+      {/* Name Prompt Modal */}
+      {showNamePrompt && !loading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
+            <div className="text-center">
+              {/* Logo or Icon */}
+              {doctorConfig.logoUrl ? (
+                <img 
+                  src={doctorConfig.logoUrl} 
+                  alt={`${doctorConfig.name} logo`}
+                  className="w-16 h-16 mx-auto mb-4 rounded-xl object-cover"
+                />
+              ) : (
+                <div 
+                  className="w-16 h-16 mx-auto mb-4 rounded-xl flex items-center justify-center"
+                  style={{ backgroundColor: doctorConfig.accentColor }}
+                >
+                  <svg 
+                    className="w-8 h-8 text-white" 
+                    fill="currentColor" 
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M8 3a2 2 0 00-2 2H4a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2-2H8zm0 2h4v1H8V5zM4 7h12v9H4V7z"/>
+                    <path d="M10 10a1 1 0 011 1v2a1 1 0 01-2 0v-2a1 1 0 011-1z"/>
+                  </svg>
+                </div>
+              )}
+              
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                {t.namePromptTitle}
+              </h2>
+              
+              <input
+                type="text"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && userName.trim()) {
+                    setShowNamePrompt(false);
+                  }
+                }}
+                placeholder={t.namePlaceholder}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 mb-4"
+                autoFocus
+              />
+              
+              <button
+                onClick={() => {
+                  if (userName.trim()) {
+                    setShowNamePrompt(false);
+                  }
+                }}
+                disabled={!userName.trim()}
+                className="w-full px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ 
+                  backgroundColor: userName.trim() ? doctorConfig.accentColor : '#ccc',
+                }}
+              >
+                {t.continueButton}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="w-full max-w-2xl bg-white rounded-2xl shadow-lg overflow-hidden">
         {/* Header */}
         <div className="text-center py-8 px-4 relative">
@@ -208,12 +291,10 @@ export default function ChatInterface() {
           </div>
           {/* Logo or Medical Briefcase Icon */}
           {doctorConfig.logoUrl ? (
-            <Image 
+            <img 
               src={doctorConfig.logoUrl} 
               alt={`${doctorConfig.name} logo`}
-              width={64}
-              height={64}
-              className="mx-auto mb-4 rounded-xl object-cover"
+              className="w-16 h-16 mx-auto mb-4 rounded-xl object-cover"
             />
           ) : (
             <div 
@@ -243,7 +324,7 @@ export default function ChatInterface() {
           
           {/* Welcome Message */}
           <p className="text-gray-600">
-            {doctorConfig.welcomeMessage}
+            {getPersonalizedWelcome()}
           </p>
         </div>
 
