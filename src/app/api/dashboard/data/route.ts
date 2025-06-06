@@ -2,28 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 
-// Define the shape of a clinic row
-type ClinicRow = {
-  id: number;
-  email: string;
-  doctor_name: string | null;
-  slug: string;
-  practice_name: string | null;
-  specialty: string | null;
-  status: string | null;
-  trial_ends_at: string | null;
-  primary_color: string | null;
-};
-
 export async function GET(request: NextRequest) {
   try {
+    // Get session token from cookies
     const cookieStore = await cookies();
     const sessionToken = cookieStore.get('session_token')?.value;
-
+    
+    console.log('Dashboard API - Session token exists:', !!sessionToken);
+    
     if (!sessionToken) {
       return NextResponse.json({ error: 'Not logged in' }, { status: 401 });
     }
 
+    // Look up the session and get clinic info
     const { data: session, error: sessionError } = await supabase
       .from('sessions')
       .select(`
@@ -45,16 +36,23 @@ export async function GET(request: NextRequest) {
       .gt('expires_at', new Date().toISOString())
       .single();
 
+    console.log('Dashboard API - Session lookup error:', sessionError);
+    console.log('Dashboard API - Session data:', session);
+
     if (sessionError || !session) {
+      console.error('Dashboard API - Failed to get session:', sessionError);
       return NextResponse.json({ error: 'Session expired' }, { status: 401 });
     }
 
-    const clinic = (session.clinics as ClinicRow[])[0];
+    // Fix: clinic comes from the join, so it's an object not array
+    const clinic = session.clinics as any;
 
+    // Get the correct base URL for chat links
     const protocol = request.headers.get('x-forwarded-proto') || 'http';
     const host = request.headers.get('host');
     const baseUrl = `${protocol}://${host}`;
 
+    // TODO: Get real stats from your database
     const stats = {
       totalChats: 0,
       thisWeek: 0,
@@ -77,9 +75,14 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Dashboard data error:', error);
-    return NextResponse.json({
-      error: 'Internal server error'
+    console.error('Dashboard API - Unexpected error:', error);
+    console.error('Dashboard API - Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    });
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }
 }
