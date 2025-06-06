@@ -164,7 +164,7 @@ export default function CustomizePage() {
               <option value="Act like a friendly medical assistant helping patients while they wait.">
                 Friendly & Helpful Assistant
               </option>
-              <option value="Behave like a calm and professional assistant for a doctor's office.">
+              <option value="Behave like a calm and professional assistant for a doctor&apos;s office.">
                 Calm & Professional
               </option>
               <option value="Speak clearly and concisely, avoiding medical jargon.">
@@ -215,7 +215,7 @@ export default function CustomizePage() {
               </button>
             </div>
             <p className="text-sm text-gray-500 mt-1">
-              These are shown to patients to guide them. You can include repetitive questions your clinic often gets (e.g. "Can I eat before my blood test?").
+              These are shown to patients to guide them. You can include repetitive questions your clinic often gets (e.g. &quot;Can I eat before my blood test?&quot;).
             </p>
           </div>
         </section>
@@ -304,7 +304,7 @@ export default function CustomizePage() {
               className="mt-1 block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:border file:border-gray-300 file:rounded-md file:bg-gray-100 file:text-sm file:font-semibold file:text-gray-700 hover:file:bg-gray-200"
             />
             <p className="text-sm text-gray-500 mt-1">
-              Optional — your clinic's logo shown in the assistant UI. Use a clear square image under 1MB (PNG or JPG preferred).
+              Optional — your clinic&apos;s logo shown in the assistant UI. Use a clear square image under 1MB (PNG or JPG preferred).
             </p>
           </div>
 
