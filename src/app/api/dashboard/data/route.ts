@@ -38,7 +38,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Session expired' }, { status: 401 });
     }
 
-    const clinic = session.clinics;
+    // Fix: clinic comes from the join, so it's an object not array
+    const clinic = session.clinics as any;
 
     // Get the correct base URL for chat links
     const protocol = request.headers.get('x-forwarded-proto') || 'http';
