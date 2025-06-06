@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     // Get session token from cookies
     const cookieStore = await cookies();
@@ -40,6 +40,11 @@ export async function GET() {
 
     const clinic = session.clinics;
 
+    // Get the correct base URL for chat links
+    const protocol = request.headers.get('x-forwarded-proto') || 'http';
+    const host = request.headers.get('host');
+    const baseUrl = `${protocol}://${host}`;
+
     // TODO: Get real stats from your database
     // For now, using dummy data - you can replace this with real analytics later
     const stats = {
@@ -59,7 +64,8 @@ export async function GET() {
         trial_ends_at: clinic.trial_ends_at || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
         primary_color: clinic.primary_color || '#5BBAD5'
       },
-      stats
+      stats,
+      baseUrl // Send the correct base URL to the frontend
     });
 
   } catch (error) {
