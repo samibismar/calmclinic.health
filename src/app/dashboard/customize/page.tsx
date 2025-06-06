@@ -264,7 +264,7 @@ export default function CustomizePage() {
               onChange={(e) => setOfficeInstructions(e.target.value)}
               rows={3}
               className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              placeholder="E.g. 'Please check in at the front desk and fill out the intake form while you wait.'"
+              placeholder="E.g. &quot;Please check in at the front desk and fill out the intake form while you wait.&quot;"
             />
             <p className="text-sm text-gray-500 mt-1">
               Optional — shown if you want to give patients any special instructions when they start.
@@ -319,7 +319,7 @@ export default function CustomizePage() {
               value={backgroundStyle}
               onChange={(e) => setBackgroundStyle(e.target.value)}
               className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              placeholder={'E.g. &quot;CalmClinic gradient&quot; or soft background'}
+              placeholder='E.g. &quot;CalmClinic gradient&quot; or soft background'
             />
             <p className="text-sm text-gray-500 mt-1">
               Optional — control the visual background of your assistant experience.
