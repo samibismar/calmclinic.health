@@ -1,7 +1,6 @@
 // /lib/auth.ts
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
-import { NextRequest } from 'next/server';
 
 export async function getClinicFromSession() {
   try {
