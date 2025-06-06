@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
       .select(`
         clinic_id,
         expires_at,
-        clinics (
+        clinics!inner (
           id,
           email,
           doctor_name,
@@ -44,8 +44,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Session expired' }, { status: 401 });
     }
 
-    // Fix: clinic comes from the join, so it's an object not array
-    const clinic = session.clinics as any;
+    // Fix: Access the clinic data correctly - it's an array from the join
+    const clinicData = session.clinics;
+    if (!clinicData || (Array.isArray(clinicData) && clinicData.length === 0)) {
+      console.error('Dashboard API - No clinic data found');
+      return NextResponse.json({ error: 'No clinic data found' }, { status: 404 });
+    }
+
+    // If it's an array, get the first item
+    const clinic = Array.isArray(clinicData) ? clinicData[0] : clinicData;
+
 
     // Get the correct base URL for chat links
     const protocol = request.headers.get('x-forwarded-proto') || 'http';
