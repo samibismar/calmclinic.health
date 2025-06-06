@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { QRCodeCanvas } from "qrcode.react";
 
 interface DashboardData {
   clinic: {
@@ -25,6 +26,8 @@ export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const qrRef = useRef<HTMLCanvasElement | null>(null);
 
   // For now, we'll use a simple URL parameter for clinic access
   // In production, you'd use proper authentication
@@ -92,6 +95,17 @@ export default function DashboardPage() {
 
   const chatUrl = `${window.location.origin}/?c=${data.clinic.slug}`;
   const daysUntilTrialEnd = Math.ceil((new Date(data.clinic.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+
+
+  const handleDownloadQR = () => {
+    const canvas = qrRef.current;
+    if (!canvas) return;
+    const url = canvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'clinic-qr-code.png';
+    link.click();
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -183,6 +197,28 @@ export default function DashboardPage() {
           <p className="mt-2 text-sm text-gray-500">
             Share this link with patients or embed it on your website
           </p>
+        </div>
+
+        {/* QR Code Section */}
+        <div className="bg-white rounded-lg shadow p-6 mb-8 flex flex-col items-center">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Your Patient Chat QR Code</h3>
+          <QRCodeCanvas
+            value={chatUrl}
+            size={160}
+            bgColor="#ffffff"
+            fgColor="#000000"
+            level="H"
+            ref={qrRef}
+          />
+          <p className="mt-2 text-sm text-gray-500">
+            Scan this QR code to open the chat link on your mobile device
+          </p>
+          <button
+            onClick={handleDownloadQR}
+            className="mt-3 px-4 py-2 bg-gray-200 text-sm rounded hover:bg-gray-300"
+          >
+            Download QR Code
+          </button>
         </div>
 
         {/* Quick Actions */}
