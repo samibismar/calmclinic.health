@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { logout } from "@/app/actions/auth";
 
 export default function MobileSidebar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,10 +15,10 @@ export default function MobileSidebar() {
 
   return (
     <>
-      {/* Hamburger button - removed md:hidden to show on all screens */}
+      {/* Hamburger button - visible on all screens with border */}
       <button
         onClick={() => setIsOpen(true)}
-        className="p-2 rounded-lg hover:bg-gray-100"
+        className="p-2 rounded-lg hover:bg-gray-100 border border-gray-300"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -34,7 +33,7 @@ export default function MobileSidebar() {
         />
       )}
 
-      {/* Sidebar - removed md:hidden to show on all screens */}
+      {/* Sidebar */}
       <div className={`fixed left-0 top-0 h-full w-64 bg-white shadow-lg transform transition-transform z-50 ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
