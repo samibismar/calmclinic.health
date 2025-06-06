@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Session expired' }, { status: 401 });
     }
 
-    const clinic = session.clinics as ClinicRow;
+    const clinic = (session.clinics as ClinicRow[])[0];
 
     const protocol = request.headers.get('x-forwarded-proto') || 'http';
     const host = request.headers.get('host');
