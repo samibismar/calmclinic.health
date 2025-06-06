@@ -3,14 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { QRCodeCanvas } from "qrcode.react"; 
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-
 import MobileSidebar from "@/components/dashboard/mobile-sidebar";
 
 interface DashboardData {
@@ -106,16 +98,14 @@ export default function DashboardPage() {
   };
 
   return (
-    <>
-      <MobileSidebar />
-      <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            <MobileSidebar />
             <div className="flex items-center">
-              <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+              <MobileSidebar />
+              <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center ml-4">
                 <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M8 3a2 2 0 00-2 2H4a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2-2H8zm0 2h4v1H8V5zM4 7h12v9H4V7z"/>
                 </svg>
@@ -125,28 +115,7 @@ export default function DashboardPage() {
                 <p className="text-sm text-gray-500">Dr. {data.clinic.doctor_name}</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="text-gray-600 border-gray-300">
-                    ☰
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-40">
-                  <DropdownMenuItem>
-                    <Link href="/dashboard">Dashboard</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link href="/dashboard/customize">Customize</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link href="/dashboard/analytics">Analytics</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link href="/logout">Log out</Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+            <div className="flex items-center">
               <Link
                 href={chatUrl}
                 target="_blank"
@@ -265,7 +234,6 @@ export default function DashboardPage() {
         </div>
 
       </div>
-      </div>
-    </>
+    </div>
   );
 }
