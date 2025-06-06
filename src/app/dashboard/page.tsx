@@ -20,6 +20,7 @@ interface DashboardData {
     thisWeek: number;
     avgSessionLength: string;
   };
+  baseUrl: string;
 }
 
 export default function DashboardPage() {
@@ -82,7 +83,7 @@ export default function DashboardPage() {
     );
   }
 
-  const chatUrl = `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}/?c=${data.clinic.slug}`;
+  const chatUrl = `${data.baseUrl}/?c=${data.clinic.slug}`;
   const daysUntilTrialEnd = Math.ceil((new Date(data.clinic.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
 
   const handleDownloadQR = () => {
