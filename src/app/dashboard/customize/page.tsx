@@ -319,7 +319,7 @@ export default function CustomizePage() {
               value={backgroundStyle}
               onChange={(e) => setBackgroundStyle(e.target.value)}
               className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              placeholder='E.g. &quot;CalmClinic gradient&quot; or soft background'
+              placeholder="E.g. &quot;CalmClinic gradient&quot; or soft background"
             />
             <p className="text-sm text-gray-500 mt-1">
               Optional — control the visual background of your assistant experience.
