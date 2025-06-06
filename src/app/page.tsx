@@ -15,10 +15,11 @@ function ChatLoading() {
   );
 }
 
-export default async function Home({ searchParams }: { searchParams: { [key: string]: string } }) {
+export default async function Home({ searchParams }: { searchParams: Promise<{ [key: string]: string }> }) {
   const supabase = await createSupabaseServerClient();
+  const params = await searchParams;
 
-  const slug = searchParams?.c;
+  const slug = params?.c;
   if (!slug) {
     return <div className="p-4 text-center text-red-500">Missing clinic slug in URL (?c=your-clinic)</div>;
   }
