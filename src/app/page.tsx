@@ -36,7 +36,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ [
 
   return (
     <Suspense fallback={<ChatLoading />}>
-      <ChatInterfaceWrapper clinic={clinic} />
+      <ChatInterfaceWrapper />
     </Suspense>
   );
 }
