@@ -1,53 +1,50 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import bcrypt from 'bcryptjs';
 
-// Function to create a URL-friendly slug from practice name
-function createSlug(practiceName: string): string {
-  return practiceName
+// Helper function to create a URL-friendly slug
+function createSlug(text: string): string {
+  return text
     .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, '') // Remove special characters
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/-+/g, '-') // Replace multiple hyphens with single
-    .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+    .trim()
+    .replace(/[^\w\s-]/g, '') // Remove special characters
+    .replace(/[\s_-]+/g, '-') // Replace spaces with hyphens
+    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
 }
 
-// Function to ensure slug is unique
-async function createUniqueSlug(baseName: string): Promise<string> {
-  let slug = createSlug(baseName);
+// Helper function to create a unique slug
+async function createUniqueSlug(practiceName: string): Promise<string> {
+  let baseSlug = createSlug(practiceName);
+  let slug = baseSlug;
   let counter = 1;
-  
+
   while (true) {
-    // Check if slug already exists
-    const { error } = await supabase
+    // Check if slug exists
+    const { data, error } = await supabase
       .from('clinics')
-      .select('slug')
+      .select('id')
       .eq('slug', slug)
       .single();
-    
-    // If no data found, slug is available
-    if (error && error.code === 'PGRST116') {
+
+    if (!data) {
+      // Slug is available
       return slug;
     }
-    
-    // If slug exists, try with number suffix
-    slug = `${createSlug(baseName)}-${counter}`;
+
+    // Try next slug
+    slug = `${baseSlug}-${counter}`;
     counter++;
-    
-    // Safety check to prevent infinite loop
-    if (counter > 100) {
-      throw new Error('Unable to create unique slug');
-    }
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const { practiceName, doctorName, email, specialty, phone } = await request.json();
+    const { practiceName, doctorName, email, password, specialty, phone } = await request.json();
 
     // Validate required fields
-    if (!practiceName || !doctorName || !email || !specialty) {
+    if (!practiceName || !doctorName || !email || !password || !specialty) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'All fields are required' },
         { status: 400 }
       );
     }
@@ -61,71 +58,97 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if email already exists  
-    const { error: emailCheckError } = await supabase
-      .from('clinics')
-      .select('email')
-      .eq('email', email)
-      .single();
-
-    // If no error, it means email exists (we found a record)
-    if (!emailCheckError) {
+    // Validate password strength (at least 8 characters)
+    if (password.length < 8) {
       return NextResponse.json(
-        { error: 'A clinic with this email already exists' },
+        { error: 'Password must be at least 8 characters long' },
         { status: 400 }
       );
     }
 
-    // Create unique slug
+    // Check if email already exists
+    const { data: existingClinic } = await supabase
+      .from('clinics')
+      .select('id')
+      .eq('email', email.toLowerCase())
+      .single();
+
+    if (existingClinic) {
+      return NextResponse.json(
+        { error: 'An account with this email already exists' },
+        { status: 409 }
+      );
+    }
+
+    // Hash the password
+    const passwordHash = await bcrypt.hash(password, 12);
+
+    // Create unique slug for the clinic
     const clinicSlug = await createUniqueSlug(practiceName);
 
-    // Generate welcome message based on language preference (defaulting to English for now)
-    const welcomeMessage = `Hello! I'm Dr. ${doctorName}'s assistant. How can I help you prepare for your visit today?`;
+    // Generate a default welcome message
+    const welcomeMessage = `Welcome to ${practiceName}! I'm here to help answer your questions while you wait to see Dr. ${doctorName}.`;
 
-    // Insert new clinic into database
+    // Choose a default color based on specialty
+    const specialtyColors: Record<string, string> = {
+      'General Practice': '#5BBAD5',
+      'Pediatrics': '#81C784',
+      'Cardiology': '#E57373',
+      'Dermatology': '#BA68C8',
+      'Orthopedics': '#4FC3F7',
+      'Gastroenterology': '#FFB74D',
+      'Neurology': '#9575CD',
+      'Psychiatry': '#7986CB',
+      'Obstetrics & Gynecology': '#F06292',
+      'Ophthalmology': '#4DB6AC'
+    };
+    const primaryColor = specialtyColors[specialty] || '#5BBAD5';
+
+    // Insert new clinic
     const { data: newClinic, error: insertError } = await supabase
       .from('clinics')
-      .insert([
-        {
-          slug: clinicSlug,
-          doctor_name: doctorName,
-          practice_name: practiceName,
-          email: email,
-          phone: phone || null,
-          logo_url: null, // Will be customizable later
-          primary_color: '#5BBAD5', // Default color
-          welcome_message: welcomeMessage,
-          specialty: specialty,
-          ai_instructions: null, // Can be customized later
-          status: 'trial', // New field we'll add
-          trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
-        }
-      ])
+      .insert({
+        slug: clinicSlug,
+        practice_name: practiceName,
+        doctor_name: doctorName,
+        email: email.toLowerCase(),
+        password_hash: passwordHash, // Store the hashed password
+        specialty: specialty,
+        phone: phone || null,
+        primary_color: primaryColor,
+        welcome_message: welcomeMessage,
+        logo_url: null,
+        ai_instructions: null
+      })
       .select()
       .single();
 
     if (insertError) {
-      console.error('Database insert error:', insertError);
-      console.error('Error details:', JSON.stringify(insertError, null, 2));
+      console.error('Insert error:', insertError);
       return NextResponse.json(
-        { error: `Database error: ${insertError.message}` },
+        { error: 'Failed to create account' },
         { status: 500 }
       );
     }
 
-    // TODO: In next step, we'll add email sending here
-    console.log('New clinic created:', newClinic);
-
-    return NextResponse.json({ 
+    // Return success (without sensitive data)
+    return NextResponse.json({
       success: true,
-      clinicSlug: clinicSlug,
-      message: 'Clinic created successfully'
+      message: 'Account created successfully',
+      clinic: {
+        id: newClinic.id,
+        slug: newClinic.slug,
+        practiceName: newClinic.practice_name,
+        doctorName: newClinic.doctor_name,
+        email: newClinic.email,
+        specialty: newClinic.specialty
+      }
     });
 
   } catch (error) {
-    console.error('Signup API error:', error);
+    console.error('Signup error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Signup failed' },
       { status: 500 }
     );
   }

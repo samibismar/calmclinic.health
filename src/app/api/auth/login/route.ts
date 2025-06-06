@@ -1,80 +1,92 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 
 export async function POST(request: Request) {
   try {
-    const { email } = await request.json();
+    const { email, password } = await request.json();
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    // Validate inputs
+    if (!email || !password) {
       return NextResponse.json(
-        { error: 'Invalid email format' },
+        { error: 'Email and password are required' },
         { status: 400 }
       );
     }
 
-    // Check if clinic exists with this email
+    // Look up the clinic by email
     const { data: clinic, error: clinicError } = await supabase
       .from('clinics')
-      .select('id, email, practice_name, doctor_name')
-      .eq('email', email)
+      .select('*')
+      .eq('email', email.toLowerCase())
       .single();
 
     if (clinicError || !clinic) {
       return NextResponse.json(
-        { error: 'No clinic assistant found with this email address' },
-        { status: 404 }
+        { error: 'Invalid email or password' },
+        { status: 401 }
       );
     }
 
-    // Generate secure login token (valid for 1 hour)
-    const loginToken = crypto.randomBytes(32).toString('hex');
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
-
-    // Store login token in database
-    const { error: tokenError } = await supabase
-      .from('login_tokens')
-      .insert([
-        {
-          clinic_id: clinic.id,
-          token: loginToken,
-          expires_at: expiresAt.toISOString(),
-          used: false
-        }
-      ]);
-
-    if (tokenError) {
-      console.error('Token storage error:', tokenError);
+    // Check if clinic has a password_hash (real password)
+    if (!clinic.password_hash) {
       return NextResponse.json(
-        { error: 'Failed to generate login link' },
+        { error: 'This account needs to be migrated. Please contact support.' },
+        { status: 400 }
+      );
+    }
+
+    // Verify the password
+    const passwordValid = await bcrypt.compare(password, clinic.password_hash);
+    
+    if (!passwordValid) {
+      return NextResponse.json(
+        { error: 'Invalid email or password' },
+        { status: 401 }
+      );
+    }
+
+    // Generate a session token
+    const sessionToken = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 24); // 24 hour session
+
+    // Store the session
+    const { error: sessionError } = await supabase
+      .from('sessions')
+      .insert({
+        clinic_id: clinic.id,
+        token: sessionToken,
+        expires_at: expiresAt.toISOString()
+      });
+
+    if (sessionError) {
+      console.error('Session creation error:', sessionError);
+      return NextResponse.json(
+        { error: 'Failed to create session' },
         { status: 500 }
       );
     }
 
-    // Create login URL
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://calmclinic-health.vercel.app';
-    const loginUrl = `${baseUrl}/dashboard?token=${loginToken}`;
-
-    // In a real app, you'd send this via email
-    // For now, we'll just return it (you can log it to console)
-    console.log(`Login link for ${email}: ${loginUrl}`);
-
-    // TODO: Send email here using Resend, SendGrid, or similar
-    // await sendLoginEmail(email, loginUrl, clinic.practice_name);
-
-    return NextResponse.json({ 
+    // Return success with session token and clinic data
+    return NextResponse.json({
       success: true,
-      message: 'Login link sent! (Check your server logs for now)',
-      // In development, return the link. Remove this in production.
-      loginUrl: process.env.NODE_ENV === 'development' ? loginUrl : undefined
+      token: sessionToken,
+      clinic: {
+        id: clinic.id,
+        slug: clinic.slug,
+        practiceName: clinic.practice_name,
+        doctorName: clinic.doctor_name,
+        email: clinic.email,
+        specialty: clinic.specialty
+      }
     });
 
   } catch (error) {
-    console.error('Login API error:', error);
+    console.error('Login error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Login failed' },
       { status: 500 }
     );
   }
