@@ -29,30 +29,19 @@ export default function DashboardPage() {
 
   const qrRef = useRef<HTMLCanvasElement | null>(null);
 
-  // For now, we'll use a simple URL parameter for clinic access
-  // In production, you'd use proper authentication
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        // For demo purposes, let's simulate loading dashboard data
-        // In real implementation, this would come from your API
-        setData({
-          clinic: {
-            practice_name: "Demo Family Practice",
-            doctor_name: "Dr. Jane Smith",
-            slug: "demo-family-practice",
-            email: "demo@example.com", 
-            specialty: "Family Medicine",
-            status: "trial",
-            trial_ends_at: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-            primary_color: "#5BBAD5"
-          },
-          stats: {
-            totalChats: 24,
-            thisWeek: 8,
-            avgSessionLength: "3m 45s"
-          }
-        });
+        // Fetch real clinic data from your API
+        const response = await fetch('/api/dashboard/data');
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch dashboard data');
+        }
+        
+        const result = await response.json();
+        setData(result);
+        
       } catch (err) {
         console.error('Dashboard error:', err);
         setError("Failed to load dashboard data");
@@ -93,9 +82,8 @@ export default function DashboardPage() {
     );
   }
 
-  const chatUrl = `${window.location.origin}/?c=${data.clinic.slug}`;
+  const chatUrl = `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}/?c=${data.clinic.slug}`;
   const daysUntilTrialEnd = Math.ceil((new Date(data.clinic.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-
 
   const handleDownloadQR = () => {
     const canvas = qrRef.current;

@@ -69,8 +69,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Return success with session token and clinic data
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       token: sessionToken,
       clinic: {
@@ -82,6 +81,16 @@ export async function POST(request: Request) {
         specialty: clinic.specialty
       }
     });
+
+    response.cookies.set('session_token', sessionToken, {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24, // 1 day
+    });
+
+    return response;
 
   } catch (error) {
     console.error('Login error:', error);

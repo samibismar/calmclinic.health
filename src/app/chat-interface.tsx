@@ -30,16 +30,25 @@ export default function ChatInterface() {
             .select('*')
             .eq('slug', clinicSlug)
             .single();
-          
-          if (error) throw error;
-          if (data) setClinic(data);
+
+          if (error && error.code !== 'PGRST116') throw error;
+          if (data) {
+            setClinic(data);
+          } else {
+            // fallback to fetch from API route
+            const res = await fetch('/api/assistant/settings');
+            if (res.ok) {
+              const config = await res.json();
+              setClinic(config);
+            }
+          }
         } catch (error) {
           console.error('Error fetching clinic:', error);
         }
       }
       setLoading(false);
     }
-    
+
     fetchClinic();
   }, [clinicSlug]);
   

@@ -1,7 +1,8 @@
 import { Suspense } from 'react';
-import ChatInterface from './chat-interface';
+import { createSupabaseServerClient } from '@/lib/supabase-server';
+import { notFound } from 'next/navigation';
+import ChatInterfaceWrapper from './chat-interface-wrapper';
 
-// Loading component for Suspense
 function ChatLoading() {
   return (
     <div className="min-h-screen flex items-center justify-center">
@@ -14,10 +15,27 @@ function ChatLoading() {
   );
 }
 
-export default function Home() {
+export default async function Home({ searchParams }: { searchParams: { [key: string]: string } }) {
+  const supabase = await createSupabaseServerClient();
+
+  const slug = searchParams?.c;
+  if (!slug) {
+    return <div className="p-4 text-center text-red-500">Missing clinic slug in URL (?c=your-clinic)</div>;
+  }
+
+  const { data: clinic, error } = await supabase
+    .from('clinics')
+    .select('*')
+    .eq('slug', slug)
+    .single();
+
+  if (!clinic || error) {
+    notFound();
+  }
+
   return (
     <Suspense fallback={<ChatLoading />}>
-      <ChatInterface />
+      <ChatInterfaceWrapper clinic={clinic} />
     </Suspense>
   );
 }

@@ -25,7 +25,7 @@ export default function CustomizePage() {
   const [backgroundStyle, setBackgroundStyle] = useState("");
   const [chatAvatarName, setChatAvatarName] = useState("");
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const payload = {
       welcomeMessage,
       tone,
@@ -37,9 +37,32 @@ export default function CustomizePage() {
       officeInstructions,
       brandColor,
       backgroundStyle,
-      chatAvatarName
+      chatAvatarName,
     };
-    console.log("Saving assistant config:", payload);
+
+    try {
+      const response = await fetch("/api/dashboard/save-settings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error("You need to be logged in to save settings.");
+        }
+        throw new Error(data.error || "Failed to save settings.");
+      }
+
+      alert("Settings saved successfully!");
+    } catch (err) {
+      console.error("Save error:", err);
+      alert(err instanceof Error ? err.message : "Something went wrong while saving. Please try again.");
+    }
   };
 
   return (
