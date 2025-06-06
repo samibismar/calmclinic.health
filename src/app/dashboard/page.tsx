@@ -102,19 +102,26 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
+          <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
+              {/* Hamburger Menu */}
               <MobileSidebar />
-              <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center ml-4">
-                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M8 3a2 2 0 00-2 2H4a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2-2H8zm0 2h4v1H8V5zM4 7h12v9H4V7z"/>
-                </svg>
-              </div>
-              <div className="ml-4">
-                <h1 className="text-xl font-semibold text-gray-900">{data.clinic.practice_name}</h1>
-                <p className="text-sm text-gray-500">Dr. {data.clinic.doctor_name}</p>
+              
+              {/* Logo and Title */}
+              <div className="flex items-center ml-4">
+                <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                  <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M8 3a2 2 0 00-2 2H4a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2-2H8zm0 2h4v1H8V5zM4 7h12v9H4V7z"/>
+                  </svg>
+                </div>
+                <div className="ml-4">
+                  <h1 className="text-xl font-semibold text-gray-900">{data.clinic.practice_name}</h1>
+                  <p className="text-sm text-gray-500">Dr. {data.clinic.doctor_name}</p>
+                </div>
               </div>
             </div>
+            
+            {/* Right side - View Chat button */}
             <div className="flex items-center">
               <Link
                 href={chatUrl}
