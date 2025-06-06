@@ -46,22 +46,19 @@ export default function CustomizePage() {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include", // Ensure session cookie is sent
         body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error("You need to be logged in to save settings.");
-        }
-        throw new Error(data.error || "Failed to save settings.");
+        throw new Error("Failed to save settings.");
       }
 
       alert("Settings saved successfully!");
+      window.location.href = "/dashboard";
     } catch (err) {
       console.error("Save error:", err);
-      alert(err instanceof Error ? err.message : "Something went wrong while saving. Please try again.");
+      alert("Something went wrong while saving. Please try again.");
     }
   };
 
