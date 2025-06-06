@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function CustomizePage() {
+  const router = useRouter();
   const [welcomeMessage, setWelcomeMessage] = useState("");
   const [tone, setTone] = useState("calm");
   const [customTone, setCustomTone] = useState("");
@@ -55,7 +57,7 @@ export default function CustomizePage() {
       }
 
       alert("Settings saved successfully!");
-      window.location.href = "/dashboard";
+      router.push("/dashboard");
     } catch (err) {
       console.error("Save error:", err);
       alert("Something went wrong while saving. Please try again.");
