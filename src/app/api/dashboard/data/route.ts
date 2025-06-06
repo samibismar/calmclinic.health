@@ -2,17 +2,28 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 
+// Define the shape of a clinic row
+type ClinicRow = {
+  id: number;
+  email: string;
+  doctor_name: string | null;
+  slug: string;
+  practice_name: string | null;
+  specialty: string | null;
+  status: string | null;
+  trial_ends_at: string | null;
+  primary_color: string | null;
+};
+
 export async function GET(request: NextRequest) {
   try {
-    // Get session token from cookies
     const cookieStore = await cookies();
     const sessionToken = cookieStore.get('session_token')?.value;
-    
+
     if (!sessionToken) {
       return NextResponse.json({ error: 'Not logged in' }, { status: 401 });
     }
 
-    // Look up the session and get clinic info
     const { data: session, error: sessionError } = await supabase
       .from('sessions')
       .select(`
@@ -38,20 +49,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Session expired' }, { status: 401 });
     }
 
-    // Fix: clinic comes from the join, so it's an object not array
-    const clinic = session.clinics as any;
+    const clinic = session.clinics as ClinicRow;
 
-    // Get the correct base URL for chat links
     const protocol = request.headers.get('x-forwarded-proto') || 'http';
     const host = request.headers.get('host');
     const baseUrl = `${protocol}://${host}`;
 
-    // TODO: Get real stats from your database
-    // For now, using dummy data - you can replace this with real analytics later
     const stats = {
-      totalChats: 0, // Count from conversations table
-      thisWeek: 0,   // Count from conversations table where created_at > week ago
-      avgSessionLength: "0m 0s" // Calculate from conversation data
+      totalChats: 0,
+      thisWeek: 0,
+      avgSessionLength: "0m 0s"
     };
 
     return NextResponse.json({
@@ -66,12 +73,12 @@ export async function GET(request: NextRequest) {
         primary_color: clinic.primary_color || '#5BBAD5'
       },
       stats,
-      baseUrl // Send the correct base URL to the frontend
+      baseUrl
     });
 
   } catch (error) {
     console.error('Dashboard data error:', error);
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: 'Internal server error'
     }, { status: 500 });
   }
