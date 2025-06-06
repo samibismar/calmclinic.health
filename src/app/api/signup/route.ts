@@ -14,7 +14,7 @@ function createSlug(text: string): string {
 
 // Helper function to create a unique slug
 async function createUniqueSlug(practiceName: string): Promise<string> {
-  let baseSlug = createSlug(practiceName);
+  const baseSlug = createSlug(practiceName);
   let slug = baseSlug;
   let counter = 1;
 
@@ -145,8 +145,7 @@ export async function POST(request: Request) {
       }
     });
 
-  } catch (error) {
-    console.error('Signup error:', error);
+  } catch {
     return NextResponse.json(
       { error: 'Signup failed' },
       { status: 500 }
