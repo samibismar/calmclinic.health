@@ -20,7 +20,7 @@ async function createUniqueSlug(practiceName: string): Promise<string> {
 
   while (true) {
     // Check if slug exists
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('clinics')
       .select('id')
       .eq('slug', slug)
