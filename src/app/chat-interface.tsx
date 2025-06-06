@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase, type Clinic } from "@/lib/supabase";
+import Image from 'next/image';
 
 export default function ChatInterface() {
   const [message, setMessage] = useState("");
@@ -205,10 +206,12 @@ export default function ChatInterface() {
             <div className="text-center">
               {/* Logo or Icon */}
               {doctorConfig.logoUrl ? (
-                <img 
+                <Image 
                   src={doctorConfig.logoUrl} 
                   alt={`${doctorConfig.name} logo`}
-                  className="w-16 h-16 mx-auto mb-4 rounded-xl object-cover"
+                  width={64}
+                  height={64}
+                  className="mx-auto mb-4 rounded-xl object-cover"
                 />
               ) : (
                 <div 
@@ -291,10 +294,12 @@ export default function ChatInterface() {
           </div>
           {/* Logo or Medical Briefcase Icon */}
           {doctorConfig.logoUrl ? (
-            <img 
+            <Image 
               src={doctorConfig.logoUrl} 
               alt={`${doctorConfig.name} logo`}
-              className="w-16 h-16 mx-auto mb-4 rounded-xl object-cover"
+              width={64}
+              height={64}
+              className="mx-auto mb-4 rounded-xl object-cover"
             />
           ) : (
             <div 

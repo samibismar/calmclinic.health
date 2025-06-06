@@ -164,7 +164,7 @@ export default function CustomizePage() {
               <option value="Act like a friendly medical assistant helping patients while they wait.">
                 Friendly & Helpful Assistant
               </option>
-              <option value="Behave like a calm and professional assistant for a doctor’s office.">
+              <option value="Behave like a calm and professional assistant for a doctor's office.">
                 Calm & Professional
               </option>
               <option value="Speak clearly and concisely, avoiding medical jargon.">
@@ -178,7 +178,7 @@ export default function CustomizePage() {
               onChange={(e) => setPromptInstructions(e.target.value)}
               rows={4}
               className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              placeholder="E.g. 'Act like a friendly medical assistant helping patients while they wait...'"
+              placeholder="E.g. &quot;Act like a friendly medical assistant helping patients while they wait...&quot;"
             />
             <p className="text-sm text-gray-500 mt-1">
               These instructions tell the assistant how to behave. Be specific and clear.
@@ -304,7 +304,7 @@ export default function CustomizePage() {
               className="mt-1 block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:border file:border-gray-300 file:rounded-md file:bg-gray-100 file:text-sm file:font-semibold file:text-gray-700 hover:file:bg-gray-200"
             />
             <p className="text-sm text-gray-500 mt-1">
-              Optional — your clinic’s logo shown in the assistant UI. Use a clear square image under 1MB (PNG or JPG preferred).
+              Optional — your clinic's logo shown in the assistant UI. Use a clear square image under 1MB (PNG or JPG preferred).
             </p>
           </div>
 
@@ -337,7 +337,7 @@ export default function CustomizePage() {
               value={chatAvatarName}
               onChange={(e) => setChatAvatarName(e.target.value)}
               className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              placeholder="E.g. 'CalmBot' or 'Clinic Assistant'"
+              placeholder="E.g. &quot;CalmBot&quot; or &quot;Clinic Assistant&quot;"
             />
             <p className="text-sm text-gray-500 mt-1">
               Optional — this is the name that appears next to the assistant avatar.
