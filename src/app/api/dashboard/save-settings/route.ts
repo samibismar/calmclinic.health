@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Session expired' }, { status: 401 });
     }
 
-    const clinic = session.clinics;
+    const clinic = Array.isArray(session.clinics) ? session.clinics[0] : session.clinics;
 
     // Get request body
     const body = await request.json();
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     for (const [camelKey, snakeKey] of Object.entries(fieldMapping)) {
       if (camelKey in body) {
         const value: unknown = body[camelKey];
-        updates[snakeKey] = (typeof value === 'string' && value.trim() === '') ? null : value;
+        updates[snakeKey] = (typeof value === 'string' && value.trim() === '') ? null : value as (string | number | boolean | string[] | null);
       }
     }
 
