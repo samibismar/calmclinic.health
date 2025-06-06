@@ -22,7 +22,6 @@ export default function CustomizePage() {
   const [officeInstructions, setOfficeInstructions] = useState("");
 
   const [brandColor, setBrandColor] = useState("#5BBAD5");
-  const [clinicLogo, setClinicLogo] = useState<File | null>(null);
   const [backgroundStyle, setBackgroundStyle] = useState("");
   const [chatAvatarName, setChatAvatarName] = useState("");
 
@@ -302,11 +301,6 @@ export default function CustomizePage() {
               id="clinicLogo"
               name="clinicLogo"
               accept="image/*"
-              onChange={(e) => {
-                if (e.target.files && e.target.files[0]) {
-                  setClinicLogo(e.target.files[0]);
-                }
-              }}
               className="mt-1 block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:border file:border-gray-300 file:rounded-md file:bg-gray-100 file:text-sm file:font-semibold file:text-gray-700 hover:file:bg-gray-200"
             />
             <p className="text-sm text-gray-500 mt-1">
@@ -325,7 +319,7 @@ export default function CustomizePage() {
               value={backgroundStyle}
               onChange={(e) => setBackgroundStyle(e.target.value)}
               className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              placeholder="E.g. CalmClinic gradient or soft background"
+              placeholder="E.g. &quot;CalmClinic gradient&quot; or soft background"
             />
             <p className="text-sm text-gray-500 mt-1">
               Optional — control the visual background of your assistant experience.
