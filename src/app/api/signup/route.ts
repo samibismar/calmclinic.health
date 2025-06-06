@@ -145,7 +145,8 @@ export async function POST(request: Request) {
       }
     });
 
-  } catch {
+  } catch (error) {
+    console.error('Signup error:', error);
     return NextResponse.json(
       { error: 'Signup failed' },
       { status: 500 }
