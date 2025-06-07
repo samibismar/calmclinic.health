@@ -2,15 +2,17 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { logout } from "@/lib/supabase-server";
 
 export default function MobileSidebar() {
   const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
 
   const navItems = [
     { label: "Dashboard", href: "/dashboard" },
     { label: "Customize", href: "/dashboard/customize" },
-    { label: "Support", href: "/support" },
-    { label: "Logout", href: "/logout" },
+    { label: "Support", href: "/support" }
   ];
 
   return (
@@ -56,13 +58,21 @@ export default function MobileSidebar() {
                 key={item.href}
                 href={item.href}
                 onClick={() => setIsOpen(false)}
-                className={`block px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors ${
-                  item.label === 'Logout' ? 'text-red-600' : ''
-                }`}
+                className="block px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 {item.label}
               </Link>
             ))}
+            <button
+              onClick={async () => {
+                await logout();
+                router.push("/login");
+                setIsOpen(false);
+              }}
+              className="block w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors text-red-600"
+            >
+              Logout
+            </button>
           </nav>
         </div>
       </div>
