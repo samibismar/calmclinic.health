@@ -4,7 +4,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import ChatInterface from '@/components/chat-interface';
+import ChatInterface from '../chat-interface';
 
 export default function ChatPage() {
   const searchParams = useSearchParams();
