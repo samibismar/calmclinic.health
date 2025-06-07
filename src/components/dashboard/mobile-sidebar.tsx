@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { logout } from "@/lib/supabase-server";
 
 export default function MobileSidebar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -65,7 +64,7 @@ export default function MobileSidebar() {
             ))}
             <button
               onClick={async () => {
-                await logout();
+                await fetch("/api/logout", { method: "POST" });
                 router.push("/login");
                 setIsOpen(false);
               }}
