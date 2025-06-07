@@ -74,7 +74,7 @@ export default function HomePage() {
           </div>
             <div className="flex gap-2 text-xs text-gray-400">
               <div className="bg-gray-700 px-3 py-1 rounded-full">💡&quot;What should I bring?&quot;</div>
-              <div className="bg-gray-700 px-3 py-1 rounded-full">💡&ldquo;How long is the wait?&rdquo;</div>
+              <div className="bg-gray-700 px-3 py-1 rounded-full">💡&quot;How long is the wait?&quot;</div>
             </div>
         </div>
       </section>
