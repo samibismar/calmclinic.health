@@ -72,10 +72,10 @@ export default function HomePage() {
             I can help answer your questions while you wait.<br /><br />
             Ask me anything — symptoms, wait time, visit prep, and more!
           </div>
-          <div className="flex gap-2 text-xs text-gray-400">
-            <div className="bg-gray-700 px-3 py-1 rounded-full">💡“What should I bring?”</div>
-            <div className="bg-gray-700 px-3 py-1 rounded-full">💡“How long is the wait?”</div>
-          </div>
+            <div className="flex gap-2 text-xs text-gray-400">
+              <div className="bg-gray-700 px-3 py-1 rounded-full">💡&ldquo;What should I bring?&rdquo;</div>
+              <div className="bg-gray-700 px-3 py-1 rounded-full">💡&ldquo;How long is the wait?&rdquo;</div>
+            </div>
         </div>
       </section>
 
@@ -147,7 +147,7 @@ export default function HomePage() {
             </div>
             <div>
               <h3 className="text-xl font-semibold text-cyan-300 mb-2">Clinic Branding, Your Way</h3>
-              <p>Customize tone, instructions, and even the assistant's name. CalmClinic becomes an extension of your care philosophy.</p>
+              <p>Customize tone, instructions, and even the assistant&apos;s name. CalmClinic becomes an extension of your care philosophy.</p>
             </div>
           </div>
         </div>
