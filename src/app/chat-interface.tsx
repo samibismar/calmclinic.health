@@ -10,10 +10,10 @@ import { useSearchParams } from "next/navigation";
 import { supabase, type Clinic } from "@/lib/supabase";
 import Image from 'next/image';
 
-export default function ChatInterface({ clinic }: ChatInterfaceProps) {
+export default function ChatInterface({ clinic: initialClinicSlug }: ChatInterfaceProps) {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Array<{role: string, content: string}>>([]);
-  const [clinic, setClinic] = useState<Clinic | null>(null);
+  const [clinicData, setClinicData] = useState<Clinic | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAiTyping, setIsAiTyping] = useState(false);
   const [userName, setUserName] = useState("");
@@ -28,23 +28,23 @@ export default function ChatInterface({ clinic }: ChatInterfaceProps) {
   
   useEffect(() => {
     async function fetchClinic() {
-      if (clinicSlug) {
+      if (initialClinicSlug) {
         try {
           const { data, error } = await supabase
             .from('clinics')
             .select('*')
-            .eq('slug', clinicSlug)
+            .eq('slug', initialClinicSlug)
             .single();
 
           if (error && error.code !== 'PGRST116') throw error;
           if (data) {
-            setClinic(data);
+            setClinicData(data);
           } else {
             // fallback to fetch from API route
             const res = await fetch('/api/assistant/settings');
             if (res.ok) {
               const config = await res.json();
-              setClinic(config);
+              setClinicData(config);
             }
           }
         } catch (error) {
@@ -55,7 +55,7 @@ export default function ChatInterface({ clinic }: ChatInterfaceProps) {
     }
 
     fetchClinic();
-  }, [clinicSlug]);
+  }, [initialClinicSlug]);
   
   // Translations
   const translations = {
@@ -100,12 +100,12 @@ export default function ChatInterface({ clinic }: ChatInterfaceProps) {
   
   // Use clinic data if available, otherwise fall back to URL params or defaults
   const doctorConfig = {
-    name: clinic?.doctor_name || (doctorParam ? parseDoctorName(doctorParam) : 'Sami Bismar'),
-    title: clinic?.doctor_name ? `Dr. ${clinic.doctor_name}` : (doctorParam ? `Dr. ${parseDoctorName(doctorParam)}` : 'Dr. Sami Bismar'),
-    welcomeMessage: clinic?.welcome_message || `${t.welcomePrefix} ${clinic?.doctor_name || (doctorParam ? parseDoctorName(doctorParam).split(' ').pop() : 'Bismar')}${t.welcomeSuffix}`,
-    accentColor: clinic?.primary_color || (doctorParam === 'dr-jones' ? '#9B59B6' : '#5BBAD5'),
-    logoUrl: clinic?.logo_url || null,
-    specialty: clinic?.specialty || 'General Practice'
+    name: clinicData?.doctor_name || (doctorParam ? parseDoctorName(doctorParam) : 'Sami Bismar'),
+    title: clinicData?.doctor_name ? `Dr. ${clinicData.doctor_name}` : (doctorParam ? `Dr. ${parseDoctorName(doctorParam)}` : 'Dr. Sami Bismar'),
+    welcomeMessage: clinicData?.welcome_message || `${t.welcomePrefix} ${clinicData?.doctor_name || (doctorParam ? parseDoctorName(doctorParam).split(' ').pop() : 'Bismar')}${t.welcomeSuffix}`,
+    accentColor: clinicData?.primary_color || (doctorParam === 'dr-jones' ? '#9B59B6' : '#5BBAD5'),
+    logoUrl: clinicData?.logo_url || null,
+    specialty: clinicData?.specialty || 'General Practice'
   };
 
   // Get personalized welcome message
@@ -174,7 +174,7 @@ export default function ChatInterface({ clinic }: ChatInterfaceProps) {
             doctorName: doctorConfig.name,
             specialty: doctorConfig.specialty,
             language,
-            aiInstructions: clinic?.ai_instructions || null,
+            aiInstructions: clinicData?.ai_instructions || null,
             userName: userName.trim(),
           }),
         });
