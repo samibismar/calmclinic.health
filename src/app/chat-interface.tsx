@@ -21,7 +21,6 @@ export default function ChatInterface({ clinic: initialClinicSlug }: ChatInterfa
   
   // Get clinic slug and language from URL parameters
   const searchParams = useSearchParams();
-  const clinicSlug = searchParams.get('c');
   const doctorParam = searchParams.get('doctor'); // Keep backward compatibility
   const langParam = searchParams.get('lang');
   const [language, setLanguage] = useState(langParam === 'es' ? 'es' : 'en');
