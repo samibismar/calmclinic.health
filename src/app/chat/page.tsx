@@ -1,8 +1,7 @@
-
-
 'use client';
 
 import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
  
 import ChatInterface from '../chat-interface';
 
@@ -14,7 +13,9 @@ export default function ChatPage() {
   }
   return (
     <main className="min-h-screen bg-black text-white">
-      <ChatInterface clinic={clinic} />
+      <Suspense fallback={<div className="text-white text-center p-6">Loading...</div>}>
+        <ChatInterface clinic={clinic} />
+      </Suspense>
     </main>
   );
 }
