@@ -73,7 +73,7 @@ export default function HomePage() {
             Ask me anything — symptoms, wait time, visit prep, and more!
           </div>
             <div className="flex gap-2 text-xs text-gray-400">
-              <div className="bg-gray-700 px-3 py-1 rounded-full">💡&#34;What should I bring?&#34;</div>
+              <div className="bg-gray-700 px-3 py-1 rounded-full">{'💡"What should I bring?"'}</div>
               <div className="bg-gray-700 px-3 py-1 rounded-full">💡&quot;How long is the wait?&quot;</div>
             </div>
         </div>
