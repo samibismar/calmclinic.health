@@ -3,5 +3,5 @@
 import ChatInterface from './chat-interface';
 
 export default function ChatInterfaceWrapper() {
-  return <ChatInterface />;
+  return <ChatInterface clinic="placeholder-clinic-slug" />;
 }
