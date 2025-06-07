@@ -26,6 +26,23 @@ export default function HomePage() {
         </div>
       </header>
 
+      {/* Learn More Section (Moved Up) */}
+      <section id="learn-more" className="px-6 py-16 text-center">
+        <h2 className="text-3xl font-bold mb-4 text-cyan-400">
+          What is CalmClinic?
+        </h2>
+        <p className="text-gray-300 max-w-2xl mx-auto mb-6">
+          CalmClinic is a B2B SaaS platform that gives every clinic its own white-labeled AI health assistant.
+          Patients scan a QR code in the waiting room to chat instantly with a clinic-branded AI that answers questions,
+          improves their experience, and reduces front-desk overload. Fully customizable. No app required. Live in minutes.
+        </p>
+        <Link href="#features">
+          <button className="border border-cyan-500 hover:bg-cyan-500 hover:text-white text-cyan-400 font-semibold py-3 px-6 rounded-xl transition">
+            See Features
+          </button>
+        </Link>
+      </section>
+
       {/* Hero Section */}
       <section id="hero" className="px-6 py-24 text-center max-w-4xl mx-auto">
         <h1 className="text-5xl font-bold text-cyan-400 mb-6">
