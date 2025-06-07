@@ -3,5 +3,10 @@
 import ChatInterface from './chat-interface';
 
 export default function ChatInterfaceWrapper() {
-  return <ChatInterface clinic="placeholder-clinic-slug" />;
+  const clinic = "placeholder-clinic-slug";
+  return (
+    <>
+      {clinic && <ChatInterface clinic={clinic} />}
+    </>
+  );
 }
