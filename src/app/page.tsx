@@ -68,7 +68,7 @@ export default function HomePage() {
             <span className="text-xs bg-gray-700 text-gray-400 px-2 py-0.5 rounded">Live Preview</span>
           </div>
           <div className="bg-black rounded-lg px-4 py-3 text-gray-100 text-sm leading-relaxed border border-gray-600">
-            👋 Hello! I’m your clinic’s AI assistant. <br />
+            👋 Hello! I'm your clinic's AI assistant. <br />
             I can help answer your questions while you wait.<br /><br />
             Ask me anything — symptoms, wait time, visit prep, and more!
           </div>
@@ -93,7 +93,7 @@ export default function HomePage() {
           </div>
           <div>
             <div className="text-5xl mb-4">2</div>
-            <p>Chat with your clinic’s AI assistant</p>
+            <p>Chat with your clinic's AI assistant</p>
           </div>
           <div>
             <div className="text-5xl mb-4">3</div>
@@ -106,7 +106,7 @@ export default function HomePage() {
       <section id="testimonials" className="px-6 py-20 max-w-4xl mx-auto text-center text-gray-400">
         <h2 className="text-2xl font-semibold mb-6 text-cyan-300">Trusted by clinics</h2>
         <p className="italic mb-4">
-          "CalmClinic transformed our waiting room experience. Patients love it."
+          &quot;CalmClinic transformed our waiting room experience. Patients love it.&quot;
         </p>
         <p>— Placeholder Clinic Name</p>
       </section>
@@ -158,7 +158,7 @@ export default function HomePage() {
       {/* Who It's For */}
       <section id="audience" className="px-6 py-20 bg-black border-t border-gray-800">
         <div className="max-w-5xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-cyan-400 mb-8">Who It’s For</h2>
+          <h2 className="text-3xl font-bold text-cyan-400 mb-8">Who It's For</h2>
           <div className="grid sm:grid-cols-3 gap-8 text-left text-gray-300 text-lg">
             <div>
               <h3 className="text-xl font-semibold text-cyan-300 mb-2">Primary Care Clinics</h3>
