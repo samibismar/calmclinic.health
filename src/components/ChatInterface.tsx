@@ -215,7 +215,7 @@ export default function ChatInterface({ clinic: initialClinicSlug }: ChatInterfa
       {/* Name Prompt Modal */}
       {showNamePrompt && !loading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
+          <div className="bg-black rounded-2xl p-6 max-w-sm w-full text-white">
             <div className="text-center">
               {/* Logo or Icon */}
               {doctorConfig.logoUrl ? (
@@ -242,7 +242,7 @@ export default function ChatInterface({ clinic: initialClinicSlug }: ChatInterfa
                 </div>
               )}
               
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              <h2 className="text-xl font-semibold text-white mb-2">
                 {t.namePromptTitle}
               </h2>
               
@@ -256,7 +256,7 @@ export default function ChatInterface({ clinic: initialClinicSlug }: ChatInterfa
                   }
                 }}
                 placeholder={t.namePlaceholder}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 mb-4"
+                className="w-full px-4 py-2 border border-gray-500 rounded-lg focus:outline-none focus:border-blue-300 bg-black text-white placeholder-gray-400 mb-4"
                 autoFocus
               />
               
@@ -288,7 +288,7 @@ export default function ChatInterface({ clinic: initialClinicSlug }: ChatInterfa
             {messages.length > 0 && (
               <button
                 onClick={() => setMessages([])}
-                className="flex items-center gap-2 px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors text-sm"
+                className="flex items-center gap-2 px-3 py-1 rounded-lg border border-gray-600 bg-black text-white hover:bg-gray-800 transition-colors text-sm"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -300,7 +300,7 @@ export default function ChatInterface({ clinic: initialClinicSlug }: ChatInterfa
             {/* Language Toggle */}
             <button
               onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
-              className="flex items-center gap-2 px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-2 px-3 py-1 rounded-lg border border-gray-600 bg-black text-white hover:bg-gray-800 transition-colors"
             >
               <span className="text-sm font-medium">{language === 'en' ? '🇺🇸 EN' : '🇪🇸 ES'}</span>
             </button>
@@ -331,17 +331,17 @@ export default function ChatInterface({ clinic: initialClinicSlug }: ChatInterfa
           )}
           
           {/* Doctor Name */}
-          <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+          <h1 className="text-2xl font-semibold text-black mb-2">
             {doctorConfig.title}
           </h1>
           
           {/* Specialty */}
-          <p className="text-sm text-gray-500 mb-2">
+          <p className="text-sm text-gray-600 mb-2">
             {doctorConfig.specialty}
           </p>
           
           {/* Welcome Message */}
-          <p className="text-gray-600">
+          <p className="text-black">
             {getPersonalizedWelcome()}
           </p>
         </div>
@@ -388,7 +388,7 @@ export default function ChatInterface({ clinic: initialClinicSlug }: ChatInterfa
                   className={`max-w-[80%] rounded-lg px-4 py-2 ${
                     msg.role === 'user' 
                       ? 'text-white' 
-                      : 'bg-gray-100 text-gray-800'
+                      : 'bg-gray-100 text-black'
                   }`}
                   style={msg.role === 'user' ? { backgroundColor: doctorConfig.accentColor } : {}}
                 >
@@ -421,7 +421,7 @@ export default function ChatInterface({ clinic: initialClinicSlug }: ChatInterfa
               onChange={(e) => setMessage(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSend()}
               placeholder={t.placeholder}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 bg-white text-black"
             />
             <button
               onClick={handleSend}
