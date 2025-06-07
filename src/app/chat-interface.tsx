@@ -1,11 +1,16 @@
 "use client";
+"use client";
+
+type ChatInterfaceProps = {
+  clinic: string;
+};
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase, type Clinic } from "@/lib/supabase";
 import Image from 'next/image';
 
-export default function ChatInterface() {
+export default function ChatInterface({ clinic }: ChatInterfaceProps) {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Array<{role: string, content: string}>>([]);
   const [clinic, setClinic] = useState<Clinic | null>(null);
