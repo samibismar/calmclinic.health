@@ -84,7 +84,7 @@ export default function DashboardPage() {
     );
   }
 
-  const chatUrl = `${data.baseUrl}/?c=${data.clinic.slug}`;
+  const chatUrl = `${data.baseUrl}/chat?c=${data.clinic.slug}`;
   const daysUntilTrialEnd = Math.ceil((new Date(data.clinic.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
 
   const handleDownloadQR = () => {
