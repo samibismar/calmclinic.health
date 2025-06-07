@@ -1,6 +1,6 @@
 'use client';
 
-import ChatInterface from './chat-interface';
+import ChatInterface from '@/components/ChatInterface';
 
 export default function ChatInterfaceWrapper() {
   const clinic = "placeholder-clinic-slug";
