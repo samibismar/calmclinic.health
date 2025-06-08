@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { QRCodeCanvas } from "qrcode.react"; 
@@ -26,25 +26,27 @@ interface DashboardData {
   baseUrl: string;
 }
 
+// Create a client component for search params
+function SearchParamsHandler({ onSetupComplete }: { onSetupComplete: () => void }) {
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get('setup') === 'complete') {
+      onSetupComplete();
+      window.history.replaceState({}, '', '/dashboard');
+    }
+  }, [searchParams, onSetupComplete]);
+
+  return null;
+}
+
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showSuccessBanner, setShowSuccessBanner] = useState(false);
   
-  const searchParams = useSearchParams();
   const qrRef = useRef<HTMLCanvasElement | null>(null);
-
-  useEffect(() => {
-    // Check if we just came from setup
-    if (searchParams.get('setup') === 'complete') {
-      setShowSuccessBanner(true);
-      // Remove the query param from URL without reload
-      window.history.replaceState({}, '', '/dashboard');
-      // Hide the banner after 5 seconds
-      setTimeout(() => setShowSuccessBanner(false), 5000);
-    }
-  }, [searchParams]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -109,6 +111,13 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-950 to-blue-900 text-white">
+      <Suspense fallback={null}>
+        <SearchParamsHandler onSetupComplete={() => {
+          setShowSuccessBanner(true);
+          setTimeout(() => setShowSuccessBanner(false), 5000);
+        }} />
+      </Suspense>
+
       {/* Success Banner */}
       {showSuccessBanner && (
         <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-2 fade-in duration-300">
