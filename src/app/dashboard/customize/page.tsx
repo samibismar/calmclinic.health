@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import LivePreviewCard from "@/components/customize/LivePreviewCard";
 import AssistantPersonalityForm from "@/components/customize/AssistantPersonalityForm";
 import ExampleQuestionsForm from "@/components/customize/ExampleQuestionsForm";
 import ClinicIdentityForm from "@/components/customize/ClinicIdentityForm";
@@ -12,7 +11,7 @@ import PromptGenerator from "@/components/customize/PromptGenerator";
 export default function CustomizePage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
-  const [prefillData, setPrefillData] = useState<any>(null);
+  const [prefillData] = useState<Record<string, any> | null>(null);
 
   const [clinicName, setClinicName] = useState(prefillData?.clinicName || "");
   const [welcomeMessage, setWelcomeMessage] = useState(prefillData?.welcomeMessage || "");
@@ -84,12 +83,12 @@ export default function CustomizePage() {
             setSpecialty={setSpecialty}
             officeInstructions={officeInstructions}
             setOfficeInstructions={setOfficeInstructions}
-            logoFile={logoFile}
-            setLogoFile={setLogoFile}
             brandColor={brandColor}
             setBrandColor={setBrandColor}
             chatAvatarName={chatAvatarName}
             setChatAvatarName={setChatAvatarName}
+            logoFile={logoFile}
+            setLogoFile={setLogoFile}
           />
         );
       case 1:
