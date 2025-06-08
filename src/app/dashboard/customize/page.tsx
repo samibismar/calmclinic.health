@@ -1,31 +1,40 @@
 "use client";
 
 import { useState } from "react";
+import LivePreviewCard from "@/components/customize/LivePreviewCard";
+import AssistantPersonalityForm from "@/components/customize/AssistantPersonalityForm";
+import ExampleQuestionsForm from "@/components/customize/ExampleQuestionsForm";
+import ClinicIdentityForm from "@/components/customize/ClinicIdentityForm";
+import BrandingForm from "@/components/customize/BrandingForm";
 import { useRouter } from "next/navigation";
+import PromptGenerator from "@/components/customize/PromptGenerator";
 
 export default function CustomizePage() {
   const router = useRouter();
-  const [welcomeMessage, setWelcomeMessage] = useState("");
-  const [tone, setTone] = useState("calm");
-  const [customTone, setCustomTone] = useState("");
-  const [languages, setLanguages] = useState<string[]>([]);
+  const [step, setStep] = useState(0);
+  const [prefillData, setPrefillData] = useState<any>(null);
+
+  const [clinicName, setClinicName] = useState(prefillData?.clinicName || "");
+  const [welcomeMessage, setWelcomeMessage] = useState(prefillData?.welcomeMessage || "");
+  const [tone, setTone] = useState(prefillData?.tone || "calm");
+  const [customTone, setCustomTone] = useState(prefillData?.tone || "");
+  const [languages, setLanguages] = useState<string[]>(prefillData?.languages || []);
   const [customLanguage, setCustomLanguage] = useState("");
-  const [promptInstructions, setPromptInstructions] = useState("");
+  const [promptInstructions, setPromptInstructions] = useState(prefillData?.promptInstructions || "");
   const [selectedPromptPreset, setSelectedPromptPreset] = useState("");
-  const [exampleQuestions, setExampleQuestions] = useState<string[]>([
+  const [exampleQuestions, setExampleQuestions] = useState<string[]>(prefillData?.exampleQuestions || [
     "What should I do before a blood test?",
     "Can I take Tylenol before my appointment?",
     "How long is the wait time?"
   ]);
   const [newQuestion, setNewQuestion] = useState("");
-
-  const [doctorName, setDoctorName] = useState("");
-  const [specialty, setSpecialty] = useState("");
-  const [officeInstructions, setOfficeInstructions] = useState("");
-
-  const [brandColor, setBrandColor] = useState("#5BBAD5");
-  const [backgroundStyle, setBackgroundStyle] = useState("");
-  const [chatAvatarName, setChatAvatarName] = useState("");
+  const [doctorName, setDoctorName] = useState(prefillData?.doctorName || "");
+  const [specialty, setSpecialty] = useState(prefillData?.specialty || "");
+  const [officeInstructions, setOfficeInstructions] = useState(prefillData?.officeInstructions || "");
+  const [brandColor, setBrandColor] = useState<string>("#5BBAD5");
+  const [backgroundStyle, setBackgroundStyle] = useState(prefillData?.backgroundStyle || "");
+  const [chatAvatarName, setChatAvatarName] = useState(prefillData?.chatAvatarName || "");
+  const [logoFile, setLogoFile] = useState<File | null>(null);
 
   const handleSave = async () => {
     const payload = {
@@ -48,13 +57,11 @@ export default function CustomizePage() {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", // Ensure session cookie is sent
+        credentials: "include",
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to save settings.");
-      }
+      if (!response.ok) throw new Error("Failed to save settings.");
 
       alert("Settings saved successfully!");
       router.push("/dashboard");
@@ -64,315 +71,177 @@ export default function CustomizePage() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
-      <div className="max-w-3xl mx-auto bg-white shadow rounded-lg p-8 space-y-10">
-        <h1 className="text-2xl font-bold text-gray-900">Customize Your Assistant</h1>
-        <p className="text-sm text-gray-500">Fields marked with <span className="text-red-500">*</span> are required.</p>
-
-        {/* Assistant Behavior */}
-        <section>
-          <h2 className="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-1 mb-4">Assistant Behavior</h2>
-          <div className="mb-6">
-            <label htmlFor="welcomeMessage" className="block text-sm font-medium text-gray-700">
-              Welcome Message
-            </label>
-            <input
-              type="text"
-              id="welcomeMessage"
-              name="welcomeMessage"
-              value={welcomeMessage}
-              onChange={(e) => setWelcomeMessage(e.target.value)}
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              placeholder="Hi there! I'm here to help while you wait."
-            />
-            <p className="text-sm text-gray-500 mt-1">
-              This is the first thing patients see when the assistant starts.
-            </p>
-          </div>
-          <div className="mb-6">
-            <label htmlFor="tone" className="block text-sm font-medium text-gray-700">
-              Tone of Voice <span className="text-red-500">*</span>
-            </label>
-            <select
-              id="tone"
-              name="tone"
-              value={tone}
-              onChange={(e) => setTone(e.target.value)}
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            >
-              <option value="calm">Calm & Professional (default)</option>
-              <option value="friendly">Friendly & Warm</option>
-              <option value="energetic">Energetic & Conversational</option>
-            </select>
-            <input
-              type="text"
-              value={customTone}
-              onChange={(e) => {
-                setCustomTone(e.target.value);
-                setTone(e.target.value);
+  const renderStep = () => {
+    switch (step) {
+      case 0:
+        return (
+          <ClinicIdentityForm
+            clinicName={clinicName}
+            setClinicName={setClinicName}
+            doctorName={doctorName}
+            setDoctorName={setDoctorName}
+            specialty={specialty}
+            setSpecialty={setSpecialty}
+            officeInstructions={officeInstructions}
+            setOfficeInstructions={setOfficeInstructions}
+            logoFile={logoFile}
+            setLogoFile={setLogoFile}
+            brandColor={brandColor}
+            setBrandColor={setBrandColor}
+            chatAvatarName={chatAvatarName}
+            setChatAvatarName={setChatAvatarName}
+          />
+        );
+      case 1:
+        return (
+          <BrandingForm
+            brandColor={brandColor}
+            setBrandColor={setBrandColor}
+            backgroundStyle={backgroundStyle}
+            setBackgroundStyle={setBackgroundStyle}
+            chatAvatarName={chatAvatarName}
+            setChatAvatarName={setChatAvatarName}
+          />
+        );
+      case 2:
+        return (
+          <AssistantPersonalityForm
+            tone={tone}
+            setTone={setTone}
+            customTone={customTone}
+            setCustomTone={setCustomTone}
+            welcomeMessage={welcomeMessage}
+            setWelcomeMessage={setWelcomeMessage}
+            promptInstructions={promptInstructions}
+            setPromptInstructions={setPromptInstructions}
+            languages={languages}
+            setLanguages={setLanguages}
+            customLanguage={customLanguage}
+            setCustomLanguage={setCustomLanguage}
+            selectedPromptPreset={selectedPromptPreset}
+            setSelectedPromptPreset={setSelectedPromptPreset}
+          />
+        );
+      case 3:
+        return (
+          <ExampleQuestionsForm
+            exampleQuestions={exampleQuestions}
+            setExampleQuestions={setExampleQuestions}
+            newQuestion={newQuestion}
+            setNewQuestion={setNewQuestion}
+          />
+        );
+      case 4:
+        return (
+          <div className="space-y-6">
+            <h2 className="text-xl font-semibold text-gray-800">🧠 Let AI Help You Customize</h2>
+            <PromptGenerator
+              onComplete={(generated) => {
+                setTone(generated.tone);
+                setPromptInstructions(generated.promptInstructions);
+                setWelcomeMessage(generated.welcomeMessage);
+                setStep(5);
               }}
-              placeholder="Or enter a custom tone"
-              className="mt-3 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
-            <p className="text-sm text-gray-500 mt-1">
-              This affects how the assistant talks to patients.
-            </p>
+            <button
+              className="underline text-sm text-gray-500"
+              onClick={() => setStep(5)}
+            >
+              Do it manually instead
+            </button>
           </div>
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Supported Languages
-            </label>
-            <div className="space-y-2">
-              {["English", "Spanish", "French", "Arabic"].map((lang) => (
-                <label key={lang} className="flex items-center text-sm text-gray-700">
-                  <input
-                    type="checkbox"
-                    checked={languages.includes(lang)}
-                    onChange={() => {
-                      setLanguages((prev) =>
-                        prev.includes(lang) ? prev.filter((l) => l !== lang) : [...prev, lang]
-                      );
-                    }}
-                    className="mr-2"
-                  />
-                  {lang}
-                </label>
-              ))}
-              <div className="flex items-center space-x-2">
+        );
+      case 5:
+        return (
+          <div className="bg-gradient-to-br from-[#0f172a] to-[#1e293b] rounded-2xl shadow-xl border border-gray-700 p-8 space-y-6 text-white max-w-2xl mx-auto">
+            <h2 className="text-2xl font-bold text-white mb-2">✅ Preview Your Assistant</h2>
+            <p className="text-sm text-gray-400 mb-6">This is how your assistant will appear to patients based on your current settings.</p>
+
+            <div className="rounded-xl p-6 shadow-lg text-center" style={{ backgroundColor: "#ffffff", color: "#111827" }}>
+              {logoFile ? (
+                <div className="w-16 h-16 mx-auto mb-2">
+                  <img src={URL.createObjectURL(logoFile)} alt="Logo" className="rounded-md object-contain w-full h-full" />
+                </div>
+              ) : (
+                <div className="w-16 h-16 mx-auto mb-2 bg-gray-200 rounded-md" />
+              )}
+              <h3 className="text-xl font-bold mb-1" style={{ color: brandColor }}>{doctorName || "Dr. Smith"}</h3>
+              <p className="text-sm text-gray-500 mb-4">{specialty || "General Practice"}</p>
+              <p className="mb-6">{welcomeMessage || `Hi! I'm ${chatAvatarName || "your assistant"}. How can I help today?`}</p>
+
+              <div className="flex flex-wrap gap-2 justify-center text-sm">
+                {(exampleQuestions.length > 0 ? exampleQuestions : [
+                  "What should I tell the doctor?",
+                  "How long will the appointment take?",
+                  "Should I mention all my symptoms?"
+                ]).slice(0, 4).map((q, i) => (
+                  <div key={i} className="bg-gray-100 px-3 py-2 rounded-full text-gray-700">
+                    {q}
+                  </div>
+                ))}
+              </div>
+
+              {/* Mock chat input box */}
+              <div className="mt-6 flex items-center gap-2 border border-gray-300 rounded-md px-4 py-2">
                 <input
                   type="text"
-                  value={customLanguage}
-                  onChange={(e) => setCustomLanguage(e.target.value)}
-                  placeholder="Other language"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  disabled
+                  placeholder="Type a question about your symptoms..."
+                  className="flex-1 text-sm bg-transparent text-gray-500 placeholder-gray-400 outline-none"
                 />
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (customLanguage && !languages.includes(customLanguage)) {
-                      setLanguages([...languages, customLanguage]);
-                      setCustomLanguage("");
-                    }
-                  }}
-                  className="px-3 py-2 bg-blue-100 text-blue-700 rounded-md text-sm hover:bg-blue-200"
-                >
-                  Add
-                </button>
+                <button className="bg-green-600 text-white px-4 py-1 rounded-md text-sm" disabled>Send</button>
               </div>
+
+              <p className="mt-6 text-xs text-gray-400">This assistant is for educational purposes only.</p>
             </div>
-            <p className="text-sm text-gray-500 mt-1">
-              Choose which languages your assistant should support.
+
+            <p className="text-sm text-gray-400 text-center mt-4">
+              To test your assistant with these settings, press <strong>Save &amp; Finish Setup</strong>, then go to your dashboard and click <strong>&ldquo;View Chat&rdquo;</strong> in the top right.
             </p>
-          </div>
-          <div className="mb-6">
-            <label htmlFor="promptInstructions" className="block text-sm font-medium text-gray-700">
-              AI Prompt Instructions <span className="text-red-500">*</span>
-            </label>
-            <label htmlFor="promptPreset" className="block text-sm font-medium text-gray-700 mb-1">
-              Prompt Presets
-            </label>
-            <select
-              id="promptPreset"
-              value={selectedPromptPreset}
-              onChange={(e) => {
-                const val = e.target.value;
-                setSelectedPromptPreset(val);
-                setPromptInstructions(val);
-              }}
-              className="block w-full mb-3 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            <button
+              onClick={handleSave}
+              className="mt-6 w-full bg-cyan-600 hover:bg-cyan-700 text-white font-medium py-3 rounded-lg shadow-md transition"
             >
-              <option value="">Select a preset...</option>
-              <option value="Act like a friendly medical assistant helping patients while they wait.">
-                Friendly & Helpful Assistant
-              </option>
-              <option value="Behave like a calm and professional assistant for a doctor&apos;s office.">
-                Calm & Professional
-              </option>
-              <option value="Speak clearly and concisely, avoiding medical jargon.">
-                Clear & Simple
-              </option>
-            </select>
-            <textarea
-              id="promptInstructions"
-              name="promptInstructions"
-              value={promptInstructions}
-              onChange={(e) => setPromptInstructions(e.target.value)}
-              rows={4}
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              placeholder="E.g. &quot;Act like a friendly medical assistant helping patients while they wait...&quot;"
-            />
-            <p className="text-sm text-gray-500 mt-1">
-              These instructions tell the assistant how to behave. Be specific and clear.
-            </p>
+              ✅ Save & Finish Setup
+            </button>
+            <button
+              onClick={() => setStep(4)}
+              className="w-full text-sm text-gray-400 hover:text-white underline"
+            >
+              ← Back
+            </button>
           </div>
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Example Questions
-            </label>
-            <ul className="list-disc ml-5 mb-2 text-sm text-gray-700">
-              {exampleQuestions.map((q, idx) => (
-                <li key={idx}>{q}</li>
-              ))}
-            </ul>
-            <div className="flex space-x-2">
-              <input
-                type="text"
-                value={newQuestion}
-                onChange={(e) => setNewQuestion(e.target.value)}
-                placeholder="Add a new question..."
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-12 px-4">
+      <div className="max-w-3xl mx-auto space-y-8">
+        <h1 className="text-2xl font-bold text-gray-900 text-center">Customize Your Assistant</h1>
+        <div className="bg-white p-6 rounded-lg shadow-md space-y-10">
+          {renderStep()}
+          <div className="flex justify-between">
+            {step > 0 && step < 5 && (
               <button
-                type="button"
-                onClick={() => {
-                  if (newQuestion.trim()) {
-                    setExampleQuestions((prev) => [...prev, newQuestion.trim()]);
-                    setNewQuestion("");
-                  }
-                }}
-                className="px-4 py-2 bg-blue-100 text-blue-700 rounded-md text-sm hover:bg-blue-200"
+                onClick={() => setStep(step - 1)}
+                className="text-sm text-gray-500 hover:underline"
               >
-                Add
+                ← Back
               </button>
-            </div>
-            <p className="text-sm text-gray-500 mt-1">
-              These are shown to patients to guide them. You can include repetitive questions your clinic often gets (e.g. &quot;Can I eat before my blood test?&quot;).
-            </p>
+            )}
+            {step < 5 && (
+              <button
+                onClick={() => setStep(step + 1)}
+                className="ml-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              >
+                Next →
+              </button>
+            )}
           </div>
-        </section>
-
-        {/* Clinic Details */}
-        <section>
-          <h2 className="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-1 mb-4">Clinic Details</h2>
-          <div className="mb-6">
-            <label htmlFor="doctorName" className="block text-sm font-medium text-gray-700">
-              Doctor Name
-            </label>
-            <input
-              type="text"
-              id="doctorName"
-              name="doctorName"
-              value={doctorName}
-              onChange={(e) => setDoctorName(e.target.value)}
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              placeholder="Dr. Jane Smith"
-            />
-          </div>
-
-          <div className="mb-6">
-            <label htmlFor="specialty" className="block text-sm font-medium text-gray-700">
-              Specialty
-            </label>
-            <input
-              type="text"
-              id="specialty"
-              name="specialty"
-              value={specialty}
-              onChange={(e) => setSpecialty(e.target.value)}
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              placeholder="Internal Medicine"
-            />
-          </div>
-
-          <div className="mb-6">
-            <label htmlFor="officeInstructions" className="block text-sm font-medium text-gray-700">
-              Office Instructions
-            </label>
-            <textarea
-              id="officeInstructions"
-              name="officeInstructions"
-              value={officeInstructions}
-              onChange={(e) => setOfficeInstructions(e.target.value)}
-              rows={3}
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              placeholder="E.g. &quot;Please check in at the front desk and fill out the intake form while you wait.&quot;"
-            />
-            <p className="text-sm text-gray-500 mt-1">
-              Optional — shown if you want to give patients any special instructions when they start.
-            </p>
-          </div>
-        </section>
-
-        {/* Appearance */}
-        <section>
-          <h2 className="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-1 mb-4">Appearance</h2>
-          <div className="mb-6">
-            <label htmlFor="brandColor" className="block text-sm font-medium text-gray-700">
-              Primary Brand Color
-            </label>
-            <input
-              type="color"
-              id="brandColor"
-              name="brandColor"
-              value={brandColor}
-              onChange={(e) => setBrandColor(e.target.value)}
-              className="mt-2 h-10 w-20 cursor-pointer"
-            />
-            <p className="text-sm text-gray-500 mt-1">
-              Optional — used for accents like buttons and highlights.
-            </p>
-          </div>
-
-          <div className="mb-6">
-            <label htmlFor="clinicLogo" className="block text-sm font-medium text-gray-700">
-              Clinic Logo
-            </label>
-            <input
-              type="file"
-              id="clinicLogo"
-              name="clinicLogo"
-              accept="image/*"
-              className="mt-1 block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:border file:border-gray-300 file:rounded-md file:bg-gray-100 file:text-sm file:font-semibold file:text-gray-700 hover:file:bg-gray-200"
-            />
-            <p className="text-sm text-gray-500 mt-1">
-              Optional — your clinic&apos;s logo shown in the assistant UI. Use a clear square image under 1MB (PNG or JPG preferred).
-            </p>
-          </div>
-
-          <div className="mb-6">
-            <label htmlFor="backgroundStyle" className="block text-sm font-medium text-gray-700">
-              Background Style
-            </label>
-            <input
-              type="text"
-              id="backgroundStyle"
-              name="backgroundStyle"
-              value={backgroundStyle}
-              onChange={(e) => setBackgroundStyle(e.target.value)}
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              placeholder="E.g. &quot;CalmClinic gradient&quot; or soft background"
-            />
-            <p className="text-sm text-gray-500 mt-1">
-              Optional — control the visual background of your assistant experience.
-            </p>
-          </div>
-
-          <div className="mb-6">
-            <label htmlFor="chatAvatarName" className="block text-sm font-medium text-gray-700">
-              Chat Avatar Name
-            </label>
-            <input
-              type="text"
-              id="chatAvatarName"
-              name="chatAvatarName"
-              value={chatAvatarName}
-              onChange={(e) => setChatAvatarName(e.target.value)}
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              placeholder="E.g. &quot;CalmBot&quot; or &quot;Clinic Assistant&quot;"
-            />
-            <p className="text-sm text-gray-500 mt-1">
-              Optional — this is the name that appears next to the assistant avatar.
-            </p>
-          </div>
-        </section>
-
-        <button
-          onClick={handleSave}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg shadow-md transition"
-        >
-          Save Changes
-        </button>
+        </div>
       </div>
     </div>
   );
