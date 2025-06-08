@@ -29,7 +29,8 @@ export async function GET(request: NextRequest) {
           specialty,
           status,
           trial_ends_at,
-          primary_color
+          primary_color,
+          has_completed_setup
         )
       `)
       .eq('token', sessionToken)
@@ -54,7 +55,6 @@ export async function GET(request: NextRequest) {
     // If it's an array, get the first item
     const clinic = Array.isArray(clinicData) ? clinicData[0] : clinicData;
 
-
     // Get the correct base URL for chat links
     const protocol = request.headers.get('x-forwarded-proto') || 'http';
     const host = request.headers.get('host');
@@ -76,7 +76,8 @@ export async function GET(request: NextRequest) {
         specialty: clinic.specialty || 'General Practice',
         status: clinic.status || 'trial',
         trial_ends_at: clinic.trial_ends_at || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        primary_color: clinic.primary_color || '#5BBAD5'
+        primary_color: clinic.primary_color || '#5BBAD5',
+        has_completed_setup: clinic.has_completed_setup || false
       },
       stats,
       baseUrl

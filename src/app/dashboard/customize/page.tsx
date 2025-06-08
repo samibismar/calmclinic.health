@@ -68,7 +68,8 @@ export default function CustomizePage() {
       if (!response.ok) throw new Error("Failed to save settings.");
 
       toast.success("Settings saved successfully!");
-      router.push("/dashboard");
+      // Redirect with success parameter
+      router.push("/dashboard?setup=complete");
     } catch (err) {
       console.error("Save error:", err);
       toast.error("Something went wrong while saving. Please try again.");
@@ -141,7 +142,7 @@ export default function CustomizePage() {
             <div className="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-sm">
               <h3 className="text-md font-semibold text-white mb-2">🧠 Generated System Instructions</h3>
               <div className="text-sm text-white whitespace-pre-wrap bg-gray-800 border border-gray-700 rounded-md p-3">
-                {promptInstructions || "Your assistant’s instructions will appear here once generated or manually entered."}
+                {promptInstructions || "Your assistant's instructions will appear here once generated or manually entered."}
               </div>
             </div>
 
@@ -150,7 +151,7 @@ export default function CustomizePage() {
                 ✍️ Customize System Instructions
               </label>
               <p className="text-sm text-gray-300 mb-3">
-                Use the field below to provide specific instructions that will shape your assistant’s behavior. You may include guidance on tone of voice, topics to avoid, or any clinic-specific preferences or values. Examples of helpful context include handling common insurance questions, addressing frequently asked concerns, or ensuring sensitive communication practices. You can also include anything else that will tailor your assistant’s AI behavior to reflect exactly what you want (e.g., preferred vocabulary, follow-up behavior, cultural considerations, etc.). If left blank, the assistant will generate a default prompt using your previously provided information.
+                Use the field below to provide specific instructions that will shape your assistant's behavior. You may include guidance on tone of voice, topics to avoid, or any clinic-specific preferences or values. Examples of helpful context include handling common insurance questions, addressing frequently asked concerns, or ensuring sensitive communication practices. You can also include anything else that will tailor your assistant's AI behavior to reflect exactly what you want (e.g., preferred vocabulary, follow-up behavior, cultural considerations, etc.). If left blank, the assistant will generate a default prompt using your previously provided information.
               </p>
               <textarea
                 value={promptInstructions}
@@ -241,7 +242,7 @@ export default function CustomizePage() {
               <div className="mt-6 text-left">
                 <h4 className="text-md font-semibold text-gray-700 mb-1">🧠 System Instructions</h4>
                 <div className="bg-gray-100 p-4 rounded-md text-sm text-gray-800 whitespace-pre-wrap">
-                  {promptInstructions || "Your assistant’s instructions will appear here once generated or manually entered."}
+                  {promptInstructions || "Your assistant's instructions will appear here once generated or manually entered."}
                 </div>
               </div>
 

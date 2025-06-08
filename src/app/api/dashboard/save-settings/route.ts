@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
     }
 
     updates.updated_at = new Date().toISOString();
+    updates.has_completed_setup = true;
 
     // Update the clinic
     const { data: updateResult, error: updateError } = await supabase
