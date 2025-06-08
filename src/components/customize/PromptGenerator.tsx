@@ -56,8 +56,8 @@ export default function PromptGenerator({
         promptInstructions: data.assistantPrompt,
         welcomeMessage: "Hi there! How can I help today?",
       });
-    } catch (err) {
-      setError("Something went wrong. Please try again.");
+    } catch {
+      // intentionally left blank
     } finally {
       setLoading(false);
     }

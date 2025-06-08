@@ -6,7 +6,6 @@ import ExampleQuestionsForm from "@/components/customize/ExampleQuestionsForm";
 import ClinicIdentityForm from "@/components/customize/ClinicIdentityForm";
 import BrandingForm from "@/components/customize/BrandingForm";
 import { useRouter } from "next/navigation";
-import PromptGenerator from "@/components/customize/PromptGenerator";
 
 export default function CustomizePage() {
   const router = useRouter();
