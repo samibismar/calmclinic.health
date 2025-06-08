@@ -11,29 +11,26 @@ import PromptGenerator from "@/components/customize/PromptGenerator";
 export default function CustomizePage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
-  const [prefillData] = useState<Record<string, any> | null>(null);
-
-  const [clinicName, setClinicName] = useState(prefillData?.clinicName || "");
-  const [welcomeMessage, setWelcomeMessage] = useState(prefillData?.welcomeMessage || "");
-  const [tone, setTone] = useState(prefillData?.tone || "calm");
-  const [customTone, setCustomTone] = useState(prefillData?.tone || "");
-  const [languages, setLanguages] = useState<string[]>(prefillData?.languages || []);
+  // Removed prefillData and default to initial values only
+  const [welcomeMessage, setWelcomeMessage] = useState("");
+  const [tone, setTone] = useState("calm");
+  const [customTone, setCustomTone] = useState("");
+  const [languages, setLanguages] = useState<string[]>([]);
   const [customLanguage, setCustomLanguage] = useState("");
-  const [promptInstructions, setPromptInstructions] = useState(prefillData?.promptInstructions || "");
+  const [promptInstructions, setPromptInstructions] = useState("");
   const [selectedPromptPreset, setSelectedPromptPreset] = useState("");
-  const [exampleQuestions, setExampleQuestions] = useState<string[]>(prefillData?.exampleQuestions || [
+  const [exampleQuestions, setExampleQuestions] = useState<string[]>([
     "What should I do before a blood test?",
     "Can I take Tylenol before my appointment?",
     "How long is the wait time?"
   ]);
   const [newQuestion, setNewQuestion] = useState("");
-  const [doctorName, setDoctorName] = useState(prefillData?.doctorName || "");
-  const [specialty, setSpecialty] = useState(prefillData?.specialty || "");
-  const [officeInstructions, setOfficeInstructions] = useState(prefillData?.officeInstructions || "");
+  const [doctorName, setDoctorName] = useState("");
+  const [specialty, setSpecialty] = useState("");
+  const [officeInstructions, setOfficeInstructions] = useState("");
   const [brandColor, setBrandColor] = useState<string>("#5BBAD5");
-  const [backgroundStyle, setBackgroundStyle] = useState(prefillData?.backgroundStyle || "");
-  const [chatAvatarName, setChatAvatarName] = useState(prefillData?.chatAvatarName || "");
-  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [backgroundStyle, setBackgroundStyle] = useState("");
+  const [chatAvatarName, setChatAvatarName] = useState("");
 
   const handleSave = async () => {
     const payload = {
@@ -75,8 +72,6 @@ export default function CustomizePage() {
       case 0:
         return (
           <ClinicIdentityForm
-            clinicName={clinicName}
-            setClinicName={setClinicName}
             doctorName={doctorName}
             setDoctorName={setDoctorName}
             specialty={specialty}
@@ -87,8 +82,6 @@ export default function CustomizePage() {
             setBrandColor={setBrandColor}
             chatAvatarName={chatAvatarName}
             setChatAvatarName={setChatAvatarName}
-            logoFile={logoFile}
-            setLogoFile={setLogoFile}
           />
         );
       case 1:
@@ -135,7 +128,11 @@ export default function CustomizePage() {
           <div className="space-y-6">
             <h2 className="text-xl font-semibold text-gray-800">🧠 Let AI Help You Customize</h2>
             <PromptGenerator
-              onComplete={(generated) => {
+              onComplete={(generated: {
+                tone: string;
+                promptInstructions: string;
+                welcomeMessage: string;
+              }) => {
                 setTone(generated.tone);
                 setPromptInstructions(generated.promptInstructions);
                 setWelcomeMessage(generated.welcomeMessage);
@@ -157,13 +154,7 @@ export default function CustomizePage() {
             <p className="text-sm text-gray-400 mb-6">This is how your assistant will appear to patients based on your current settings.</p>
 
             <div className="rounded-xl p-6 shadow-lg text-center" style={{ backgroundColor: "#ffffff", color: "#111827" }}>
-              {logoFile ? (
-                <div className="w-16 h-16 mx-auto mb-2">
-                  <img src={URL.createObjectURL(logoFile)} alt="Logo" className="rounded-md object-contain w-full h-full" />
-                </div>
-              ) : (
-                <div className="w-16 h-16 mx-auto mb-2 bg-gray-200 rounded-md" />
-              )}
+              <div className="w-16 h-16 mx-auto mb-2 bg-gray-200 rounded-md" />
               <h3 className="text-xl font-bold mb-1" style={{ color: brandColor }}>{doctorName || "Dr. Smith"}</h3>
               <p className="text-sm text-gray-500 mb-4">{specialty || "General Practice"}</p>
               <p className="mb-6">{welcomeMessage || `Hi! I'm ${chatAvatarName || "your assistant"}. How can I help today?`}</p>
