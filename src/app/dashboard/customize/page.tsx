@@ -32,7 +32,6 @@ export default function CustomizePage() {
   const [backgroundStyle, setBackgroundStyle] = useState("");
   const [chatAvatarName, setChatAvatarName] = useState("");
   const [clinicName, setClinicName] = useState("");
-  const [logoFile, setLogoFile] = useState<File | null>(null);
 
   const handleSave = async () => {
     const payload = {
@@ -76,7 +75,6 @@ export default function CustomizePage() {
           <ClinicIdentityForm
             clinicName={clinicName}
             setClinicName={setClinicName}
-            setLogoFile={setLogoFile}
             doctorName={doctorName}
             setDoctorName={setDoctorName}
             specialty={specialty}

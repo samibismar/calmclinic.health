@@ -9,7 +9,6 @@ type Props = {
   setBrandColor: (val: string) => void;
   chatAvatarName: string;
   setChatAvatarName: (val: string) => void;
-  setLogoFile: (file: File | null) => void;
   doctorName: string;
   setDoctorName: (val: string) => void;
   specialty: string;
@@ -25,7 +24,6 @@ const ClinicIdentityForm = ({
   setBrandColor,
   chatAvatarName,
   setChatAvatarName,
-  setLogoFile,
   doctorName,
   setDoctorName,
   specialty,
@@ -69,16 +67,6 @@ const ClinicIdentityForm = ({
               onChange={(e) => setChatAvatarName(e.target.value)}
               className="w-full px-4 py-2 bg-[#0f172a] text-white border border-gray-600 rounded-md shadow-sm focus:ring-cyan-400 focus:border-cyan-500"
               placeholder="e.g., Sunny"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-200 mb-1">Clinic Logo</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setLogoFile(e.target.files?.[0] || null)}
-              className="w-full bg-[#0f172a] text-white border border-gray-600 rounded-md"
             />
           </div>
 
