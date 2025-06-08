@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "react-hot-toast";
 import AssistantPersonalityForm from "@/components/customize/AssistantPersonalityForm";
 import ExampleQuestionsForm from "@/components/customize/ExampleQuestionsForm";
 import ClinicIdentityForm from "@/components/customize/ClinicIdentityForm";
@@ -31,8 +32,15 @@ export default function CustomizePage() {
   const [backgroundStyle, setBackgroundStyle] = useState("");
   const [chatAvatarName, setChatAvatarName] = useState("");
   const [clinicName, setClinicName] = useState("");
+  const [hasAcceptedPrompt, setHasAcceptedPrompt] = useState(false);
+  const [hasGeneratedPrompt, setHasGeneratedPrompt] = useState(false);
+  const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false);
 
   const handleSave = async () => {
+    if (!doctorName || !specialty || !chatAvatarName || !tone || !promptInstructions) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
     const payload = {
       welcomeMessage,
       tone,
@@ -59,11 +67,11 @@ export default function CustomizePage() {
 
       if (!response.ok) throw new Error("Failed to save settings.");
 
-      alert("Settings saved successfully!");
+      toast.success("Settings saved successfully!");
       router.push("/dashboard");
     } catch (err) {
       console.error("Save error:", err);
-      alert("Something went wrong while saving. Please try again.");
+      toast.error("Something went wrong while saving. Please try again.");
     }
   };
 
@@ -127,34 +135,35 @@ export default function CustomizePage() {
         );
       case 4:
         return (
-          <div className="space-y-8">
-            <h2 className="text-2xl font-bold text-gray-900">🧠 Let AI Help You Customize</h2>
+          <div className="space-y-8 bg-gradient-to-br from-[#0f172a] to-[#1e293b] rounded-2xl shadow-xl border border-gray-700 p-8 text-white">
+            <h2 className="text-2xl font-bold text-white">🧠 Let AI Help You Customize</h2>
 
-            <div className="bg-gray-50 border border-gray-300 rounded-lg p-4 shadow-sm">
-              <h3 className="text-md font-semibold text-gray-700 mb-2">🧠 Generated System Instructions</h3>
-              <div className="text-sm text-gray-800 whitespace-pre-wrap bg-white border rounded-md p-3">
+            <div className="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-sm">
+              <h3 className="text-md font-semibold text-white mb-2">🧠 Generated System Instructions</h3>
+              <div className="text-sm text-white whitespace-pre-wrap bg-gray-800 border border-gray-700 rounded-md p-3">
                 {promptInstructions || "Your assistant’s instructions will appear here once generated or manually entered."}
               </div>
             </div>
 
-            <div className="bg-white border border-gray-300 rounded-lg p-4 shadow-sm">
-              <label className="text-sm font-semibold text-gray-700 block mb-2">
+            <div className="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-sm">
+              <label className="text-sm font-semibold text-white block mb-2">
                 ✍️ Customize System Instructions
               </label>
-              <p className="text-sm text-gray-500 mb-3">
+              <p className="text-sm text-gray-300 mb-3">
                 Use the field below to provide specific instructions that will shape your assistant’s behavior. You may include guidance on tone of voice, topics to avoid, or any clinic-specific preferences or values. Examples of helpful context include handling common insurance questions, addressing frequently asked concerns, or ensuring sensitive communication practices. You can also include anything else that will tailor your assistant’s AI behavior to reflect exactly what you want (e.g., preferred vocabulary, follow-up behavior, cultural considerations, etc.). If left blank, the assistant will generate a default prompt using your previously provided information.
               </p>
               <textarea
                 value={promptInstructions}
                 onChange={(e) => setPromptInstructions(e.target.value)}
                 rows={6}
-                className="w-full border rounded-md p-3 text-sm text-gray-800"
+                className="w-full border border-gray-600 bg-gray-900 text-white rounded-md p-3 text-sm"
               />
             </div>
 
             <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
               <button
                 onClick={async () => {
+                  setIsGeneratingPrompt(true);
                   try {
                     const response = await fetch("/api/generate-prompt", {
                       method: "POST",
@@ -163,23 +172,30 @@ export default function CustomizePage() {
                     });
                     const data = await response.json();
                     setPromptInstructions(data.assistantPrompt);
+                    setHasGeneratedPrompt(true);
                   } catch (err) {
                     console.error("AI generation failed", err);
                     alert("Failed to generate instructions. Try again.");
+                  } finally {
+                    setIsGeneratingPrompt(false);
                   }
                 }}
                 className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded-lg shadow-md transition"
               >
-                🪄 Use AI to Generate Instructions
+                {isGeneratingPrompt ? "Generating..." : "🪄 Use AI to Generate Instructions"}
               </button>
+              {hasGeneratedPrompt && (
+                <button
+                  onClick={() => {
+                    setHasAcceptedPrompt(true);
+                  }}
+                  className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg shadow-md transition"
+                >
+                  ✅ Use This and Continue
+                </button>
+              )}
               <button
-                onClick={() => setStep(5)}
-                className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg shadow-md transition"
-              >
-                ✅ Use This and Continue
-              </button>
-              <button
-                className="w-full sm:w-auto underline text-sm text-gray-500 hover:text-gray-700"
+                className="w-full sm:w-auto underline text-sm text-gray-300 hover:text-white"
                 onClick={() => setStep(5)}
               >
                 Do it manually instead
@@ -260,6 +276,31 @@ export default function CustomizePage() {
         <h1 className="text-2xl font-bold text-gray-900 text-center">Customize Your Assistant</h1>
         <div className="bg-white p-6 rounded-lg shadow-md space-y-10">
           {renderStep()}
+
+          {/* Error/Warning messages for required fields */}
+          {step === 0 && (!doctorName || !specialty || !chatAvatarName) && (
+            <div className="bg-red-100 text-red-700 border border-red-300 rounded-md p-4 text-sm">
+              Please complete all required fields in this section:
+              <ul className="list-disc list-inside mt-2">
+                {!doctorName && <li>Doctor Name</li>}
+                {!specialty && <li>Specialty</li>}
+                {!chatAvatarName && <li>Chat Avatar Name</li>}
+              </ul>
+            </div>
+          )}
+
+          {step === 2 && !tone && (
+            <div className="bg-red-100 text-red-700 border border-red-300 rounded-md p-4 text-sm">
+              Please select a tone of voice before continuing.
+            </div>
+          )}
+
+          {step === 4 && !hasAcceptedPrompt && (
+            <div className="bg-cyan-100 text-cyan-800 border border-cyan-300 rounded-md p-4 text-sm">
+              Please use the AI tool to generate instructions and accept them before continuing.
+            </div>
+          )}
+
           <div className="flex justify-between">
             {step > 0 && step < 5 && (
               <button
@@ -270,12 +311,41 @@ export default function CustomizePage() {
               </button>
             )}
             {step < 5 && (
-              <button
-                onClick={() => setStep(step + 1)}
-                className="ml-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-              >
-                Next →
-              </button>
+              <>
+                {step !== 4 && (
+                  <button
+                    onClick={() => {
+                      if (step === 0) {
+                        const missing = [];
+                        if (!doctorName) missing.push("Doctor Name");
+                        if (!specialty) missing.push("Specialty");
+                        if (!chatAvatarName) missing.push("Chat Avatar Name");
+                        if (missing.length > 0) {
+                          toast.error(`Please fill in the following required field(s): ${missing.join(", ")}`);
+                          return;
+                        }
+                      }
+
+                      if (step === 2 && !tone) {
+                        toast.error("Please select a tone of voice before continuing.");
+                        return;
+                      }
+                      setStep(step + 1);
+                    }}
+                    className="ml-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                  >
+                    Next →
+                  </button>
+                )}
+                {step === 4 && hasAcceptedPrompt && (
+                  <button
+                    onClick={() => setStep(5)}
+                    className="ml-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                  >
+                    Next →
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>
