@@ -142,7 +142,7 @@ export default function CustomizePage() {
             <div className="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-sm">
               <h3 className="text-md font-semibold text-white mb-2">🧠 Generated System Instructions</h3>
               <div className="text-sm text-white whitespace-pre-wrap bg-gray-800 border border-gray-700 rounded-md p-3">
-                {promptInstructions || "Your assistant's instructions will appear here once generated or manually entered."}
+                {promptInstructions || "Your assistant&apos;s instructions will appear here once generated or manually entered."}
               </div>
             </div>
 
@@ -151,7 +151,7 @@ export default function CustomizePage() {
                 ✍️ Customize System Instructions
               </label>
               <p className="text-sm text-gray-300 mb-3">
-                Use the field below to provide specific instructions that will shape your assistant's behavior. You may include guidance on tone of voice, topics to avoid, or any clinic-specific preferences or values. Examples of helpful context include handling common insurance questions, addressing frequently asked concerns, or ensuring sensitive communication practices. You can also include anything else that will tailor your assistant's AI behavior to reflect exactly what you want (e.g., preferred vocabulary, follow-up behavior, cultural considerations, etc.). If left blank, the assistant will generate a default prompt using your previously provided information.
+                Use the field below to provide specific instructions that will shape your assistant&apos;s behavior. You may include guidance on tone of voice, topics to avoid, or any clinic-specific preferences or values. Examples of helpful context include handling common insurance questions, addressing frequently asked concerns, or ensuring sensitive communication practices. You can also include anything else that will tailor your assistant&apos;s AI behavior to reflect exactly what you want (e.g., preferred vocabulary, follow-up behavior, cultural considerations, etc.). If left blank, the assistant will generate a default prompt using your previously provided information.
               </p>
               <textarea
                 value={promptInstructions}
@@ -214,7 +214,7 @@ export default function CustomizePage() {
               <div className="w-16 h-16 mx-auto mb-2 bg-gray-200 rounded-md" />
               <h3 className="text-xl font-bold mb-1" style={{ color: brandColor }}>{doctorName || "Dr. Smith"}</h3>
               <p className="text-sm text-gray-500 mb-4">{specialty || "General Practice"}</p>
-              <p className="mb-6">{welcomeMessage || `Hi! I'm ${chatAvatarName || "your assistant"}. How can I help today?`}</p>
+              <p className="mb-6">{welcomeMessage || `Hi! I&apos;m ${chatAvatarName || "your assistant"}. How can I help today?`}</p>
 
               <div className="flex flex-wrap gap-2 justify-center text-sm">
                 {(exampleQuestions.length > 0 ? exampleQuestions : [
@@ -242,7 +242,7 @@ export default function CustomizePage() {
               <div className="mt-6 text-left">
                 <h4 className="text-md font-semibold text-gray-700 mb-1">🧠 System Instructions</h4>
                 <div className="bg-gray-100 p-4 rounded-md text-sm text-gray-800 whitespace-pre-wrap">
-                  {promptInstructions || "Your assistant's instructions will appear here once generated or manually entered."}
+                  {promptInstructions || "Your assistant&apos;s instructions will appear here once generated or manually entered."}
                 </div>
               </div>
 

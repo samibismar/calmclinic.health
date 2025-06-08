@@ -171,7 +171,7 @@ export default function DashboardPage() {
               Welcome to CalmClinic! 
             </h2>
             <p className="text-lg text-blue-100 mb-8 max-w-xl mx-auto">
-              Let's set up your AI medical assistant in just 2 minutes. Customize how it talks to your patients and matches your practice style.
+              Let&apos;s set up your AI medical assistant in just 2 minutes. Customize how it talks to your patients and matches your practice style.
             </p>
             <Link
               href="/dashboard/customize"
