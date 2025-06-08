@@ -9,7 +9,6 @@ type Props = {
   setBrandColor: (val: string) => void;
   chatAvatarName: string;
   setChatAvatarName: (val: string) => void;
-  logoFile: File | null;
   setLogoFile: (file: File | null) => void;
   doctorName: string;
   setDoctorName: (val: string) => void;
@@ -26,7 +25,6 @@ const ClinicIdentityForm = ({
   setBrandColor,
   chatAvatarName,
   setChatAvatarName,
-  logoFile,
   setLogoFile,
   doctorName,
   setDoctorName,
@@ -39,7 +37,7 @@ const ClinicIdentityForm = ({
     <div className="bg-gradient-to-br from-[#0f172a] to-[#1e293b] rounded-2xl shadow-xl border border-gray-700 p-8 space-y-8 text-white">
       <div>
         <h2 className="text-2xl font-bold text-white mb-1">🏥 Clinic Identity</h2>
-        <p className="text-sm text-gray-200 mb-6">Personalize the assistant with your clinic’s branding and details.</p>
+        <p className="text-sm text-gray-200 mb-6">Personalize the assistant with your clinic's branding and details.</p>
 
         <div className="space-y-6">
           <div>
