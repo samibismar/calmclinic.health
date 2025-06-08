@@ -14,9 +14,13 @@ export async function POST(req: Request) {
       specialty,
       tone = "",
       customTone = "",
-      languages = [],
       notes = "",
     } = body || {};
+
+    const rawLanguages = body?.languages || "";
+    const languages = typeof rawLanguages === "string"
+      ? rawLanguages.split(",").map(l => l.trim()).filter(Boolean)
+      : Array.isArray(rawLanguages) ? rawLanguages : [];
 
     const safeTone = typeof tone === "string" ? tone : "";
     const safeCustomTone = typeof customTone === "string" ? customTone : "";

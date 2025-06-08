@@ -128,16 +128,64 @@ export default function CustomizePage() {
         );
       case 4:
         return (
-          <div className="space-y-6">
-            <h2 className="text-xl font-semibold text-gray-800">🧠 Let AI Help You Customize</h2>
-            <PromptGenerator
-            />
-            <button
-              className="underline text-sm text-gray-500"
-              onClick={() => setStep(5)}
-            >
-              Do it manually instead
-            </button>
+          <div className="space-y-8">
+            <h2 className="text-2xl font-bold text-gray-900">🧠 Let AI Help You Customize</h2>
+
+            <div className="bg-gray-50 border border-gray-300 rounded-lg p-4 shadow-sm">
+              <h3 className="text-md font-semibold text-gray-700 mb-2">🧠 Generated System Instructions</h3>
+              <div className="text-sm text-gray-800 whitespace-pre-wrap bg-white border rounded-md p-3">
+                {promptInstructions || "Your assistant’s instructions will appear here once generated or manually entered."}
+              </div>
+            </div>
+
+            <div className="bg-white border border-gray-300 rounded-lg p-4 shadow-sm">
+              <label className="text-sm font-semibold text-gray-700 block mb-2">
+                ✍️ Customize System Instructions
+              </label>
+              <p className="text-sm text-gray-500 mb-3">
+                Use the field below to provide specific instructions that will shape your assistant’s behavior. You may include guidance on tone of voice, topics to avoid, or any clinic-specific preferences or values. Examples of helpful context include handling common insurance questions, addressing frequently asked concerns, or ensuring sensitive communication practices. You can also include anything else that will tailor your assistant’s AI behavior to reflect exactly what you want (e.g., preferred vocabulary, follow-up behavior, cultural considerations, etc.). If left blank, the assistant will generate a default prompt using your previously provided information.
+              </p>
+              <textarea
+                value={promptInstructions}
+                onChange={(e) => setPromptInstructions(e.target.value)}
+                rows={6}
+                className="w-full border rounded-md p-3 text-sm text-gray-800"
+              />
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
+              <button
+                onClick={async () => {
+                  try {
+                    const response = await fetch("/api/generate-prompt", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ tone, languages, notes: promptInstructions }),
+                    });
+                    const data = await response.json();
+                    setPromptInstructions(data.assistantPrompt);
+                  } catch (err) {
+                    console.error("AI generation failed", err);
+                    alert("Failed to generate instructions. Try again.");
+                  }
+                }}
+                className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded-lg shadow-md transition"
+              >
+                🪄 Use AI to Generate Instructions
+              </button>
+              <button
+                onClick={() => setStep(5)}
+                className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg shadow-md transition"
+              >
+                ✅ Use This and Continue
+              </button>
+              <button
+                className="w-full sm:w-auto underline text-sm text-gray-500 hover:text-gray-700"
+                onClick={() => setStep(5)}
+              >
+                Do it manually instead
+              </button>
+            </div>
           </div>
         );
       case 5:
@@ -173,6 +221,13 @@ export default function CustomizePage() {
                   className="flex-1 text-sm bg-transparent text-gray-500 placeholder-gray-400 outline-none"
                 />
                 <button className="bg-green-600 text-white px-4 py-1 rounded-md text-sm" disabled>Send</button>
+              </div>
+
+              <div className="mt-6 text-left">
+                <h4 className="text-md font-semibold text-gray-700 mb-1">🧠 System Instructions</h4>
+                <div className="bg-gray-100 p-4 rounded-md text-sm text-gray-800 whitespace-pre-wrap">
+                  {promptInstructions || "Your assistant’s instructions will appear here once generated or manually entered."}
+                </div>
               </div>
 
               <p className="mt-6 text-xs text-gray-400">This assistant is for educational purposes only.</p>
