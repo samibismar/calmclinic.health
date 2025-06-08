@@ -31,6 +31,8 @@ export default function CustomizePage() {
   const [brandColor, setBrandColor] = useState<string>("#5BBAD5");
   const [backgroundStyle, setBackgroundStyle] = useState("");
   const [chatAvatarName, setChatAvatarName] = useState("");
+  const [clinicName, setClinicName] = useState("");
+  const [logoFile, setLogoFile] = useState<File | null>(null);
 
   const handleSave = async () => {
     const payload = {
@@ -72,6 +74,9 @@ export default function CustomizePage() {
       case 0:
         return (
           <ClinicIdentityForm
+            clinicName={clinicName}
+            setClinicName={setClinicName}
+            setLogoFile={setLogoFile}
             doctorName={doctorName}
             setDoctorName={setDoctorName}
             specialty={specialty}
@@ -128,16 +133,6 @@ export default function CustomizePage() {
           <div className="space-y-6">
             <h2 className="text-xl font-semibold text-gray-800">🧠 Let AI Help You Customize</h2>
             <PromptGenerator
-              onComplete={(generated: {
-                tone: string;
-                promptInstructions: string;
-                welcomeMessage: string;
-              }) => {
-                setTone(generated.tone);
-                setPromptInstructions(generated.promptInstructions);
-                setWelcomeMessage(generated.welcomeMessage);
-                setStep(5);
-              }}
             />
             <button
               className="underline text-sm text-gray-500"
