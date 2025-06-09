@@ -4,7 +4,6 @@ import ChatInterfaceWrapper from './chat-interface-wrapper';
 export const dynamic = 'force-dynamic';
 
 interface ChatPageProps {
-  searchParams: Promise<{ c?: string | string[] }>;
 }
 
 // Simple loading component
@@ -23,7 +22,7 @@ function LoadingFallback() {
   );
 }
 
-export default async function Page({ searchParams }: ChatPageProps) {
+export default async function Page() {
   return (
     <Suspense fallback={<LoadingFallback />}>
       <ChatInterfaceWrapper backgroundStyle="calm-gradient" />
