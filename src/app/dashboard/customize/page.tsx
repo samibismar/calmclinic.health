@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "react-hot-toast";
-import AssistantPersonalityForm from "@/components/customize/AssistantPersonalityForm";
 import ExampleQuestionsForm from "@/components/customize/ExampleQuestionsForm";
 import ClinicIdentityForm from "@/components/customize/ClinicIdentityForm";
 import { useRouter } from "next/navigation";
@@ -35,6 +34,7 @@ export default function CustomizePage() {
   const [hasAcceptedPrompt, setHasAcceptedPrompt] = useState(false);
   const [hasGeneratedPrompt, setHasGeneratedPrompt] = useState(false);
   const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false);
+  const [avoidList, setAvoidList] = useState("");
 
   const handleSave = async () => {
     if (!doctorName || !specialty || !tone || !promptInstructions) {
@@ -92,25 +92,6 @@ export default function CustomizePage() {
         );
       case 1:
         return (
-          <AssistantPersonalityForm
-            tone={tone}
-            setTone={setTone}
-            customTone={customTone}
-            setCustomTone={setCustomTone}
-            welcomeMessage={welcomeMessage}
-            setWelcomeMessage={setWelcomeMessage}
-            promptInstructions={promptInstructions}
-            setPromptInstructions={setPromptInstructions}
-            languages={languages}
-            setLanguages={setLanguages}
-            customLanguage={customLanguage}
-            setCustomLanguage={setCustomLanguage}
-            selectedPromptPreset={selectedPromptPreset}
-            setSelectedPromptPreset={setSelectedPromptPreset}
-          />
-        );
-      case 2:
-        return (
           <ExampleQuestionsForm
             exampleQuestions={exampleQuestions}
             setExampleQuestions={setExampleQuestions}
@@ -118,10 +99,103 @@ export default function CustomizePage() {
             setNewQuestion={setNewQuestion}
           />
         );
-      case 3:
+      case 2:
         return (
           <div className="space-y-8 bg-gradient-to-br from-[#0f172a] to-[#1e293b] rounded-2xl shadow-xl border border-gray-700 p-8 text-white">
             <h2 className="text-2xl font-bold text-white">🧠 Let AI Help You Customize</h2>
+
+            {/* Assistant Personality settings */}
+            <div className="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-sm">
+              <h3 className="text-md font-semibold text-white mb-3">🎭 Assistant Personality</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-semibold text-white block mb-1">Tone of Voice</label>
+                  <select
+                    value={tone}
+                    onChange={(e) => setTone(e.target.value)}
+                    className="w-full border border-gray-600 bg-gray-900 text-white rounded-md p-2 text-sm"
+                  >
+                    <option value="calm">Calm</option>
+                    <option value="friendly">Friendly</option>
+                    <option value="professional">Professional</option>
+                    <option value="custom">Custom</option>
+                  </select>
+                </div>
+
+                {tone === "custom" && (
+                  <div>
+                    <label className="text-sm font-semibold text-white block mb-1">Custom Tone Description</label>
+                    <input
+                      value={customTone}
+                      onChange={(e) => setCustomTone(e.target.value)}
+                      className="w-full border border-gray-600 bg-gray-900 text-white rounded-md p-2 text-sm"
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label className="text-sm font-semibold text-white block mb-1">Languages</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. English, Spanish"
+                    value={languages.join(", ")}
+                    onChange={(e) => setLanguages(e.target.value.split(",").map(s => s.trim()))}
+                    className="w-full border border-gray-600 bg-gray-900 text-white rounded-md p-2 text-sm"
+                  />
+                </div>
+
+                {/* Doctor Name and Specialty display */}
+                <div>
+                  <label className="text-sm font-semibold text-white block mb-1">Doctor Name</label>
+                  <input
+                    type="text"
+                    value={doctorName}
+                    disabled
+                    className="w-full border border-gray-600 bg-gray-900 text-white rounded-md p-2 text-sm opacity-75"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-semibold text-white block mb-1">Specialty</label>
+                  <input
+                    type="text"
+                    value={specialty}
+                    disabled
+                    className="w-full border border-gray-600 bg-gray-900 text-white rounded-md p-2 text-sm opacity-75"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-semibold text-white block mb-1">Things the Assistant Should Avoid Saying</label>
+                  <textarea
+                    value={avoidList}
+                    onChange={(e) => setAvoidList(e.target.value)}
+                    placeholder="e.g. Avoid medical advice, avoid saying 'I don't know', avoid giving legal guidance"
+                    className="w-full border border-gray-600 bg-gray-900 text-white rounded-md p-2 text-sm"
+                    rows={3}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-semibold text-white block mb-1">Any Other Instructions for Your AI Assistant</label>
+                  <textarea
+                    value={promptInstructions}
+                    onChange={(e) => setPromptInstructions(e.target.value)}
+                    placeholder="Write anything else the assistant should keep in mind when speaking to patients."
+                    className="w-full border border-gray-600 bg-gray-900 text-white rounded-md p-2 text-sm"
+                    rows={3}
+                  />
+                  <div className="text-xs text-gray-400 mt-2 leading-relaxed">
+                    <p className="mb-1">Need ideas? You can add:</p>
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li>A reminder to always greet patients politely</li>
+                      <li>Instructions to prioritize clear, simple explanations</li>
+                      <li>A note to recommend following up with the doctor for any uncertainties</li>
+                      <li>Any culturally relevant communication styles</li>
+                      <li>Information you always want mentioned (e.g. office hours, location, insurance info)</li>
+                    </ul>
+                  </div>
+                </div>
+                {/* End Doctor Name and Specialty display */}
+              </div>
+            </div>
 
             <div className="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-sm">
               <h3 className="text-md font-semibold text-white mb-2">🧠 Generated System Instructions</h3>
@@ -130,20 +204,6 @@ export default function CustomizePage() {
               </div>
             </div>
 
-            <div className="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-sm">
-              <label className="text-sm font-semibold text-white block mb-2">
-                ✍️ Customize System Instructions
-              </label>
-              <p className="text-sm text-gray-300 mb-3">
-                Use the field below to provide specific instructions that will shape your assistant&apos;s behavior. You may include guidance on tone of voice, topics to avoid, or any clinic-specific preferences or values. Examples of helpful context include handling common insurance questions, addressing frequently asked concerns, or ensuring sensitive communication practices. You can also include anything else that will tailor your assistant&apos;s AI behavior to reflect exactly what you want (e.g., preferred vocabulary, follow-up behavior, cultural considerations, etc.). If left blank, the assistant will generate a default prompt using your previously provided information.
-              </p>
-              <textarea
-                value={promptInstructions}
-                onChange={(e) => setPromptInstructions(e.target.value)}
-                rows={6}
-                className="w-full border border-gray-600 bg-gray-900 text-white rounded-md p-3 text-sm"
-              />
-            </div>
 
             <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
               <button
@@ -153,7 +213,14 @@ export default function CustomizePage() {
                     const response = await fetch("/api/generate-prompt", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ tone, languages, notes: promptInstructions }),
+                      body: JSON.stringify({
+                        tone,
+                        languages,
+                        doctorName,
+                        specialty,
+                        notes: promptInstructions,
+                        avoidList,
+                      }),
                     });
                     const data = await response.json();
                     setPromptInstructions(data.assistantPrompt);
@@ -188,7 +255,7 @@ export default function CustomizePage() {
             </div>
           </div>
         );
-      case 4:
+      case 3:
         return (
           <div className="bg-gradient-to-br from-[#0f172a] to-[#1e293b] rounded-2xl shadow-xl border border-gray-700 p-8 space-y-6 text-white max-w-2xl mx-auto">
             <h2 className="text-2xl font-bold text-white mb-2">✅ Preview Your Assistant</h2>
@@ -241,12 +308,6 @@ export default function CustomizePage() {
               className="mt-6 w-full bg-cyan-600 hover:bg-cyan-700 text-white font-medium py-3 rounded-lg shadow-md transition"
             >
               ✅ Save & Finish Setup
-            </button>
-            <button
-              onClick={() => setStep(4)}
-              className="w-full text-sm text-gray-400 hover:text-white underline"
-            >
-              ← Back
             </button>
           </div>
         );
@@ -323,20 +384,15 @@ export default function CustomizePage() {
             </div>
           )}
 
-          {step === 1 && !tone && (
-            <div className="bg-red-100 text-red-700 border border-red-300 rounded-md p-4 text-sm">
-              Please select a tone of voice before continuing.
-            </div>
-          )}
 
-          {step === 3 && !hasAcceptedPrompt && (
+          {step === 2 && !hasAcceptedPrompt && (
             <div className="bg-cyan-100 text-cyan-800 border border-cyan-300 rounded-md p-4 text-sm">
               Please use the AI tool to generate instructions and accept them before continuing.
             </div>
           )}
 
           <div className="flex justify-between">
-            {step > 0 && step < 4 + 1 && (
+            {step > 0 && step < 3 + 1 && (
               <button
                 onClick={() => setStep(step - 1)}
                 className="text-sm text-gray-500 hover:underline"
@@ -344,9 +400,9 @@ export default function CustomizePage() {
                 ← Back
               </button>
             )}
-            {step < 4 && (
+            {step < 3 && (
               <>
-                {step !== 3 && (
+                {step !== 2 && (
                   <button
                     onClick={() => {
                     if (step === 0) {
@@ -358,11 +414,6 @@ export default function CustomizePage() {
                         return;
                       }
                     }
-
-                      if (step === 1 && !tone) {
-                        toast.error("Please select a tone of voice before continuing.");
-                        return;
-                      }
                       setStep(step + 1);
                     }}
                     className="ml-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
@@ -370,9 +421,9 @@ export default function CustomizePage() {
                     Next →
                   </button>
                 )}
-                {step === 3 && hasAcceptedPrompt && (
+                {step === 2 && hasAcceptedPrompt && (
                   <button
-                    onClick={() => setStep(4)}
+                    onClick={() => setStep(3)}
                     className="ml-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
                   >
                     Next →
