@@ -24,9 +24,6 @@ function LoadingFallback() {
 }
 
 export default async function Page({ searchParams }: ChatPageProps) {
-  // Await the searchParams promise for Next.js 15 compatibility
-  const params = await searchParams;
-  
   return (
     <Suspense fallback={<LoadingFallback />}>
       <ChatInterfaceWrapper backgroundStyle="calm-gradient" />

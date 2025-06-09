@@ -157,27 +157,6 @@ export default function ChatInterface({ clinic: clinicSlug }: ChatInterfaceProps
     }
   };
 
-  // Create gradient background based on accent color
-  const getGradientBackground = (color: string) => {
-    const rgb = hexToRgb(color);
-    if (!rgb) return 'linear-gradient(135deg, #60A5FA, #3B82F6)';
-    
-    const { r, g, b } = rgb;
-    const lightColor = `rgb(${Math.min(255, r + 40)}, ${Math.min(255, g + 40)}, ${Math.min(255, b + 40)})`;
-    const darkColor = `rgb(${Math.max(0, r - 20)}, ${Math.max(0, g - 20)}, ${Math.max(0, b - 20)})`;
-    
-    return `linear-gradient(135deg, ${lightColor}, ${darkColor})`;
-  };
-
-  const hexToRgb = (hex: string) => {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16)
-    } : null;
-  };
-
   if (loading) {
     return (
       <div className="bg-white rounded-3xl shadow-2xl p-8 text-center backdrop-blur-sm bg-white/95">
