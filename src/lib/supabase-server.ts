@@ -7,9 +7,9 @@ export function createSupabaseServerClient() {
   });
 }
 
-export async function getClinicSettings() {
+export async function getClinicSettings(slug: string) {
   const supabase = createSupabaseServerClient();
-  const { data, error } = await supabase.from("clinics").select("*").single();
+  const { data, error } = await supabase.from("clinics").select("*").eq("slug", slug).single();
   if (error) throw error;
   return data;
 }

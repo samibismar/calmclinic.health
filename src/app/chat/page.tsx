@@ -4,8 +4,9 @@ import { getClinicSettings } from "@/lib/supabase-server";
 
 export const dynamic = 'force-dynamic';
 
-export default async function Page() {
-  const settings = await getClinicSettings();
+export default async function Page({ searchParams }: { searchParams: { c?: string } }) {
+  const slug = searchParams?.c || "";
+  const settings = await getClinicSettings(slug);
   const backgroundStyle = settings?.background_style || "calm-gradient";
   const clinicName = typeof settings?.clinic_name === "string" ? settings.clinic_name : null;
   const logoUrl = typeof settings?.logo_url === "string" && settings.logo_url.startsWith("http") ? settings.logo_url : null;
