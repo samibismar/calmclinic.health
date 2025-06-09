@@ -3,9 +3,6 @@ import ChatInterfaceWrapper from './chat-interface-wrapper';
 
 export const dynamic = 'force-dynamic';
 
-interface ChatPageProps {
-}
-
 // Simple loading component
 function LoadingFallback() {
   return (
