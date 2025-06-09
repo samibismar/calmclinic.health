@@ -14,6 +14,7 @@ export default function ChatInterface({ clinic: initialClinicSlug }: ChatInterfa
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Array<{role: string, content: string}>>([]);
   const [clinicData, setClinicData] = useState<Clinic | null>(null);
+  console.log("Loaded logo URL:", clinicData?.logo_url);
   const [loading, setLoading] = useState(true);
   const [isAiTyping, setIsAiTyping] = useState(false);
   const [userName, setUserName] = useState("");

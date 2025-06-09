@@ -1,16 +1,20 @@
 "use client";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import AssistantPersonalityForm from "@/components/customize/AssistantPersonalityForm";
 import ExampleQuestionsForm from "@/components/customize/ExampleQuestionsForm";
 import ClinicIdentityForm from "@/components/customize/ClinicIdentityForm";
 import BrandingForm from "@/components/customize/BrandingForm";
 import { useRouter } from "next/navigation";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import type { Session } from "@supabase/supabase-js";
 
 export default function CustomizePage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
+  const [session, setSession] = useState<Session | null>(null);
+  const supabase = createClientComponentClient();
+
   // Removed prefillData and default to initial values only
   const [welcomeMessage, setWelcomeMessage] = useState("");
   const [tone, setTone] = useState("calm");
@@ -32,12 +36,13 @@ export default function CustomizePage() {
   const [backgroundStyle, setBackgroundStyle] = useState("");
   const [chatAvatarName, setChatAvatarName] = useState("");
   const [clinicName, setClinicName] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
   const [hasAcceptedPrompt, setHasAcceptedPrompt] = useState(false);
   const [hasGeneratedPrompt, setHasGeneratedPrompt] = useState(false);
   const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false);
 
   const handleSave = async () => {
-    if (!doctorName || !specialty || !chatAvatarName || !tone || !promptInstructions) {
+    if (!doctorName || !specialty || !tone || !promptInstructions) {
       toast.error("Please fill in all required fields.");
       return;
     }
@@ -53,6 +58,7 @@ export default function CustomizePage() {
       brandColor,
       backgroundStyle,
       chatAvatarName,
+      logoUrl: logoUrl, // send as logoUrl to backend
     };
 
     try {
@@ -91,8 +97,9 @@ export default function CustomizePage() {
             setOfficeInstructions={setOfficeInstructions}
             brandColor={brandColor}
             setBrandColor={setBrandColor}
-            chatAvatarName={chatAvatarName}
-            setChatAvatarName={setChatAvatarName}
+            logoUrl={logoUrl}
+            setLogoUrl={setLogoUrl}
+            session={session}
           />
         );
       case 1:
@@ -211,7 +218,15 @@ export default function CustomizePage() {
             <p className="text-sm text-gray-400 mb-6">This is how your assistant will appear to patients based on your current settings.</p>
 
             <div className="rounded-xl p-6 shadow-lg text-center" style={{ backgroundColor: "#ffffff", color: "#111827" }}>
-              <div className="w-16 h-16 mx-auto mb-2 bg-gray-200 rounded-md" />
+              {logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt="Clinic Logo"
+                  className="w-16 h-16 mx-auto mb-2 rounded-md object-contain border border-gray-300"
+                />
+              ) : (
+                <div className="w-16 h-16 mx-auto mb-2 bg-gray-200 rounded-md" />
+              )}
               <h3 className="text-xl font-bold mb-1" style={{ color: brandColor }}>{doctorName || "Dr. Smith"}</h3>
               <p className="text-sm text-gray-500 mb-4">{specialty || "General Practice"}</p>
               <p className="mb-6">{welcomeMessage || `Hi! I&apos;m ${chatAvatarName || "your assistant"}. How can I help today?`}</p>
@@ -271,6 +286,60 @@ export default function CustomizePage() {
     }
   };
 
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Initial session:", session);
+      setSession(session);
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("Auth state changed:", session);
+      setSession(session);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    const fetchClinicSettings = async () => {
+      if (!session || !session.user || !session.user.user_metadata || !session.user.user_metadata.clinic_id) {
+        console.log("Session or clinic_id not available, skipping fetchClinicSettings.");
+        return;
+      }
+
+      const clinicId = session.user.user_metadata.clinic_id;
+
+      const { data, error } = await supabase.from("clinics").select("*").eq("id", clinicId).single();
+      if (error) {
+        console.error("Failed to fetch saved settings:", error);
+      } else {
+        if (data.logo_url) setLogoUrl(data.logo_url);
+        if (data.doctor_name) setDoctorName(data.doctor_name);
+        if (data.specialty) setSpecialty(data.specialty);
+        if (data.chat_avatar_name) setChatAvatarName(data.chat_avatar_name);
+        if (data.welcome_message) setWelcomeMessage(data.welcome_message);
+        if (data.brand_color) setBrandColor(data.brand_color);
+        if (data.office_instructions) setOfficeInstructions(data.office_instructions);
+        if (data.tone) setTone(data.tone);
+        if (data.custom_tone) setCustomTone(data.custom_tone);
+        if (data.languages) setLanguages(data.languages);
+        if (data.custom_language) setCustomLanguage(data.custom_language);
+        if (data.prompt_instructions) setPromptInstructions(data.prompt_instructions);
+        if (data.selected_prompt_preset) setSelectedPromptPreset(data.selected_prompt_preset);
+        if (data.example_questions) setExampleQuestions(data.example_questions);
+        if (data.background_style) setBackgroundStyle(data.background_style);
+        if (data.clinic_name) setClinicName(data.clinic_name); // Fetch and set clinic name
+      }
+    };
+    fetchClinicSettings();
+  }, [session]); // Add session to dependency array
+
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-3xl mx-auto space-y-8">
@@ -279,13 +348,12 @@ export default function CustomizePage() {
           {renderStep()}
 
           {/* Error/Warning messages for required fields */}
-          {step === 0 && (!doctorName || !specialty || !chatAvatarName) && (
+          {step === 0 && (!doctorName || !specialty) && (
             <div className="bg-red-100 text-red-700 border border-red-300 rounded-md p-4 text-sm">
               Please complete all required fields in this section:
               <ul className="list-disc list-inside mt-2">
                 {!doctorName && <li>Doctor Name</li>}
                 {!specialty && <li>Specialty</li>}
-                {!chatAvatarName && <li>Chat Avatar Name</li>}
               </ul>
             </div>
           )}
@@ -316,16 +384,15 @@ export default function CustomizePage() {
                 {step !== 4 && (
                   <button
                     onClick={() => {
-                      if (step === 0) {
-                        const missing = [];
-                        if (!doctorName) missing.push("Doctor Name");
-                        if (!specialty) missing.push("Specialty");
-                        if (!chatAvatarName) missing.push("Chat Avatar Name");
-                        if (missing.length > 0) {
-                          toast.error(`Please fill in the following required field(s): ${missing.join(", ")}`);
-                          return;
-                        }
+                    if (step === 0) {
+                      const missing = [];
+                      if (!doctorName) missing.push("Doctor Name");
+                      if (!specialty) missing.push("Specialty");
+                      if (missing.length > 0) {
+                        toast.error(`Please fill in the following required field(s): ${missing.join(", ")}`);
+                        return;
                       }
+                    }
 
                       if (step === 2 && !tone) {
                         toast.error("Please select a tone of voice before continuing.");

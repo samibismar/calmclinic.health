@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { cookies } from 'next/headers';
 
 export async function POST(request: NextRequest) {
@@ -11,6 +11,9 @@ export async function POST(request: NextRequest) {
     if (!sessionToken) {
       return NextResponse.json({ error: 'Not logged in' }, { status: 401 });
     }
+
+    // Create Supabase client
+    const supabase = createSupabaseServerClient();
 
     // Look up the session and get clinic info
     const { data: session, error: sessionError } = await supabase
@@ -54,7 +57,8 @@ export async function POST(request: NextRequest) {
       languages: 'languages',
       officeInstructions: 'office_instructions',
       backgroundStyle: 'background_style',
-      chatAvatarName: 'chat_avatar_name'
+      chatAvatarName: 'chat_avatar_name',
+      logoUrl: 'logo_url',
     };
 
     for (const [camelKey, snakeKey] of Object.entries(fieldMapping)) {

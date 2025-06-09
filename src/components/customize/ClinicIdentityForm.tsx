@@ -1,11 +1,9 @@
 "use client";
 
 import React, { useEffect } from "react";
-import type { Session } from "@supabase/supabase-js";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
 type Props = {
-  session: Session | null;
   clinicName: string;
   setClinicName: (val: string) => void;
   brandColor: string;

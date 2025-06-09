@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { cookies } from 'next/headers';
 
 export async function GET(request: NextRequest) {
@@ -13,6 +13,9 @@ export async function GET(request: NextRequest) {
     if (!sessionToken) {
       return NextResponse.json({ error: 'Not logged in' }, { status: 401 });
     }
+
+    // Create Supabase client
+    const supabase = createSupabaseServerClient();
 
     // Look up the session and get clinic info
     const { data: session, error: sessionError } = await supabase
