@@ -5,7 +5,9 @@ import { useState } from "react";
 interface PromptAnswers {
   tone: string;
   languages: string;
-  notes: string;
+  notesInclude: string;
+  notesAvoid: string;
+  culturalContext: string;
 }
 
 export default function PromptGenerator({
@@ -20,7 +22,9 @@ export default function PromptGenerator({
   const [form, setForm] = useState<PromptAnswers>({
     tone: "",
     languages: "",
-    notes: "",
+    notesInclude: "",
+    notesAvoid: "",
+    culturalContext: "",
   });
 
   const [systemPrompt, setSystemPrompt] = useState("");
@@ -41,7 +45,13 @@ export default function PromptGenerator({
       const res = await fetch("/api/generate-prompt", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          tone: form.tone,
+          languages: form.languages,
+          notesInclude: form.notesInclude,
+          notesAvoid: form.notesAvoid,
+          culturalContext: form.culturalContext,
+        }),
       });
       if (!res.ok) throw new Error("Failed to generate prompt");
       const data = await res.json();
@@ -97,13 +107,50 @@ export default function PromptGenerator({
 
           <div>
             <label className="block font-medium text-gray-700 mb-1">
-              Any Additional Instructions
+              ✅ What should your assistant always include in responses?
             </label>
             <textarea
-              name="notes"
-              rows={4}
-              placeholder="e.g., Avoid giving medical advice. Be clear and empathetic."
-              value={form.notes}
+              name="notesInclude"
+              rows={3}
+              placeholder="e.g., Mention nearby urgent care, speak in a warm tone"
+              value={form.notesInclude}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded-md"
+            />
+            <ul className="text-xs text-gray-500 mt-1">
+              <li>• Include friendly greetings</li>
+              <li>• Mention coverage for common insurances</li>
+              <li>• Encourage follow-up if needed</li>
+            </ul>
+          </div>
+
+          <div>
+            <label className="block font-medium text-gray-700 mt-4 mb-1">
+              🚫 Anything it should avoid?
+            </label>
+            <textarea
+              name="notesAvoid"
+              rows={3}
+              placeholder="e.g., Avoid giving medical advice or diagnosing"
+              value={form.notesAvoid}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded-md"
+            />
+            <ul className="text-xs text-gray-500 mt-1">
+              <li>• Don't offer prescriptions</li>
+              <li>• Avoid jokes or sarcasm</li>
+            </ul>
+          </div>
+
+          <div>
+            <label className="block font-medium text-gray-700 mt-4 mb-1">
+              🌍 Anything culturally or locally important to know?
+            </label>
+            <textarea
+              name="culturalContext"
+              rows={3}
+              placeholder="e.g., Many of our patients speak Haitian Creole and value discretion"
+              value={form.culturalContext}
               onChange={handleChange}
               className="w-full px-4 py-2 border rounded-md"
             />

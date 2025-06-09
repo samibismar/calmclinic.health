@@ -43,7 +43,7 @@ export default function CustomizePage() {
       welcomeMessage,
       tone,
       languages,
-      promptInstructions,
+      aiInstructions: promptInstructions, // changed from promptInstructions
       exampleQuestions,
       doctorName,
       specialty,
