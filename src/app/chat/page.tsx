@@ -6,11 +6,14 @@ import Image from "next/image";
 export const dynamic = 'force-dynamic';
 
 interface ChatPageProps {
-  searchParams?: { c?: string | string[] };
+  searchParams: Promise<{ c?: string | string[] }>;
 }
 
 export default async function Page({ searchParams }: ChatPageProps) {
-  const slug = typeof searchParams?.c === 'string' ? searchParams.c : "";
+  // Await the searchParams promise
+  const params = await searchParams;
+  const slug = typeof params?.c === 'string' ? params.c : "";
+  
   const settings = await getClinicSettings(slug);
   const backgroundStyle = settings?.background_style || "calm-gradient";
   const clinicName = typeof settings?.clinic_name === "string" ? settings.clinic_name : null;
