@@ -1,10 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
 import type { Session } from "@supabase/supabase-js";
-import Image from "next/image";
-import { toast } from "react-hot-toast";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
 type Props = {
@@ -41,22 +38,12 @@ const ClinicIdentityForm = ({
   const supabase = createClientComponentClient();
 
   // Maps frontend field names to Supabase column names
-  const fieldMapping: Record<string, string> = {
-    clinicName: 'clinic_name',
-    brandColor: 'brand_color',
-    doctorName: 'doctor_name',
-    specialty: 'specialty',
-    officeInstructions: 'office_instructions',
-    logoUrl: 'logo_url',
-  };
-  const [currentSession, setCurrentSession] = useState<Session | null>(propSession);
 
   useEffect(() => {
     // Initialize session
     const initializeSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       console.log("Initialized session:", session);
-      setCurrentSession(session);
     };
 
     initializeSession();
@@ -64,13 +51,12 @@ const ClinicIdentityForm = ({
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       console.log("Auth state changed:", session);
-      setCurrentSession(session);
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [supabase.auth]);
 
   return (
     <div className="bg-gradient-to-br from-[#0f172a] to-[#1e293b] rounded-2xl shadow-xl border border-gray-700 p-8 space-y-8 text-white">
