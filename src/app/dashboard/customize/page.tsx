@@ -7,7 +7,6 @@ import ClinicIdentityForm from "@/components/customize/ClinicIdentityForm";
 import { useRouter } from "next/navigation";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import type { Session } from "@supabase/supabase-js";
-import Image from 'next/image';
 
 export default function CustomizePage() {
   const router = useRouter();
