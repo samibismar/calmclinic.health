@@ -4,7 +4,6 @@ import { toast } from "react-hot-toast";
 import AssistantPersonalityForm from "@/components/customize/AssistantPersonalityForm";
 import ExampleQuestionsForm from "@/components/customize/ExampleQuestionsForm";
 import ClinicIdentityForm from "@/components/customize/ClinicIdentityForm";
-import BrandingForm from "@/components/customize/BrandingForm";
 import { useRouter } from "next/navigation";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import type { Session } from "@supabase/supabase-js";
@@ -101,13 +100,6 @@ export default function CustomizePage() {
         );
       case 1:
         return (
-          <BrandingForm
-            brandColor={brandColor}
-            setBrandColor={setBrandColor}
-          />
-        );
-      case 2:
-        return (
           <AssistantPersonalityForm
             tone={tone}
             setTone={setTone}
@@ -125,7 +117,7 @@ export default function CustomizePage() {
             setSelectedPromptPreset={setSelectedPromptPreset}
           />
         );
-      case 3:
+      case 2:
         return (
           <ExampleQuestionsForm
             exampleQuestions={exampleQuestions}
@@ -134,7 +126,7 @@ export default function CustomizePage() {
             setNewQuestion={setNewQuestion}
           />
         );
-      case 4:
+      case 3:
         return (
           <div className="space-y-8 bg-gradient-to-br from-[#0f172a] to-[#1e293b] rounded-2xl shadow-xl border border-gray-700 p-8 text-white">
             <h2 className="text-2xl font-bold text-white">🧠 Let AI Help You Customize</h2>
@@ -204,7 +196,7 @@ export default function CustomizePage() {
             </div>
           </div>
         );
-      case 5:
+      case 4:
         return (
           <div className="bg-gradient-to-br from-[#0f172a] to-[#1e293b] rounded-2xl shadow-xl border border-gray-700 p-8 space-y-6 text-white max-w-2xl mx-auto">
             <h2 className="text-2xl font-bold text-white mb-2">✅ Preview Your Assistant</h2>
@@ -351,20 +343,20 @@ export default function CustomizePage() {
             </div>
           )}
 
-          {step === 2 && !tone && (
+          {step === 1 && !tone && (
             <div className="bg-red-100 text-red-700 border border-red-300 rounded-md p-4 text-sm">
               Please select a tone of voice before continuing.
             </div>
           )}
 
-          {step === 4 && !hasAcceptedPrompt && (
+          {step === 3 && !hasAcceptedPrompt && (
             <div className="bg-cyan-100 text-cyan-800 border border-cyan-300 rounded-md p-4 text-sm">
               Please use the AI tool to generate instructions and accept them before continuing.
             </div>
           )}
 
           <div className="flex justify-between">
-            {step > 0 && step < 5 && (
+            {step > 0 && step < 4 + 1 && (
               <button
                 onClick={() => setStep(step - 1)}
                 className="text-sm text-gray-500 hover:underline"
@@ -372,9 +364,9 @@ export default function CustomizePage() {
                 ← Back
               </button>
             )}
-            {step < 5 && (
+            {step < 4 && (
               <>
-                {step !== 4 && (
+                {step !== 3 && (
                   <button
                     onClick={() => {
                     if (step === 0) {
@@ -387,7 +379,7 @@ export default function CustomizePage() {
                       }
                     }
 
-                      if (step === 2 && !tone) {
+                      if (step === 1 && !tone) {
                         toast.error("Please select a tone of voice before continuing.");
                         return;
                       }
@@ -398,9 +390,9 @@ export default function CustomizePage() {
                     Next →
                   </button>
                 )}
-                {step === 4 && hasAcceptedPrompt && (
+                {step === 3 && hasAcceptedPrompt && (
                   <button
-                    onClick={() => setStep(5)}
+                    onClick={() => setStep(4)}
                     className="ml-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
                   >
                     Next →
