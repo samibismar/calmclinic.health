@@ -14,8 +14,6 @@ type Props = {
   setDoctorName: (val: string) => void;
   specialty: string;
   setSpecialty: (val: string) => void;
-  officeInstructions: string;
-  setOfficeInstructions: (val: string) => void;
   logoUrl: string;
   setLogoUrl: (val: string) => void;
   session: Session | null;
@@ -30,8 +28,6 @@ const ClinicIdentityForm = ({
   setDoctorName,
   specialty,
   setSpecialty,
-  officeInstructions,
-  setOfficeInstructions,
   logoUrl,
   setLogoUrl,
 }: Props) => {
@@ -131,18 +127,6 @@ const ClinicIdentityForm = ({
               onChange={(e) => setSpecialty(e.target.value)}
               className="w-full px-4 py-2 bg-[#0f172a] text-white border border-gray-600 rounded-md shadow-sm focus:ring-cyan-400 focus:border-cyan-500"
               placeholder="e.g., Pediatrics"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-200 mb-1">
-              Office Instructions <span className="text-gray-400">(shown to patient when they arrive)</span>
-            </label>
-            <textarea
-              value={officeInstructions || ""}
-              onChange={(e) => setOfficeInstructions(e.target.value)}
-              className="w-full px-4 py-2 bg-[#0f172a] text-white border border-gray-600 rounded-md shadow-sm focus:ring-cyan-400 focus:border-cyan-500"
-              placeholder="e.g., Please turn off your phone and have your ID ready."
             />
           </div>
         </div>
