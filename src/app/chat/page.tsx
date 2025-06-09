@@ -4,14 +4,13 @@ import { getClinicSettings } from "@/lib/supabase-server";
 
 export const dynamic = 'force-dynamic';
 
-interface ChatPageProps {
-  searchParams: {
-    c?: string;
-  };
+type Props = {
+  params: { [key: string]: string | string[] | undefined }
+  searchParams: { [key: string]: string | string[] | undefined }
 }
 
-export default async function Page({ searchParams }: ChatPageProps) {
-  const slug = searchParams?.c || "";
+export default async function Page({ searchParams }: Props) {
+  const slug = typeof searchParams?.c === 'string' ? searchParams.c : "";
   const settings = await getClinicSettings(slug);
   const backgroundStyle = settings?.background_style || "calm-gradient";
   const clinicName = typeof settings?.clinic_name === "string" ? settings.clinic_name : null;
