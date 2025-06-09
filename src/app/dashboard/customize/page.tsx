@@ -193,6 +193,10 @@ export default function CustomizePage() {
           </div>
         );
       case 4:
+        // Guard clause: wait for logoUrl to load if session exists
+        if (!logoUrl && session) {
+          return <p className="text-white">Loading logo preview...</p>;
+        }
         return (
           <div className="bg-gradient-to-br from-[#0f172a] to-[#1e293b] rounded-2xl shadow-xl border border-gray-700 p-8 space-y-6 text-white max-w-2xl mx-auto">
             <h2 className="text-2xl font-bold text-white mb-2">✅ Preview Your Assistant</h2>
