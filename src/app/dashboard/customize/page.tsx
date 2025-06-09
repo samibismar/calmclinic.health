@@ -34,7 +34,6 @@ export default function CustomizePage() {
   const [officeInstructions, setOfficeInstructions] = useState("");
   const [brandColor, setBrandColor] = useState<string>("#5BBAD5");
   const [backgroundStyle, setBackgroundStyle] = useState("");
-  const [chatAvatarName, setChatAvatarName] = useState("");
   const [clinicName, setClinicName] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
   const [hasAcceptedPrompt, setHasAcceptedPrompt] = useState(false);
@@ -57,7 +56,6 @@ export default function CustomizePage() {
       officeInstructions,
       brandColor,
       backgroundStyle,
-      chatAvatarName,
       logoUrl: logoUrl, // send as logoUrl to backend
     };
 
@@ -109,8 +107,6 @@ export default function CustomizePage() {
             setBrandColor={setBrandColor}
             backgroundStyle={backgroundStyle}
             setBackgroundStyle={setBackgroundStyle}
-            chatAvatarName={chatAvatarName}
-            setChatAvatarName={setChatAvatarName}
           />
         );
       case 2:
@@ -229,7 +225,7 @@ export default function CustomizePage() {
               )}
               <h3 className="text-xl font-bold mb-1" style={{ color: brandColor }}>{doctorName || "Dr. Smith"}</h3>
               <p className="text-sm text-gray-500 mb-4">{specialty || "General Practice"}</p>
-              <p className="mb-6">{welcomeMessage || `Hi! I&apos;m ${chatAvatarName || "your assistant"}. How can I help today?`}</p>
+              <p className="mb-6">{welcomeMessage || "Hi! I’m your assistant. How can I help today?"}</p>
 
               <div className="flex flex-wrap gap-2 justify-center text-sm">
                 {(exampleQuestions.length > 0 ? exampleQuestions : [
@@ -322,7 +318,6 @@ export default function CustomizePage() {
         if (data.logo_url) setLogoUrl(data.logo_url);
         if (data.doctor_name) setDoctorName(data.doctor_name);
         if (data.specialty) setSpecialty(data.specialty);
-        if (data.chat_avatar_name) setChatAvatarName(data.chat_avatar_name);
         if (data.welcome_message) setWelcomeMessage(data.welcome_message);
         if (data.brand_color) setBrandColor(data.brand_color);
         if (data.office_instructions) setOfficeInstructions(data.office_instructions);
