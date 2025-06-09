@@ -6,3 +6,10 @@ export function createSupabaseServerClient() {
     cookies,
   });
 }
+
+export async function getClinicSettings() {
+  const supabase = createSupabaseServerClient();
+  const { data, error } = await supabase.from("clinics").select("*").single();
+  if (error) throw error;
+  return data;
+}

@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import ChatInterfaceWrapper from './chat-interface-wrapper';
-import { getClinicSettings } from "@/lib/supabase";
+import { getClinicSettings } from "@/lib/supabase-server";
 
 export default async function Page() {
   const settings = await getClinicSettings();
