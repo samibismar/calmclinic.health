@@ -221,7 +221,7 @@ export default function CustomizePage() {
               )}
               <h3 className="text-xl font-bold mb-1" style={{ color: brandColor }}>{doctorName || "Dr. Smith"}</h3>
               <p className="text-sm text-gray-500 mb-4">{specialty || "General Practice"}</p>
-              <p className="mb-6">{welcomeMessage || "Hi! I’m your assistant. How can I help today?"}</p>
+              <p className="mb-6">{welcomeMessage || "Hi! I'm your assistant. How can I help today?"}</p>
 
               <div className="flex flex-wrap gap-2 justify-center text-sm">
                 {(exampleQuestions.length > 0 ? exampleQuestions : [
