@@ -1,14 +1,16 @@
 import { Suspense } from "react";
 import ChatInterfaceWrapper from './chat-interface-wrapper';
 import { getClinicSettings } from "@/lib/supabase-server";
+import { Metadata } from "next";
 
 export const dynamic = 'force-dynamic';
 
-export default async function Page({
-  searchParams,
-}: {
+interface PageProps {
   searchParams: { [key: string]: string | string[] | undefined }
-}) {
+}
+
+export default async function Page(props: PageProps) {
+  const { searchParams } = props;
   const slug = typeof searchParams?.c === 'string' ? searchParams.c : "";
   const settings = await getClinicSettings(slug);
   const backgroundStyle = settings?.background_style || "calm-gradient";
