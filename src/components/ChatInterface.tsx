@@ -212,7 +212,10 @@ export default function ChatInterface({ clinic: initialClinicSlug }: ChatInterfa
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4">
+    <div
+      className="min-h-screen flex flex-col items-center justify-center p-4"
+      style={{ backgroundColor: "var(--clinic-color, #8b5cf6)" }}
+    >
       {/* Name Prompt Modal */}
       {showNamePrompt && !loading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">

@@ -19,10 +19,15 @@ export default function ChatInterfaceWrapper() {
   }
 
   return (
-    <main className="min-h-screen bg-black text-white">
-      <Suspense fallback={<div className="text-white text-center p-6">Loading assistant...</div>}>
-        <ChatInterface clinic={clinic} />
-      </Suspense>
+    <main
+      className="min-h-screen text-white flex items-center justify-center"
+      style={{ backgroundColor: "var(--clinic-color, #8b5cf6)" }}
+    >
+      <div className="w-full max-w-md p-4">
+        <Suspense fallback={<div className="text-white text-center p-6">Loading assistant...</div>}>
+          <ChatInterface clinic={clinic} />
+        </Suspense>
+      </div>
     </main>
   );
 }
