@@ -3,8 +3,9 @@
 import { useSearchParams } from 'next/navigation';
 import ChatInterface from '@/components/ChatInterface';
 import { Suspense } from 'react';
+import clsx from "clsx";
 
-export default function ChatInterfaceWrapper() {
+export default function ChatInterfaceWrapper({ backgroundStyle }: { backgroundStyle: string }) {
   const searchParams = useSearchParams();
   const clinic = searchParams.get('c');
 
@@ -20,8 +21,12 @@ export default function ChatInterfaceWrapper() {
 
   return (
     <main
-      className="min-h-screen text-white flex items-center justify-center"
-      style={{ backgroundColor: "var(--clinic-color, #8b5cf6)" }}
+      className={clsx(
+        "min-h-screen text-white flex items-center justify-center",
+        backgroundStyle === "calm-gradient" && "bg-gradient-to-br from-[#0f172a] to-[#1e293b]",
+        backgroundStyle === "light" && "bg-white text-black",
+        backgroundStyle === "dark" && "bg-[#111827]"
+      )}
     >
       <div className="w-full max-w-md p-4">
         <Suspense fallback={<div className="text-white text-center p-6">Loading assistant...</div>}>
