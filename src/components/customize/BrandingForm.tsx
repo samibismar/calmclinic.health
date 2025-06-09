@@ -8,7 +8,7 @@ type Props = {
   // other props...
 };
 
-const ChatInterfaceWrapper = ({ backgroundStyle, ...props }: Props) => {
+const BrandingForm = ({ backgroundStyle }: Props) => {
   return (
     <div
       className={clsx(
@@ -23,4 +23,4 @@ const ChatInterfaceWrapper = ({ backgroundStyle, ...props }: Props) => {
   );
 };
 
-export default ChatInterfaceWrapper;
+export default BrandingForm;
