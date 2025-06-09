@@ -18,9 +18,7 @@ export default function CustomizePage() {
   const [tone, setTone] = useState("calm");
   const [customTone, setCustomTone] = useState("");
   const [languages, setLanguages] = useState<string[]>([]);
-  const [customLanguage, setCustomLanguage] = useState("");
   const [promptInstructions, setPromptInstructions] = useState("");
-  const [selectedPromptPreset, setSelectedPromptPreset] = useState("");
   const [exampleQuestions, setExampleQuestions] = useState<string[]>([
     "What should I do before a blood test?",
     "Can I take Tylenol before my appointment?",
@@ -356,9 +354,7 @@ export default function CustomizePage() {
         if (data.tone) setTone(data.tone);
         if (data.custom_tone) setCustomTone(data.custom_tone);
         if (data.languages) setLanguages(data.languages);
-        if (data.custom_language) setCustomLanguage(data.custom_language);
         if (data.prompt_instructions) setPromptInstructions(data.prompt_instructions);
-        if (data.selected_prompt_preset) setSelectedPromptPreset(data.selected_prompt_preset);
         if (data.example_questions) setExampleQuestions(data.example_questions);
         if (data.clinic_name) setClinicName(data.clinic_name);
       }
