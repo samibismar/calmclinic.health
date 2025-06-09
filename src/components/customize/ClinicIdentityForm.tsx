@@ -76,14 +76,20 @@ const ClinicIdentityForm = ({
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-200 mb-1">Brand Color</label>
+          <div className="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-sm mt-6">
+            <label htmlFor="brandColor" className="block text-sm font-medium text-white mb-2">
+              Primary Brand Color
+            </label>
             <input
               type="color"
+              id="brandColor"
               value={brandColor}
               onChange={(e) => setBrandColor(e.target.value)}
-              className="w-20 h-10 rounded-md border border-gray-600 bg-[#0f172a]"
+              className="w-full h-10 rounded-md border-gray-600 bg-gray-900 cursor-pointer"
             />
+            <p className="mt-2 text-xs text-gray-400">
+              This color will be used for primary elements like buttons and headers.
+            </p>
           </div>
 
           <div>
