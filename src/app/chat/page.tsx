@@ -1,7 +1,5 @@
 import { Suspense } from "react";
 import ChatInterfaceWrapper from './chat-interface-wrapper';
-import { getClinicSettings } from "@/lib/supabase-server";
-import Image from "next/image";
 
 export const dynamic = 'force-dynamic';
 
@@ -9,37 +7,29 @@ interface ChatPageProps {
   searchParams: Promise<{ c?: string | string[] }>;
 }
 
-export default async function Page({ searchParams }: ChatPageProps) {
-  // Await the searchParams promise
-  const params = await searchParams;
-  const slug = typeof params?.c === 'string' ? params.c : "";
-  
-  const settings = await getClinicSettings(slug);
-  const backgroundStyle = settings?.background_style || "calm-gradient";
-  const clinicName = typeof settings?.clinic_name === "string" ? settings.clinic_name : null;
-  const logoUrl = typeof settings?.logo_url === "string" && settings.logo_url.startsWith("http") ? settings.logo_url : null;
-
+// Simple loading component
+function LoadingFallback() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--clinic-color,#8b5cf6)]">
-      <div className="w-full max-w-md p-4">
-        <Suspense fallback={<div className="text-white text-center p-6">Loading assistant...</div>}>
-          {clinicName && (
-            <div className="flex items-center justify-center gap-2 mb-4">
-              {logoUrl && (
-                <Image
-                  src={logoUrl}
-                  alt="Clinic Logo"
-                  width={32}
-                  height={32}
-                  className="object-contain rounded-md border border-gray-300"
-                />
-              )}
-              <h2 className="text-white text-lg font-semibold">Welcome to {clinicName}</h2>
-            </div>
-          )}
-          <ChatInterfaceWrapper backgroundStyle={backgroundStyle} />
-        </Suspense>
+    <div className="min-h-screen bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center p-4">
+      <div className="w-full max-w-sm">
+        <div className="bg-white rounded-3xl shadow-2xl p-8 text-center backdrop-blur-sm bg-white/95">
+          <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl shadow-lg animate-pulse flex items-center justify-center">
+            <div className="w-8 h-8 bg-blue-300 rounded-lg animate-pulse"></div>
+          </div>
+          <p className="text-blue-600 text-sm font-medium">Loading assistant...</p>
+        </div>
       </div>
     </div>
+  );
+}
+
+export default async function Page({ searchParams }: ChatPageProps) {
+  // Await the searchParams promise for Next.js 15 compatibility
+  const params = await searchParams;
+  
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <ChatInterfaceWrapper backgroundStyle="calm-gradient" />
+    </Suspense>
   );
 }
