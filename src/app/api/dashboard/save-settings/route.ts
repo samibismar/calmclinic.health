@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
       doctorName: 'doctor_name',
       specialty: 'specialty',
       brandColor: 'primary_color',
-      promptInstructions: 'prompt_instructions',
+      promptInstructions: 'ai_instructions',
       exampleQuestions: 'example_questions',
       languages: 'languages',
       officeInstructions: 'office_instructions',
