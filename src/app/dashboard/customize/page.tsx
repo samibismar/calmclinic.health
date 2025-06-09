@@ -43,7 +43,7 @@ export default function CustomizePage() {
       welcomeMessage,
       tone,
       languages,
-      aiInstructions: promptInstructions, // changed from promptInstructions
+      ai_instructions: promptInstructions,
       exampleQuestions,
       doctorName,
       specialty,
@@ -354,7 +354,7 @@ export default function CustomizePage() {
         if (data.tone) setTone(data.tone);
         if (data.custom_tone) setCustomTone(data.custom_tone);
         if (data.languages) setLanguages(data.languages);
-        if (data.prompt_instructions) setPromptInstructions(data.prompt_instructions);
+        if (data.ai_instructions) setPromptInstructions(data.ai_instructions);
         if (data.example_questions) setExampleQuestions(data.example_questions);
         if (data.clinic_name) setClinicName(data.clinic_name);
       }
