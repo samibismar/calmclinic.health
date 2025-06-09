@@ -15,6 +15,7 @@ export async function POST(req: Request) {
       tone = "",
       customTone = "",
       notes = "",
+      avoidList = "",
     } = body || {};
 
     const rawLanguages = body?.languages || "";
@@ -27,14 +28,25 @@ export async function POST(req: Request) {
     const toneDescription = (safeCustomTone || safeTone || "").trim();
 
     const userPrompt = `
-Based on the information below, generate a GPT system prompt that defines how the assistant should behave.
+You are an expert in crafting system prompts for GPT-based assistants working in healthcare clinics. Based on the clinic's preferences and context provided below, generate a detailed system prompt that governs how the AI assistant should behave.
 
-- The assistant represents a clinic led by: Dr. ${doctorName}, a specialist in ${specialty}.
-- The assistant should sound: ${toneDescription}.
-- Supported languages: ${languages.join(", ")}.
-- Extra context to guide the assistant: ${notes}
+Key requirements:
 
-Write a full prompt that could be given to a GPT-4 model to define this assistant's personality, tone, behavior, and any relevant context. Format it as a direct instruction to the AI. The tone should match what was requested.`;
+• Clinic Lead: Dr. ${doctorName || "Smith"}, a specialist in ${specialty || "general medicine"}.
+• Tone of Voice: ${toneDescription || "friendly and professional"}.
+• Supported Languages: ${languages.join(", ") || "English"}.
+• Additional Clinic Instructions: ${notes || "None specified."}
+${avoidList?.trim() ? `• 🚫 Must avoid: ${avoidList.trim()}.` : ""}
+
+Guidelines:
+- The assistant should act as a helpful, friendly, and informative representative of the clinic.
+- Never provide diagnoses or medical advice unless explicitly instructed.
+- Avoid casual or unprofessional language, and follow the clinic's preferences exactly.
+- Embed all instructions naturally into the system prompt, without explicitly listing them like bullet points.
+- Write in a polished, natural tone as if this prompt were to be fed directly into the GPT system.
+
+Return only the system prompt string, written as a direct instruction to the assistant.
+`;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4",
