@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect } from "react";
+import Image from "next/image";
+import type { Session } from "@supabase/supabase-js";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
 type Props = {
@@ -16,6 +18,7 @@ type Props = {
   setOfficeInstructions: (val: string) => void;
   logoUrl: string;
   setLogoUrl: (val: string) => void;
+  session: Session | null;
 };
 
 const ClinicIdentityForm = ({
@@ -98,7 +101,7 @@ const ClinicIdentityForm = ({
             {logoUrl && (
               <div className="mt-4">
                 <p className="text-sm text-gray-400 mb-1">Preview:</p>
-                <img src={logoUrl} alt="Clinic Logo" width={80} height={80} className="h-20 object-contain rounded-md border border-gray-600" />
+                <Image src={logoUrl} alt="Clinic Logo" width={80} height={80} className="h-20 object-contain rounded-md border border-gray-600" />
               </div>
             )}
           </div>
