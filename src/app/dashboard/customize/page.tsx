@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { toast } from "react-hot-toast";
 import AssistantPersonalityForm from "@/components/customize/AssistantPersonalityForm";
 import ExampleQuestionsForm from "@/components/customize/ExampleQuestionsForm";
@@ -14,7 +14,7 @@ export default function CustomizePage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [session, setSession] = useState<Session | null>(null);
-  const supabase = createClientComponentClient();
+  const supabase = useMemo(() => createClientComponentClient(), []);
 
   // Removed prefillData and default to initial values only
   const [welcomeMessage, setWelcomeMessage] = useState("");
@@ -299,7 +299,7 @@ export default function CustomizePage() {
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase.auth]);
+  }, [supabase]);
 
   useEffect(() => {
     const fetchClinicSettings = async () => {
@@ -327,7 +327,7 @@ export default function CustomizePage() {
         if (data.prompt_instructions) setPromptInstructions(data.prompt_instructions);
         if (data.selected_prompt_preset) setSelectedPromptPreset(data.selected_prompt_preset);
         if (data.example_questions) setExampleQuestions(data.example_questions);
-        if (data.clinic_name) setClinicName(data.clinic_name); // Fetch and set clinic name
+        if (data.clinic_name) setClinicName(data.clinic_name);
       }
     };
     fetchClinicSettings();
