@@ -21,7 +21,6 @@ type Props = {
 };
 
 const ClinicIdentityForm = ({
-  session,
   clinicName,
   setClinicName,
   brandColor,
