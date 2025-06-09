@@ -31,7 +31,6 @@ export default function CustomizePage() {
   const [newQuestion, setNewQuestion] = useState("");
   const [doctorName, setDoctorName] = useState("");
   const [specialty, setSpecialty] = useState("");
-  const [officeInstructions, setOfficeInstructions] = useState("");
   const [brandColor, setBrandColor] = useState<string>("#5BBAD5");
   const [clinicName, setClinicName] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
@@ -52,7 +51,6 @@ export default function CustomizePage() {
       exampleQuestions,
       doctorName,
       specialty,
-      officeInstructions,
       brandColor,
       logoUrl: logoUrl, // send as logoUrl to backend
     };
@@ -89,8 +87,6 @@ export default function CustomizePage() {
             setDoctorName={setDoctorName}
             specialty={specialty}
             setSpecialty={setSpecialty}
-            officeInstructions={officeInstructions}
-            setOfficeInstructions={setOfficeInstructions}
             brandColor={brandColor}
             setBrandColor={setBrandColor}
             logoUrl={logoUrl}
@@ -311,7 +307,6 @@ export default function CustomizePage() {
         if (data.specialty) setSpecialty(data.specialty);
         if (data.welcome_message) setWelcomeMessage(data.welcome_message);
         if (data.brand_color) setBrandColor(data.brand_color);
-        if (data.office_instructions) setOfficeInstructions(data.office_instructions);
         if (data.tone) setTone(data.tone);
         if (data.custom_tone) setCustomTone(data.custom_tone);
         if (data.languages) setLanguages(data.languages);
