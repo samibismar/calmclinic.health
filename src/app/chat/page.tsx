@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import ChatInterfaceWrapper from './chat-interface-wrapper';
 import { getClinicSettings } from "@/lib/supabase-server";
 
+export const dynamic = 'force-dynamic';
+
 export default async function Page() {
   const settings = await getClinicSettings();
   const backgroundStyle = settings?.background_style || "calm-gradient";
