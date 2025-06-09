@@ -5,12 +5,11 @@ import Image from "next/image";
 
 export const dynamic = 'force-dynamic';
 
-interface PageProps {
-  searchParams: { [key: string]: string | string[] | undefined }
-}
-
-export default async function Page(props: PageProps) {
-  const { searchParams } = props;
+export default async function Page({
+  searchParams,
+}: {
+  searchParams?: { [key: string]: string | string[] | undefined }
+}) {
   const slug = typeof searchParams?.c === 'string' ? searchParams.c : "";
   const settings = await getClinicSettings(slug);
   const backgroundStyle = settings?.background_style || "calm-gradient";
