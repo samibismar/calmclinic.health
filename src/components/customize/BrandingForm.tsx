@@ -7,8 +7,6 @@ type Props = {
   setBrandColor: (val: string) => void;
   backgroundStyle: string;
   setBackgroundStyle: (val: string) => void;
-  chatAvatarName: string;
-  setChatAvatarName: (val: string) => void;
 };
 
 const BrandingForm = ({
@@ -16,8 +14,6 @@ const BrandingForm = ({
   setBrandColor,
   backgroundStyle,
   setBackgroundStyle,
-  chatAvatarName,
-  setChatAvatarName,
 }: Props) => {
   return (
     <div className="bg-gradient-to-br from-[#0f172a] to-[#1e293b] rounded-2xl shadow-xl border border-gray-700 p-8 space-y-6 text-white">
@@ -48,17 +44,6 @@ const BrandingForm = ({
               <option value="light">Light</option>
               <option value="dark">Dark</option>
             </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-200 mb-1">Chat Avatar Name</label>
-            <input
-              type="text"
-              value={chatAvatarName}
-              onChange={(e) => setChatAvatarName(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-600 rounded-md bg-[#0f172a] text-white placeholder-gray-400 focus:ring-cyan-400 focus:border-cyan-500"
-              placeholder="e.g., Sunny, CareBot, Dr. Chat"
-            />
           </div>
         </div>
       </div>
