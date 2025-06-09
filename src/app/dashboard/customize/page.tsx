@@ -33,7 +33,6 @@ export default function CustomizePage() {
   const [specialty, setSpecialty] = useState("");
   const [brandColor, setBrandColor] = useState<string>("#5BBAD5");
   const [clinicName, setClinicName] = useState("");
-  const [logoUrl, setLogoUrl] = useState("");
   const [hasAcceptedPrompt, setHasAcceptedPrompt] = useState(false);
   const [hasGeneratedPrompt, setHasGeneratedPrompt] = useState(false);
   const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false);
@@ -52,7 +51,7 @@ export default function CustomizePage() {
       doctorName,
       specialty,
       brandColor,
-      logoUrl: logoUrl, // send as logoUrl to backend
+      // logoUrl removed
     };
 
     try {
@@ -89,8 +88,6 @@ export default function CustomizePage() {
             setSpecialty={setSpecialty}
             brandColor={brandColor}
             setBrandColor={setBrandColor}
-            logoUrl={logoUrl}
-            setLogoUrl={setLogoUrl}
             session={session}
           />
         );
@@ -193,27 +190,13 @@ export default function CustomizePage() {
           </div>
         );
       case 4:
-        // Guard clause: wait for logoUrl to load if session exists
-        if (!logoUrl && session) {
-          return <p className="text-white">Loading logo preview...</p>;
-        }
         return (
           <div className="bg-gradient-to-br from-[#0f172a] to-[#1e293b] rounded-2xl shadow-xl border border-gray-700 p-8 space-y-6 text-white max-w-2xl mx-auto">
             <h2 className="text-2xl font-bold text-white mb-2">✅ Preview Your Assistant</h2>
             <p className="text-sm text-gray-400 mb-6">This is how your assistant will appear to patients based on your current settings.</p>
 
             <div className="rounded-xl p-6 shadow-lg text-center" style={{ backgroundColor: "#ffffff", color: "#111827" }}>
-              {logoUrl ? (
-                <Image
-                  src={logoUrl}
-                  alt="Clinic Logo"
-                  width={64}
-                  height={64}
-                  className="mx-auto mb-2 rounded-md object-contain border border-gray-300"
-                />
-              ) : (
-                <div className="w-16 h-16 mx-auto mb-2 bg-gray-200 rounded-md" />
-              )}
+              <div className="w-16 h-16 mx-auto mb-2 rounded-md" style={{ backgroundColor: brandColor }} />
               <h3 className="text-xl font-bold mb-1" style={{ color: brandColor }}>{doctorName || "Dr. Smith"}</h3>
               <p className="text-sm text-gray-500 mb-4">{specialty || "General Practice"}</p>
               <p className="mb-6">{welcomeMessage || "Hi! I'm your assistant. How can I help today?"}</p>
@@ -306,7 +289,6 @@ export default function CustomizePage() {
       if (error) {
         console.error("Failed to fetch saved settings:", error);
       } else {
-        if (data.logo_url) setLogoUrl(data.logo_url);
         if (data.doctor_name) setDoctorName(data.doctor_name);
         if (data.specialty) setSpecialty(data.specialty);
         if (data.welcome_message) setWelcomeMessage(data.welcome_message);
