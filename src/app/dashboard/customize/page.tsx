@@ -33,7 +33,6 @@ export default function CustomizePage() {
   const [specialty, setSpecialty] = useState("");
   const [officeInstructions, setOfficeInstructions] = useState("");
   const [brandColor, setBrandColor] = useState<string>("#5BBAD5");
-  const [backgroundStyle, setBackgroundStyle] = useState("");
   const [clinicName, setClinicName] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
   const [hasAcceptedPrompt, setHasAcceptedPrompt] = useState(false);
@@ -55,7 +54,6 @@ export default function CustomizePage() {
       specialty,
       officeInstructions,
       brandColor,
-      backgroundStyle,
       logoUrl: logoUrl, // send as logoUrl to backend
     };
 
@@ -105,8 +103,6 @@ export default function CustomizePage() {
           <BrandingForm
             brandColor={brandColor}
             setBrandColor={setBrandColor}
-            backgroundStyle={backgroundStyle}
-            setBackgroundStyle={setBackgroundStyle}
           />
         );
       case 2:
@@ -328,7 +324,6 @@ export default function CustomizePage() {
         if (data.prompt_instructions) setPromptInstructions(data.prompt_instructions);
         if (data.selected_prompt_preset) setSelectedPromptPreset(data.selected_prompt_preset);
         if (data.example_questions) setExampleQuestions(data.example_questions);
-        if (data.background_style) setBackgroundStyle(data.background_style);
         if (data.clinic_name) setClinicName(data.clinic_name); // Fetch and set clinic name
       }
     };
