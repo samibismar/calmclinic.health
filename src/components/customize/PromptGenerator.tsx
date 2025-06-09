@@ -137,7 +137,7 @@ export default function PromptGenerator({
               className="w-full px-4 py-2 border rounded-md"
             />
             <ul className="text-xs text-gray-500 mt-1">
-              <li>• Don't offer prescriptions</li>
+              <li>• Don&apos;t offer prescriptions</li>
               <li>• Avoid jokes or sarcasm</li>
             </ul>
           </div>
