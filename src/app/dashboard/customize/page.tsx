@@ -8,6 +8,7 @@ import BrandingForm from "@/components/customize/BrandingForm";
 import { useRouter } from "next/navigation";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import type { Session } from "@supabase/supabase-js";
+import Image from 'next/image';
 
 export default function CustomizePage() {
   const router = useRouter();
@@ -211,10 +212,12 @@ export default function CustomizePage() {
 
             <div className="rounded-xl p-6 shadow-lg text-center" style={{ backgroundColor: "#ffffff", color: "#111827" }}>
               {logoUrl ? (
-                <img
+                <Image
                   src={logoUrl}
                   alt="Clinic Logo"
-                  className="w-16 h-16 mx-auto mb-2 rounded-md object-contain border border-gray-300"
+                  width={64}
+                  height={64}
+                  className="mx-auto mb-2 rounded-md object-contain border border-gray-300"
                 />
               ) : (
                 <div className="w-16 h-16 mx-auto mb-2 bg-gray-200 rounded-md" />
@@ -296,7 +299,7 @@ export default function CustomizePage() {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [supabase.auth]);
 
   useEffect(() => {
     const fetchClinicSettings = async () => {
@@ -328,7 +331,7 @@ export default function CustomizePage() {
       }
     };
     fetchClinicSettings();
-  }, [session]); // Add session to dependency array
+  }, [session, supabase]);
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
