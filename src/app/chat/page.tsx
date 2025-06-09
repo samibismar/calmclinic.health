@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import ChatInterfaceWrapper from './chat-interface-wrapper';
 import { getClinicSettings } from "@/lib/supabase-server";
-import { Metadata } from "next";
+import Image from "next/image";
 
 export const dynamic = 'force-dynamic';
 
@@ -24,10 +24,12 @@ export default async function Page(props: PageProps) {
           {clinicName && (
             <div className="flex items-center justify-center gap-2 mb-4">
               {logoUrl && (
-                <img
+                <Image
                   src={logoUrl}
                   alt="Clinic Logo"
-                  className="h-8 w-8 object-contain rounded-md border border-gray-300"
+                  width={32}
+                  height={32}
+                  className="object-contain rounded-md border border-gray-300"
                 />
               )}
               <h2 className="text-white text-lg font-semibold">Welcome to {clinicName}</h2>
