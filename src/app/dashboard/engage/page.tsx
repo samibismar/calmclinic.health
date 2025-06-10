@@ -5,23 +5,30 @@ import { QRCodeCanvas } from "qrcode.react";
 import { useSession } from "next-auth/react";
 import type { Session } from "next-auth";
 import type { Clinic } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
 
 interface CustomSession extends Session {
   clinics?: Clinic[];
 }
 
 export default function EngagementToolkitPage() {
+  const router = useRouter();
   const qrRef = useRef<HTMLCanvasElement | null>(null);
   const [copied, setCopied] = useState(false);
-  const { data: session } = useSession() as { data: CustomSession | null };
+  const { data: session, status } = useSession() as { data: CustomSession | null; status: string };
   const [chatUrl, setChatUrl] = useState("");
 
   useEffect(() => {
+    if (status === "unauthenticated") {
+      router.replace("/login");
+      return;
+    }
+
     if (session?.clinics?.[0]?.slug) {
       const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
       setChatUrl(`${baseUrl}/chat?c=${session.clinics[0].slug}`);
     }
-  }, [session]);
+  }, [session, status, router]);
 
   const copyLink = () => {
     navigator.clipboard.writeText(chatUrl);
@@ -39,7 +46,7 @@ export default function EngagementToolkitPage() {
     link.click();
   };
 
-  if (!chatUrl) {
+  if (status === "loading" || !chatUrl) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-950 to-blue-900 text-white p-8 flex items-center justify-center">
         <div className="text-center">
