@@ -15,6 +15,10 @@ export interface Clinic {
   welcome_message: string
   specialty: string
   ai_instructions: string | null
+  suggested_prompts: {
+    en: string[]
+    es: string[]
+  } | null
   created_at: string
 }
 

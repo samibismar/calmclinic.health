@@ -78,8 +78,17 @@ export default function ChatInterface({ clinic: clinicSlug }: ChatInterfaceProps
     specialty: clinic?.specialty || 'General Practice'
   };
 
-  // Suggested prompts based on specialty
+  // Suggested prompts based on specialty or custom prompts
   const getSuggestedPrompts = () => {
+    // First check if clinic has custom prompts
+    if (clinic?.suggested_prompts) {
+      const prompts = clinic.suggested_prompts[language as keyof typeof clinic.suggested_prompts];
+      if (prompts && prompts.length > 0) {
+        return prompts;
+      }
+    }
+    
+    // Fallback to default prompts based on specialty
     const specialtyPrompts: Record<string, { en: string[], es: string[] }> = {
       'Gastroenterology': {
         en: [

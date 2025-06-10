@@ -355,7 +355,12 @@ export default function CustomizePage() {
         if (data.custom_tone) setCustomTone(data.custom_tone);
         if (data.languages) setLanguages(data.languages);
         if (data.ai_instructions) setPromptInstructions(data.ai_instructions);
-        if (data.example_questions) setExampleQuestions(data.example_questions);
+        // Load suggested_prompts if available, otherwise fall back to example_questions
+        if (data.suggested_prompts && data.suggested_prompts.en) {
+          setExampleQuestions(data.suggested_prompts.en);
+        } else if (data.example_questions) {
+          setExampleQuestions(data.example_questions);
+        }
         if (data.clinic_name) setClinicName(data.clinic_name);
       }
     };

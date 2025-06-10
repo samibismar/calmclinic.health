@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Transform updates
-    const updates: Record<string, string | number | boolean | null | string[]> = {};
+    const updates: Record<string, string | number | boolean | null | string[] | object> = {};
     
     const fieldMapping: Record<string, string> = {
       welcomeMessage: 'welcome_message',
@@ -64,8 +64,16 @@ export async function POST(request: NextRequest) {
     for (const [camelKey, snakeKey] of Object.entries(fieldMapping)) {
       if (camelKey in body) {
         const value: unknown = body[camelKey];
-        updates[snakeKey] = (typeof value === 'string' && value.trim() === '') ? null : value as (string | number | boolean | string[] | null);
+        updates[snakeKey] = (typeof value === 'string' && value.trim() === '') ? null : value as (string | number | boolean | string[] | object | null);
       }
+    }
+
+    // Convert exampleQuestions array to suggested_prompts format
+    if (body.exampleQuestions && Array.isArray(body.exampleQuestions)) {
+      updates.suggested_prompts = {
+        en: body.exampleQuestions,
+        es: body.exampleQuestions // For now, same questions in Spanish - can be enhanced later
+      };
     }
 
     updates.updated_at = new Date().toISOString();
