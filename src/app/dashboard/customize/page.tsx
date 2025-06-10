@@ -9,7 +9,13 @@ export default function CustomizePage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [clinicData, setClinicData] = useState<any>(null);
+  const [clinicData, setClinicData] = useState<{
+    practice_name?: string;
+    doctor_name?: string;
+    slug?: string;
+    specialty?: string;
+    primary_color?: string;
+  } | null>(null);
 
   // Initialize all state with empty values - will be populated from database
   const [welcomeMessage, setWelcomeMessage] = useState("");
@@ -92,7 +98,7 @@ export default function CustomizePage() {
         if (settingsResponse.ok) {
           const settings = await settingsResponse.json();
           
-          // Populate form with saved values
+          // Populate form with saved values, fallback to clinic data from dashboard
           setDoctorName(settings.doctor_name || clinic.doctor_name || "");
           setSpecialty(settings.specialty || clinic.specialty || "");
           setWelcomeMessage(settings.welcome_message || "");
@@ -116,6 +122,12 @@ export default function CustomizePage() {
             setHasGeneratedPrompt(true);
             setHasAcceptedPrompt(true);
           }
+        } else {
+          // If no detailed settings found, use basic clinic data
+          setDoctorName(clinic.doctor_name || "");
+          setSpecialty(clinic.specialty || "");
+          setBrandColor(clinic.primary_color || "#5BBAD5");
+          setClinicName(clinic.practice_name || "");
         }
       } catch (error) {
         console.error("Error fetching clinic settings:", error);
