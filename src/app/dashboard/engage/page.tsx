@@ -1,15 +1,21 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { QRCodeCanvas } from "qrcode.react";
-
-const chatUrl = typeof window !== "undefined"
-  ? `${window.location.origin}/chat`
-  : "/chat";
+import { useSession } from "next-auth/react";
 
 export default function EngagementToolkitPage() {
   const qrRef = useRef<HTMLCanvasElement | null>(null);
   const [copied, setCopied] = useState(false);
+  const { data: session } = useSession();
+  const [chatUrl, setChatUrl] = useState("");
+
+  useEffect(() => {
+    if (session?.clinics?.[0]?.slug) {
+      const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+      setChatUrl(`${baseUrl}/chat?c=${session.clinics[0].slug}`);
+    }
+  }, [session]);
 
   const copyLink = () => {
     navigator.clipboard.writeText(chatUrl);
@@ -26,6 +32,17 @@ export default function EngagementToolkitPage() {
     link.download = "calmclinic-qr-code.png";
     link.click();
   };
+
+  if (!chatUrl) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-950 to-blue-900 text-white p-8 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Loading...</h1>
+          <p className="text-blue-200">Please wait while we prepare your engagement tools.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-950 to-blue-900 text-white p-8 space-y-12">
