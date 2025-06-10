@@ -7,6 +7,9 @@ import type { Session } from "next-auth";
 import type { Clinic } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 
+// Mark this page as dynamic
+export const dynamic = 'force-dynamic';
+
 interface CustomSession extends Session {
   clinics?: Clinic[];
 }
