@@ -1,8 +1,6 @@
-
-
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 
 const chatUrl = typeof window !== "undefined"
@@ -10,7 +8,7 @@ const chatUrl = typeof window !== "undefined"
   : "/chat";
 
 export default function EngagementToolkitPage() {
-  const qrRef = useRef<QRCodeCanvas | null>(null);
+  const qrRef = useRef<HTMLCanvasElement | null>(null);
   const [copied, setCopied] = useState(false);
 
   const copyLink = () => {
