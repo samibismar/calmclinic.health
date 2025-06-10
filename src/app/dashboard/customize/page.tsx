@@ -9,13 +9,6 @@ export default function CustomizePage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [clinicData, setClinicData] = useState<{
-    practice_name?: string;
-    doctor_name?: string;
-    slug?: string;
-    specialty?: string;
-    primary_color?: string;
-  } | null>(null);
 
   // Initialize all state with empty values - will be populated from database
   const [welcomeMessage, setWelcomeMessage] = useState("");
@@ -88,7 +81,6 @@ export default function CustomizePage() {
         }
 
         const { clinic } = await response.json();
-        setClinicData(clinic);
 
         // Now fetch the full clinic details from database
         const settingsResponse = await fetch(`/api/clinic-settings?slug=${clinic.slug}`, {
