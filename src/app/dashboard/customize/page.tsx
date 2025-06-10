@@ -1,19 +1,17 @@
 "use client";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import ExampleQuestionsForm from "@/components/customize/ExampleQuestionsForm";
 import ClinicIdentityForm from "@/components/customize/ClinicIdentityForm";
 import { useRouter } from "next/navigation";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import type { Session } from "@supabase/supabase-js";
 
 export default function CustomizePage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
-  const [session, setSession] = useState<Session | null>(null);
-  const supabase = useMemo(() => createClientComponentClient(), []);
+  const [isLoading, setIsLoading] = useState(true);
+  const [clinicData, setClinicData] = useState<any>(null);
 
-  // Removed prefillData and default to initial values only
+  // Initialize all state with empty values - will be populated from database
   const [welcomeMessage, setWelcomeMessage] = useState("");
   const [tone, setTone] = useState("calm");
   const [customTone, setCustomTone] = useState("");
@@ -48,7 +46,6 @@ export default function CustomizePage() {
       doctorName,
       specialty,
       brandColor,
-      // logoUrl removed
     };
 
     try {
@@ -64,13 +61,91 @@ export default function CustomizePage() {
       if (!response.ok) throw new Error("Failed to save settings.");
 
       toast.success("Settings saved successfully!");
-      // Redirect with success parameter
       router.push("/dashboard?setup=complete");
     } catch (err) {
       console.error("Save error:", err);
       toast.error("Something went wrong while saving. Please try again.");
     }
   };
+
+  // Fetch clinic settings using the same pattern as dashboard
+  useEffect(() => {
+    const fetchClinicSettings = async () => {
+      try {
+        // Use the same API endpoint as dashboard to get clinic data
+        const response = await fetch("/api/dashboard/data", {
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch clinic data");
+        }
+
+        const { clinic } = await response.json();
+        setClinicData(clinic);
+
+        // Now fetch the full clinic details from database
+        const settingsResponse = await fetch(`/api/clinic-settings?slug=${clinic.slug}`, {
+          credentials: "include",
+        });
+
+        if (settingsResponse.ok) {
+          const settings = await settingsResponse.json();
+          
+          // Populate form with saved values
+          setDoctorName(settings.doctor_name || clinic.doctor_name || "");
+          setSpecialty(settings.specialty || clinic.specialty || "");
+          setWelcomeMessage(settings.welcome_message || "");
+          setBrandColor(settings.primary_color || clinic.primary_color || "#5BBAD5");
+          setTone(settings.tone || "calm");
+          setCustomTone(settings.custom_tone || "");
+          setLanguages(settings.languages || []);
+          setPromptInstructions(settings.ai_instructions || "");
+          setClinicName(settings.practice_name || clinic.practice_name || "");
+          setAvoidList(settings.avoid_list || "");
+
+          // Handle example questions with fallback
+          if (settings.suggested_prompts?.en) {
+            setExampleQuestions(settings.suggested_prompts.en);
+          } else if (settings.example_questions) {
+            setExampleQuestions(settings.example_questions);
+          }
+
+          // If prompt instructions exist, mark as generated/accepted
+          if (settings.ai_instructions) {
+            setHasGeneratedPrompt(true);
+            setHasAcceptedPrompt(true);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching clinic settings:", error);
+        toast.error("Failed to load your settings. Please try refreshing the page.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchClinicSettings();
+  }, []);
+
+  // Show loading spinner while fetching data
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12 px-4">
+        <div className="max-w-3xl mx-auto space-y-8">
+          <h1 className="text-2xl font-bold text-gray-900 text-center">Customize Your Assistant</h1>
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading your current settings...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const renderStep = () => {
     switch (step) {
@@ -85,7 +160,7 @@ export default function CustomizePage() {
             setSpecialty={setSpecialty}
             brandColor={brandColor}
             setBrandColor={setBrandColor}
-            session={session}
+            session={null} // Not needed anymore
           />
         );
       case 1:
@@ -191,17 +266,15 @@ export default function CustomizePage() {
                     </ul>
                   </div>
                 </div>
-                {/* End Doctor Name and Specialty display */}
               </div>
             </div>
 
             <div className="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-sm">
               <h3 className="text-md font-semibold text-white mb-2">🧠 Generated System Instructions</h3>
               <div className="text-sm text-white whitespace-pre-wrap bg-gray-800 border border-gray-700 rounded-md p-3">
-                {promptInstructions || "Your assistant&apos;s instructions will appear here once generated or manually entered."}
+                {promptInstructions || "Your assistant's instructions will appear here once generated or manually entered."}
               </div>
             </div>
-
 
             <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
               <button
@@ -291,7 +364,7 @@ export default function CustomizePage() {
               <div className="mt-6 text-left">
                 <h4 className="text-md font-semibold text-gray-700 mb-1">🧠 System Instructions</h4>
                 <div className="bg-gray-100 p-4 rounded-md text-sm text-gray-800 whitespace-pre-wrap">
-                  {promptInstructions || "Your assistant&apos;s instructions will appear here once generated or manually entered."}
+                  {promptInstructions || "Your assistant's instructions will appear here once generated or manually entered."}
                 </div>
               </div>
 
@@ -314,59 +387,6 @@ export default function CustomizePage() {
     }
   };
 
-  useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("Initial session:", session);
-      setSession(session);
-    });
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("Auth state changed:", session);
-      setSession(session);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [supabase]);
-
-  useEffect(() => {
-    const fetchClinicSettings = async () => {
-      if (!session || !session.user || !session.user.user_metadata || !session.user.user_metadata.clinic_id) {
-        console.log("Session or clinic_id not available, skipping fetchClinicSettings.");
-        return;
-      }
-
-      const clinicId = session.user.user_metadata.clinic_id;
-
-      const { data, error } = await supabase.from("clinics").select("*").eq("id", clinicId).single();
-      if (error) {
-        console.error("Failed to fetch saved settings:", error);
-      } else {
-        if (data.doctor_name) setDoctorName(data.doctor_name);
-        if (data.specialty) setSpecialty(data.specialty);
-        if (data.welcome_message) setWelcomeMessage(data.welcome_message);
-        if (data.brand_color) setBrandColor(data.brand_color);
-        if (data.tone) setTone(data.tone);
-        if (data.custom_tone) setCustomTone(data.custom_tone);
-        if (data.languages) setLanguages(data.languages);
-        if (data.ai_instructions) setPromptInstructions(data.ai_instructions);
-        // Load suggested_prompts if available, otherwise fall back to example_questions
-        if (data.suggested_prompts && data.suggested_prompts.en) {
-          setExampleQuestions(data.suggested_prompts.en);
-        } else if (data.example_questions) {
-          setExampleQuestions(data.example_questions);
-        }
-        if (data.clinic_name) setClinicName(data.clinic_name);
-      }
-    };
-    fetchClinicSettings();
-  }, [session, supabase]);
-
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-3xl mx-auto space-y-8">
@@ -385,7 +405,6 @@ export default function CustomizePage() {
             </div>
           )}
 
-
           {step === 2 && !hasAcceptedPrompt && (
             <div className="bg-cyan-100 text-cyan-800 border border-cyan-300 rounded-md p-4 text-sm">
               Please use the AI tool to generate instructions and accept them before continuing.
@@ -393,7 +412,7 @@ export default function CustomizePage() {
           )}
 
           <div className="flex justify-between">
-            {step > 0 && step < 3 + 1 && (
+            {step > 0 && step < 4 && (
               <button
                 onClick={() => setStep(step - 1)}
                 className="text-sm text-gray-500 hover:underline"
