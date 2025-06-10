@@ -3,11 +3,17 @@
 import { useRef, useState, useEffect } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { useSession } from "next-auth/react";
+import type { Session } from "next-auth";
+import type { Clinic } from "@/lib/supabase";
+
+interface CustomSession extends Session {
+  clinics?: Clinic[];
+}
 
 export default function EngagementToolkitPage() {
   const qrRef = useRef<HTMLCanvasElement | null>(null);
   const [copied, setCopied] = useState(false);
-  const { data: session } = useSession();
+  const { data: session } = useSession() as { data: CustomSession | null };
   const [chatUrl, setChatUrl] = useState("");
 
   useEffect(() => {
