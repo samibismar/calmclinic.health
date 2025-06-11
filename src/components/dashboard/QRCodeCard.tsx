@@ -28,7 +28,7 @@ export default function QRCodeCard({ slug, clinic }: QRCodeCardProps) {
   const openPrintablePage = () => {
     // Build URL parameters for the print page
     const params = new URLSearchParams({
-      doctor: clinic?.doctor_name || 'Dr. Sam',
+      doctor: clinic?.doctor_name ? `Dr. ${clinic.doctor_name}` : 'Dr. Sam',
       specialty: clinic?.specialty || 'General Practice', 
       url: chatUrl,
     });
