@@ -27,7 +27,8 @@ export async function POST(request: NextRequest) {
           doctor_name,
           slug,
           practice_name,
-          specialty
+          specialty,
+          has_completed_setup
         )
       `)
       .eq('token', sessionToken)
