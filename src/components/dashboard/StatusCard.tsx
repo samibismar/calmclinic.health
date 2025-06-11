@@ -39,8 +39,6 @@ export default function StatusCard({ clinic }: StatusCardProps) {
     );
   }
 
-  // Placeholder for last updated, can be updated with real data later
-  const lastUpdated = "—";
 
   return (
     <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6">
