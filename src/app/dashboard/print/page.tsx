@@ -1,10 +1,10 @@
 // app/dashboard/print/page.tsx
 "use client";
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
-export default function PrintPage() {
+function PrintPageContent() {
   const searchParams = useSearchParams();
   const qrCodeRef = useRef<HTMLDivElement>(null);
 
@@ -221,5 +221,34 @@ export default function PrintPage() {
         </div>
       </div>
     </>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div style={{
+      fontFamily: 'Arial, sans-serif',
+      maxWidth: '8.5in',
+      margin: '0 auto',
+      padding: '20px',
+      background: 'white',
+      color: 'black',
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ fontSize: '18px', color: '#666' }}>Loading printable QR code...</div>
+      </div>
+    </div>
+  );
+}
+
+export default function PrintPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <PrintPageContent />
+    </Suspense>
   );
 }
