@@ -1,18 +1,9 @@
 "use client";
 
 import { QRCodeCanvas } from "qrcode.react";
-import { useEffect, useState } from "react";
 
-export default function QRCodeCard() {
-  const [chatUrl, setChatUrl] = useState("/chat");
-
-  useEffect(() => {
-    const slug = localStorage.getItem("clinic_slug");
-    const url = slug
-      ? `${window.location.origin}/chat?c=${slug}`
-      : `${window.location.origin}/chat`;
-    setChatUrl(url);
-  }, []);
+export default function QRCodeCard({ slug }: { slug: string }) {
+  const chatUrl = `https://calmclinic-health.vercel.app/chat?c=${slug}`;
 
   const downloadQRCode = () => {
     const canvas = document.querySelector("canvas");
