@@ -1,17 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+interface ReminderMessageCardProps {
+  slug: string;
+}
 
-export default function ReminderMessageCard() {
-  const [chatUrl, setChatUrl] = useState("https://calmclinic-health.vercel.app/chat");
-
-  useEffect(() => {
-    const slug = localStorage.getItem("clinic_slug");
-    const url = slug
-      ? `https://calmclinic-health.vercel.app/chat?c=${slug}`
-      : "https://calmclinic-health.vercel.app/chat";
-    setChatUrl(url);
-  }, []);
+export default function ReminderMessageCard({ slug }: ReminderMessageCardProps) {
+  const chatUrl = `https://calmclinic-health.vercel.app/chat?c=${slug}`;
 
   const message = `Hi! You can chat with our assistant here: ${chatUrl}`;
 
