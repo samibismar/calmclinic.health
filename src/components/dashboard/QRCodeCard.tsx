@@ -1,11 +1,18 @@
 "use client";
 
 import { QRCodeCanvas } from "qrcode.react";
+import { useEffect, useState } from "react";
 
 export default function QRCodeCard() {
-  const chatUrl = typeof window !== "undefined"
-    ? `${window.location.origin}/chat`
-    : "/chat";
+  const [chatUrl, setChatUrl] = useState("/chat");
+
+  useEffect(() => {
+    const slug = localStorage.getItem("clinic_slug");
+    const url = slug
+      ? `${window.location.origin}/chat?c=${slug}`
+      : `${window.location.origin}/chat`;
+    setChatUrl(url);
+  }, []);
 
   const downloadQRCode = () => {
     const canvas = document.querySelector("canvas");
