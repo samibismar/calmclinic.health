@@ -42,8 +42,7 @@ export async function POST(request: NextRequest) {
     const clinic = Array.isArray(session.clinics) ? session.clinics[0] : session.clinics;
     const clinicWithSetupFlag = {
       ...clinic,
-      has_completed_setup:
-        (Array.isArray(session.clinics) ? session.clinics[0]?.has_completed_setup : session.clinics?.has_completed_setup) ?? false,
+      has_completed_setup: clinic.has_completed_setup ?? false,
     };
 
     // Get request body
