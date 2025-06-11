@@ -3,13 +3,13 @@
 import { useEffect, useState } from "react";
 
 export default function ReminderMessageCard() {
-  const [chatUrl, setChatUrl] = useState("https://calmclinic.app/chat");
+  const [chatUrl, setChatUrl] = useState("https://calmclinic-health.vercel.app/chat");
 
   useEffect(() => {
     const slug = localStorage.getItem("clinic_slug");
     const url = slug
-      ? `https://calmclinic.app/chat?c=${slug}`
-      : "https://calmclinic.app/chat";
+      ? `https://calmclinic-health.vercel.app/chat?c=${slug}`
+      : "https://calmclinic-health.vercel.app/chat";
     setChatUrl(url);
   }, []);
 
