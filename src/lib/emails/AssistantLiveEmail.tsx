@@ -1,7 +1,3 @@
-import { Resend } from "resend";
-import AssistantLiveEmail from "@/lib/emails/AssistantLiveEmail";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 type AssistantLiveEmailProps = {
   doctorName: string;
