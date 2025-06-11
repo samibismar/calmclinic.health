@@ -12,7 +12,6 @@ export default function PrintPage() {
   const doctorName = searchParams.get('doctor') || 'Dr. Sam';
   const specialty = searchParams.get('specialty') || 'General Practice';
   const chatUrl = searchParams.get('url') || `${window.location.origin}/chat?c=default`;
-  const logoUrl = searchParams.get('logo');
   const primaryColor = searchParams.get('color') || '#007bff';
 
   useEffect(() => {
