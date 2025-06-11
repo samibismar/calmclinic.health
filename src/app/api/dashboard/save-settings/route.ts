@@ -99,6 +99,26 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
+    // If this is the first time setup is being completed, trigger the welcome email
+    const wasPreviouslyIncomplete = !clinic.has_completed_setup;
+    const isNowComplete = updateResult[0].has_completed_setup === true;
+
+    if (wasPreviouslyIncomplete && isNowComplete) {
+      try {
+        await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/send-live-email`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            clinicEmail: clinic.email,
+            doctorName: clinic.doctor_name,
+            slug: clinic.slug
+          })
+        });
+      } catch (emailError) {
+        console.error("Failed to send welcome email:", emailError);
+      }
+    }
+
     return NextResponse.json({ 
       success: true, 
       clinic: updateResult[0] 
