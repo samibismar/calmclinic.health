@@ -24,7 +24,6 @@ export default function PrintPage() {
           const canvas = document.createElement('canvas');
           await QRCode.toCanvas(canvas, chatUrl, {
             width: 400,
-            height: 400,
             color: {
               dark: '#000000',
               light: '#FFFFFF'
