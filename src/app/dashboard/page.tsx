@@ -134,7 +134,7 @@ export default function DashboardPage() {
         </div>
         {data.clinic.has_completed_setup && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
-            <QRCodeCard slug={data.clinic.slug} />
+            <QRCodeCard slug={data.clinic.slug} clinic={data.clinic} />
             <ReminderMessageCard slug={data.clinic.slug} />
             <EmbedCodeCard slug={data.clinic.slug} />
           </div>
