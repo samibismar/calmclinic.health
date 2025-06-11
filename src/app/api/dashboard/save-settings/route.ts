@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
     }
 
     const clinic = Array.isArray(session.clinics) ? session.clinics[0] : session.clinics;
+    const clinicWithSetupFlag = { ...clinic, has_completed_setup: session.clinics?.has_completed_setup ?? false };
 
     // Get request body
     const body = await request.json();
@@ -100,7 +101,7 @@ export async function POST(request: NextRequest) {
     }
 
     // If this is the first time setup is being completed, trigger the welcome email
-    const wasPreviouslyIncomplete = !clinic.has_completed_setup;
+    const wasPreviouslyIncomplete = !clinicWithSetupFlag.has_completed_setup;
     const isNowComplete = updateResult[0].has_completed_setup === true;
 
     if (wasPreviouslyIncomplete && isNowComplete) {
