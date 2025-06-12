@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -34,8 +33,6 @@ export default function SignupPage() {
     'Ophthalmology'
   ];
 
-  const supabase = createClientComponentClient();
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -53,34 +50,24 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      // Step 1: Supabase Auth signup
-      const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password
-      });
-
-      if (error || !data.user) {
-        throw new Error(error?.message || 'Signup failed');
-      }
-
-      // Step 2: Send clinic info to backend
-      const res = await fetch('/api/clinics/create', {
+      // Use the existing signup API route
+      const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           practiceName: formData.practiceName,
           doctorName: formData.doctorName,
           email: formData.email,
+          password: formData.password,
           specialty: formData.specialty,
-          phone: formData.phone,
-          auth_user_id: data.user.id
+          phone: formData.phone
         })
       });
 
       const result = await res.json();
 
       if (!res.ok) {
-        throw new Error(result.error || 'Failed to save clinic info');
+        throw new Error(result.error || 'Signup failed');
       }
 
       router.push('/login?registered=true');
