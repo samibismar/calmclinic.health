@@ -1,74 +1,38 @@
+// Replace app/api/dashboard/data/route.ts with this:
+
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@/lib/supabase-server';
+import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get session token from cookies
-    const cookieStore = await cookies();
-    const sessionToken = cookieStore.get('session_token')?.value;
+    const cookieStore = cookies();
+    const authUserId = cookieStore.get('auth_user_id')?.value;
     
-    console.log('Dashboard API - Session token exists:', !!sessionToken);
+    console.log('Dashboard API - Auth user ID:', authUserId);
     
-    if (!sessionToken) {
-      return NextResponse.json({ error: 'Not logged in' }, { status: 401 });
+    if (!authUserId) {
+      console.error('Dashboard API - No auth user ID found');
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    // Create Supabase client
-    const supabase = createSupabaseServerClient();
-
-    // Look up the session and get clinic info
-    const { data: session, error: sessionError } = await supabase
-      .from('sessions')
-      .select(`
-        clinic_id,
-        expires_at,
-        clinics!inner (
-          id,
-          email,
-          doctor_name,
-          slug,
-          practice_name,
-          specialty,
-          status,
-          trial_ends_at,
-          primary_color,
-          has_completed_setup
-        )
-      `)
-      .eq('token', sessionToken)
-      .gt('expires_at', new Date().toISOString())
+    // Get clinic data for this user
+    const { data: clinic, error: clinicError } = await supabase
+      .from('clinics')
+      .select('*')
+      .eq('auth_user_id', authUserId)
       .single();
 
-    console.log('Dashboard API - Session lookup error:', sessionError);
-    console.log('Dashboard API - Session data:', session);
+    console.log('Dashboard API - Clinic found:', !!clinic, 'Error:', clinicError);
 
-    if (sessionError || !session) {
-      console.error('Dashboard API - Failed to get session:', sessionError);
-      return NextResponse.json({ error: 'Session expired' }, { status: 401 });
+    if (clinicError || !clinic) {
+      return NextResponse.json({ error: 'Clinic not found' }, { status: 404 });
     }
 
-    // Fix: Access the clinic data correctly - it's an array from the join
-    const clinicData = session.clinics;
-    if (!clinicData || (Array.isArray(clinicData) && clinicData.length === 0)) {
-      console.error('Dashboard API - No clinic data found');
-      return NextResponse.json({ error: 'No clinic data found' }, { status: 404 });
-    }
-
-    // If it's an array, get the first item
-    const clinic = Array.isArray(clinicData) ? clinicData[0] : clinicData;
-
-    // Get the correct base URL for chat links
+    // Get the correct base URL
     const protocol = request.headers.get('x-forwarded-proto') || 'http';
     const host = request.headers.get('host');
     const baseUrl = `${protocol}://${host}`;
-
-    // TODO: Get real stats from your database
-    const stats = {
-      totalChats: 0,
-      thisWeek: 0,
-      avgSessionLength: "0m 0s"
-    };
 
     return NextResponse.json({
       clinic: {
@@ -82,16 +46,11 @@ export async function GET(request: NextRequest) {
         primary_color: clinic.primary_color || '#5BBAD5',
         has_completed_setup: clinic.has_completed_setup || false
       },
-      stats,
       baseUrl
     });
 
   } catch (error) {
-    console.error('Dashboard API - Unexpected error:', error);
-    console.error('Dashboard API - Error details:', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined
-    });
+    console.error('Dashboard API error:', error);
     return NextResponse.json({ 
       error: 'Internal server error',
       details: error instanceof Error ? error.message : 'Unknown error'

@@ -1,14 +1,12 @@
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
-import { Database } from "@/types/supabase";
+import { createClient } from '@supabase/supabase-js';
 
-export function createSupabaseServerClient() {
-  return createServerComponentClient<Database>({ cookies });
-}
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+export const supabaseServer = createClient(supabaseUrl, supabaseServiceRoleKey);
 
 export async function getClinicSettings(slug: string) {
-  const supabase = createSupabaseServerClient();
-  const { data, error } = await supabase
+  const { data, error } = await supabaseServer
     .from("clinics")
     .select("*")
     .eq("slug", slug)
@@ -16,4 +14,9 @@ export async function getClinicSettings(slug: string) {
 
   if (error) throw error;
   return data;
+}
+
+// Simple server client function using your existing supabase setup
+export function createSupabaseServerClient() {
+  return supabaseServer;
 }

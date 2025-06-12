@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import type { Session } from "@supabase/supabase-js";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { supabase } from "@/lib/supabase";
 
 type Props = {
   clinicName: string;
@@ -26,10 +26,6 @@ const ClinicIdentityForm = ({
   specialty,
   setSpecialty,
 }: Props) => {
-  const supabase = createClientComponentClient();
-
-  // Maps frontend field names to Supabase column names
-
   useEffect(() => {
     // Initialize session
     const initializeSession = async () => {
@@ -47,7 +43,7 @@ const ClinicIdentityForm = ({
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase.auth]);
+  }, []);
 
   return (
     <div className="bg-gradient-to-br from-[#0f172a] to-[#1e293b] rounded-2xl shadow-xl border border-gray-700 p-8 space-y-8 text-white">

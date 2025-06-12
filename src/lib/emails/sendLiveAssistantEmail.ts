@@ -1,5 +1,4 @@
 
-
 import { Resend } from "resend";
 import AssistantLiveEmail from "@/lib/emails/AssistantLiveEmail";
 

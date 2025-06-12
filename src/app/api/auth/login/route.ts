@@ -1,13 +1,12 @@
+// Replace app/api/auth/login/route.ts with this:
+
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
 
 export async function POST(request: Request) {
   try {
     const { email, password } = await request.json();
 
-    // Validate inputs
     if (!email || !password) {
       return NextResponse.json(
         { error: 'Email and password are required' },
@@ -15,63 +14,42 @@ export async function POST(request: Request) {
       );
     }
 
-    // Look up the clinic by email
+    // Use your existing supabase client
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (authError || !authData.user) {
+      console.error('Login error:', authError);
+      return NextResponse.json(
+        { error: 'Invalid email or password' },
+        { status: 401 }
+      );
+    }
+
+    // Get clinic data
     const { data: clinic, error: clinicError } = await supabase
       .from('clinics')
       .select('*')
-      .eq('email', email.toLowerCase())
+      .eq('auth_user_id', authData.user.id)
       .single();
 
     if (clinicError || !clinic) {
+      console.error('Clinic lookup error:', clinicError);
       return NextResponse.json(
-        { error: 'Invalid email or password' },
-        { status: 401 }
+        { error: 'Clinic data not found' },
+        { status: 404 }
       );
     }
 
-    // Check if clinic has a password_hash (real password)
-    if (!clinic.password_hash) {
-      return NextResponse.json(
-        { error: 'This account needs to be migrated. Please contact support.' },
-        { status: 400 }
-      );
-    }
-
-    // Verify the password
-    const passwordValid = await bcrypt.compare(password, clinic.password_hash);
-    
-    if (!passwordValid) {
-      return NextResponse.json(
-        { error: 'Invalid email or password' },
-        { status: 401 }
-      );
-    }
-
-    // Generate a session token
-    const sessionToken = crypto.randomBytes(32).toString('hex');
-    const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 24); // 24 hour session
-
-    // Store the session
-    const { error: sessionError } = await supabase
-      .from('sessions')
-      .insert({
-        clinic_id: clinic.id,
-        token: sessionToken,
-        expires_at: expiresAt.toISOString()
-      });
-
-    if (sessionError) {
-      console.error('Session creation error:', sessionError);
-      return NextResponse.json(
-        { error: 'Failed to create session' },
-        { status: 500 }
-      );
-    }
-
+    // Create a simple response with session data
     const response = NextResponse.json({
       success: true,
-      token: sessionToken,
+      user: {
+        id: authData.user.id,
+        email: authData.user.email
+      },
       clinic: {
         id: clinic.id,
         slug: clinic.slug,
@@ -82,12 +60,12 @@ export async function POST(request: Request) {
       }
     });
 
-    response.cookies.set('session_token', sessionToken, {
-      path: '/',
+    // Set a simple auth cookie with the user ID
+    response.cookies.set('auth_user_id', authData.user.id, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24, // 1 day
+      maxAge: 24 * 60 * 60 // 24 hours
     });
 
     return response;

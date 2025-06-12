@@ -31,8 +31,7 @@ export default function LoginPage() {
         throw new Error(data.error || 'Login failed');
       }
 
-      // Store the session token and clinic data
-      localStorage.setItem('sessionToken', data.token);
+      // Store only the clinic data
       localStorage.setItem('clinicData', JSON.stringify(data.clinic));
 
       // Redirect to dashboard

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -33,17 +34,17 @@ export default function SignupPage() {
     'Ophthalmology'
   ];
 
+  const supabase = createClientComponentClient();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
     }
 
-    // Validate password length
     if (formData.password.length < 8) {
       setError('Password must be at least 8 characters long');
       return;
@@ -52,28 +53,36 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/signup', {
+      // Step 1: Supabase Auth signup
+      const { data, error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password
+      });
+
+      if (error || !data.user) {
+        throw new Error(error?.message || 'Signup failed');
+      }
+
+      // Step 2: Send clinic info to backend
+      const res = await fetch('/api/clinics/create', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           practiceName: formData.practiceName,
           doctorName: formData.doctorName,
           email: formData.email,
-          password: formData.password,
           specialty: formData.specialty,
-          phone: formData.phone
-        }),
+          phone: formData.phone,
+          auth_user_id: data.user.id
+        })
       });
 
-      const data = await response.json();
+      const result = await res.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Signup failed');
+      if (!res.ok) {
+        throw new Error(result.error || 'Failed to save clinic info');
       }
 
-      // Redirect to login page with success message
       router.push('/login?registered=true');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Signup failed');

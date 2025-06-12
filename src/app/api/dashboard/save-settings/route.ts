@@ -1,52 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@/lib/supabase-server';
+import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 
 export async function POST(request: NextRequest) {
   try {
-    // Get session token from cookies
-    const cookieStore = await cookies();
-    const sessionToken = cookieStore.get('session_token')?.value;
+    // Get auth user ID from cookies (using your new simple auth system)
+    const cookieStore = cookies();
+    const authUserId = cookieStore.get('auth_user_id')?.value;
     
-    if (!sessionToken) {
+    console.log('Save settings - Auth user ID:', authUserId);
+    
+    if (!authUserId) {
       return NextResponse.json({ error: 'Not logged in' }, { status: 401 });
     }
 
-    // Create Supabase client
-    const supabase = createSupabaseServerClient();
-
-    // Look up the session and get clinic info
-    const { data: session, error: sessionError } = await supabase
-      .from('sessions')
-      .select(`
-        clinic_id,
-        expires_at,
-        clinics (
-          id,
-          email,
-          doctor_name,
-          slug,
-          practice_name,
-          specialty,
-          has_completed_setup
-        )
-      `)
-      .eq('token', sessionToken)
-      .gt('expires_at', new Date().toISOString())
+    // Get clinic data for this user
+    const { data: clinic, error: clinicError } = await supabase
+      .from('clinics')
+      .select('*')
+      .eq('auth_user_id', authUserId)
       .single();
 
-    if (sessionError || !session) {
-      return NextResponse.json({ error: 'Session expired' }, { status: 401 });
-    }
+    console.log('Save settings - Clinic found:', !!clinic, 'Error:', clinicError);
 
-    const clinic = Array.isArray(session.clinics) ? session.clinics[0] : session.clinics;
-    const clinicWithSetupFlag = {
-      ...clinic,
-      has_completed_setup: clinic.has_completed_setup ?? false,
-    };
+    if (clinicError || !clinic) {
+      return NextResponse.json({ error: 'Clinic not found' }, { status: 404 });
+    }
 
     // Get request body
     const body = await request.json();
+    console.log('Save settings - Request body:', body);
 
     // Transform updates
     const updates: Record<string, string | number | boolean | null | string[] | object> = {};
@@ -84,12 +67,16 @@ export async function POST(request: NextRequest) {
     updates.updated_at = new Date().toISOString();
     updates.has_completed_setup = true;
 
+    console.log('Save settings - Updates to apply:', updates);
+
     // Update the clinic
     const { data: updateResult, error: updateError } = await supabase
       .from('clinics')
       .update(updates)
       .eq('id', clinic.id)
       .select('*');
+
+    console.log('Save settings - Update result:', updateResult, 'Error:', updateError);
 
     if (updateError) {
       return NextResponse.json({ 
@@ -105,12 +92,15 @@ export async function POST(request: NextRequest) {
     }
 
     // If this is the first time setup is being completed, trigger the welcome email
-    const wasPreviouslyIncomplete = !clinicWithSetupFlag.has_completed_setup;
+    const wasPreviouslyIncomplete = !clinic.has_completed_setup;
     const isNowComplete = updateResult[0].has_completed_setup === true;
+
+    console.log('Save settings - Setup status:', { wasPreviouslyIncomplete, isNowComplete });
 
     if (wasPreviouslyIncomplete && isNowComplete) {
       try {
-        await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/send-live-email`, {
+        console.log('Save settings - Sending welcome email');
+        await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/send-live-email`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -132,7 +122,8 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Save settings error:', error);
     return NextResponse.json({ 
-      error: 'Internal server error'
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }
 }
