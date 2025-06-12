@@ -6,7 +6,7 @@ import { cookies } from 'next/headers';
 
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies(); // Add await here
     const authUserId = cookieStore.get('auth_user_id')?.value;
     
     console.log('Dashboard API - Auth user ID:', authUserId);
