@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
 
 export async function POST() {
-  const supabase = createRouteHandlerClient({ cookies });
-  await supabase.auth.signOut();
-  return NextResponse.json({ success: true });
+  // Create response
+  const response = NextResponse.json({ success: true });
+  
+  // Clear the auth cookie
+  response.cookies.delete('auth_user_id');
+  
+  return response;
 }
