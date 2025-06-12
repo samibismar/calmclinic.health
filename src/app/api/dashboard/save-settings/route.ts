@@ -1,11 +1,13 @@
+// Replace your save-settings route with this:
+
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 
 export async function POST(request: NextRequest) {
   try {
-    // Get auth user ID from cookies (using your new simple auth system)
-    const cookieStore = cookies();
+    // Get auth user ID from cookies (await the cookies function)
+    const cookieStore = await cookies(); // Add await here
     const authUserId = cookieStore.get('auth_user_id')?.value;
     
     console.log('Save settings - Auth user ID:', authUserId);
