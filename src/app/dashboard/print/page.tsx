@@ -125,7 +125,7 @@ function PrintPageContent() {
         </div>
 
         {/* Main QR Code Section */}
-        <div style={{ textAlign: 'center', margin: '30px 0' }}>
+        <div style={{ textAlign: 'center', margin: '20px 0' }}>
           <div style={{ fontSize: '20px', fontWeight: 'bold', margin: '0 0 15px 0', color: '#333' }}>
             Scan this QR code to chat with our AI assistant
           </div>
@@ -138,7 +138,7 @@ function PrintPageContent() {
             border: '3px solid #000',
             borderRadius: '15px',
             padding: '25px',
-            margin: '0 auto 30px auto',
+            margin: '0 auto 20px auto',
             display: 'inline-block',
             boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
           }}>
@@ -159,59 +159,44 @@ function PrintPageContent() {
               Generating QR Code...
             </div>
           </div>
-          
-          <div style={{
-            background: '#f8f9fa',
-            border: '2px dashed #ddd',
-            padding: '20px',
-            margin: '30px auto',
-            borderRadius: '8px',
-            fontFamily: 'monospace',
-            fontSize: '12px',
-            wordBreak: 'break-all',
-            maxWidth: '500px'
-          }}>
-            <strong>Direct Link:</strong><br />
-            {chatUrl}
-          </div>
-        </div>
 
-        {/* Features section */}
-        <div style={{
-          textAlign: 'left',
-          maxWidth: '500px',
-          margin: '30px auto',
-          background: '#f8f9fa',
-          padding: '20px',
-          borderRadius: '10px',
-          borderLeft: `4px solid ${primaryColor}`
-        }}>
-          <h3 style={{ marginTop: 0, color: primaryColor }}>
-            🤖 What can the AI assistant help with?
-          </h3>
-          <ul style={{ margin: 0, paddingLeft: '20px' }}>
-            <li style={{ marginBottom: '8px', lineHeight: 1.4 }}>
-              Answer questions about common symptoms and conditions
-            </li>
-            <li style={{ marginBottom: '8px', lineHeight: 1.4 }}>
-              Help you prepare questions for your doctor visit
-            </li>
-            <li style={{ marginBottom: '8px', lineHeight: 1.4 }}>
-              Provide general health education and wellness tips
-            </li>
-            <li style={{ marginBottom: '8px', lineHeight: 1.4 }}>
-              Offer comfort and reassurance while you wait
-            </li>
-            <li style={{ marginBottom: '8px', lineHeight: 1.4 }}>
-              Available in English and Spanish
-            </li>
-          </ul>
+          {/* Features section */}
+          <div style={{
+            textAlign: 'left',
+            maxWidth: '500px',
+            margin: '20px auto',
+            background: '#f8f9fa',
+            padding: '20px',
+            borderRadius: '10px',
+            borderLeft: `4px solid ${primaryColor}`
+          }}>
+            <h3 style={{ marginTop: 0, color: primaryColor }}>
+              🤖 What can the AI assistant help with?
+            </h3>
+            <ul style={{ margin: 0, paddingLeft: '20px' }}>
+              <li style={{ marginBottom: '8px', lineHeight: 1.4 }}>
+                Answer questions about common symptoms and conditions
+              </li>
+              <li style={{ marginBottom: '8px', lineHeight: 1.4 }}>
+                Help you prepare questions for your doctor visit
+              </li>
+              <li style={{ marginBottom: '8px', lineHeight: 1.4 }}>
+                Provide general health education and wellness tips
+              </li>
+              <li style={{ marginBottom: '8px', lineHeight: 1.4 }}>
+                Offer comfort and reassurance while you wait
+              </li>
+              <li style={{ marginBottom: '8px', lineHeight: 1.4 }}>
+                Available in English and Spanish
+              </li>
+            </ul>
+          </div>
         </div>
 
         {/* Footer */}
         <div style={{
-          marginTop: '40px',
-          paddingTop: '20px',
+          marginTop: '20px',
+          paddingTop: '10px',
           borderTop: '2px solid #eee',
           textAlign: 'center',
           fontSize: '10px',
