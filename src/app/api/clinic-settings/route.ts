@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@/lib/supabase-server';
+import { supabase } from '@/lib/supabase';
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,8 +10,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Slug is required' }, { status: 400 });
     }
 
-    const supabase = createSupabaseServerClient();
-    
     const { data: clinic, error } = await supabase
       .from('clinics')
       .select('*')
