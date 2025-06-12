@@ -1,37 +1,27 @@
 // /lib/auth.ts
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 
 export async function getClinicFromSession() {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const cookieStore = await cookies();
+    const authUserId = cookieStore.get('auth_user_id')?.value;
     
-    // Get session with detailed logging
-    console.log('🔍 Getting session...');
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    console.log('🔍 Getting clinic from session...');
     
-    if (sessionError) {
-      console.error('❌ Session error:', sessionError);
-      return null;
-    }
-    
-    if (!session || !session.user) {
-      console.log('❌ No session or user found');
+    if (!authUserId) {
+      console.log('❌ No auth user ID found in cookies');
       return null;
     }
 
-    console.log('✅ Session found for user:', {
-      id: session.user.id,
-      email: session.user.email,
-      created_at: session.user.created_at
-    });
+    console.log('✅ Auth user ID found:', authUserId);
 
-    // Look up clinic by email with better error handling
-    console.log('🔍 Looking up clinic by email:', session.user.email);
+    // Look up clinic by auth_user_id
+    console.log('🔍 Looking up clinic by auth_user_id:', authUserId);
     const { data: clinic, error: clinicError } = await supabase
       .from('clinics')
       .select('*')
-      .eq('email', session.user.email)
+      .eq('auth_user_id', authUserId)
       .single();
 
     if (clinicError) {
@@ -45,7 +35,7 @@ export async function getClinicFromSession() {
     }
 
     if (!clinic) {
-      console.log('❌ No clinic found for email:', session.user.email);
+      console.log('❌ No clinic found for auth_user_id:', authUserId);
       return null;
     }
 
@@ -64,22 +54,28 @@ export async function getClinicFromSession() {
   }
 }
 
-// Alternative: Get clinic by user ID instead of email
-export async function getClinicFromSessionByUserId() {
+// Alternative: Get clinic by email (if needed)
+export async function getClinicFromSessionByEmail() {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const cookieStore = await cookies();
+    const authUserId = cookieStore.get('auth_user_id')?.value;
     
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-    
-    if (sessionError || !session?.user) {
+    if (!authUserId) {
       return null;
     }
 
-    // If you have a user_id column in clinics table
+    // First get the user's email from Supabase Auth
+    const { data: { user }, error: userError } = await supabase.auth.admin.getUserById(authUserId);
+    
+    if (userError || !user) {
+      return null;
+    }
+
+    // Then look up clinic by email
     const { data: clinic, error: clinicError } = await supabase
       .from('clinics')
       .select('*')
-      .eq('user_id', session.user.id) // Assuming you have this column
+      .eq('email', user.email)
       .single();
 
     if (clinicError || !clinic) {
@@ -89,7 +85,7 @@ export async function getClinicFromSessionByUserId() {
     return clinic;
     
   } catch (error) {
-    console.error('Error in getClinicFromSessionByUserId:', error);
+    console.error('Error in getClinicFromSessionByEmail:', error);
     return null;
   }
 }
@@ -97,25 +93,35 @@ export async function getClinicFromSessionByUserId() {
 // Debug function to check current user context
 export async function debugUserContext() {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
-    
-    // Get session
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    // Call the Supabase function we created
-    const { data: userInfo } = await supabase.rpc('get_current_user_info');
+    const cookieStore = await cookies();
+    const authUserId = cookieStore.get('auth_user_id')?.value;
     
     console.log('🐛 Debug user context:', {
-      session_user_id: session?.user?.id,
-      session_user_email: session?.user?.email,
-      supabase_auth_uid: userInfo?.auth_uid,
-      supabase_auth_email: userInfo?.auth_email,
-      supabase_auth_role: userInfo?.auth_role
+      auth_user_id_cookie: authUserId,
+      cookies_available: !!cookieStore
     });
     
+    if (authUserId) {
+      // Try to get user info from Supabase
+      const { data: { user }, error } = await supabase.auth.admin.getUserById(authUserId);
+      
+      console.log('🐛 Supabase user info:', {
+        user_id: user?.id,
+        user_email: user?.email,
+        error: error?.message
+      });
+      
+      return {
+        authUserId,
+        supabaseUser: user,
+        error
+      };
+    }
+    
     return {
-      session,
-      supabaseAuth: userInfo
+      authUserId: null,
+      supabaseUser: null,
+      error: 'No auth user ID in cookies'
     };
     
   } catch (error) {
