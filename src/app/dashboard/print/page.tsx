@@ -64,6 +64,7 @@ function PrintPageContent() {
       
       <div style={{
         fontFamily: 'Arial, sans-serif',
+        fontSize: '12px',
         maxWidth: '8.5in',
         margin: '0 auto',
         padding: '20px',
@@ -90,7 +91,7 @@ function PrintPageContent() {
               padding: '12px 24px',
               borderRadius: '6px',
               cursor: 'pointer',
-              fontSize: '14px',
+              fontSize: '11px',
               fontWeight: 'bold',
               boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
             }}
@@ -106,7 +107,7 @@ function PrintPageContent() {
               padding: '8px 16px',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '12px'
+              fontSize: '10px'
             }}
           >
             ✕ Close
@@ -115,20 +116,20 @@ function PrintPageContent() {
 
         {/* Header with doctor info */}
         <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-          <div style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '8px' }}>
+          <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>
             {doctorName}
           </div>
-          <div style={{ fontSize: '20px', color: '#666', marginBottom: '20px' }}>
+          <div style={{ fontSize: '16px', color: '#666', marginBottom: '20px' }}>
             {specialty}
           </div>
         </div>
 
         {/* Main QR Code Section */}
         <div style={{ textAlign: 'center', margin: '30px 0' }}>
-          <div style={{ fontSize: '26px', fontWeight: 'bold', margin: '0 0 15px 0', color: '#333' }}>
+          <div style={{ fontSize: '20px', fontWeight: 'bold', margin: '0 0 15px 0', color: '#333' }}>
             Scan this QR code to chat with our AI assistant
           </div>
-          <div style={{ fontSize: '18px', color: '#666', marginBottom: '30px', lineHeight: 1.4 }}>
+          <div style={{ fontSize: '14px', color: '#666', marginBottom: '30px', lineHeight: 1.4 }}>
             Get help with your questions while you wait for your appointment
           </div>
           
@@ -166,7 +167,7 @@ function PrintPageContent() {
             margin: '30px auto',
             borderRadius: '8px',
             fontFamily: 'monospace',
-            fontSize: '16px',
+            fontSize: '12px',
             wordBreak: 'break-all',
             maxWidth: '500px'
           }}>
@@ -213,7 +214,7 @@ function PrintPageContent() {
           paddingTop: '20px',
           borderTop: '2px solid #eee',
           textAlign: 'center',
-          fontSize: '12px',
+          fontSize: '10px',
           color: '#888'
         }}>
           <p><strong>Note:</strong> This AI assistant is for educational purposes only and does not replace professional medical advice.</p>
@@ -228,6 +229,7 @@ function LoadingFallback() {
   return (
     <div style={{
       fontFamily: 'Arial, sans-serif',
+      fontSize: '12px',
       maxWidth: '8.5in',
       margin: '0 auto',
       padding: '20px',
@@ -239,7 +241,7 @@ function LoadingFallback() {
       justifyContent: 'center'
     }}>
       <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: '18px', color: '#666' }}>Loading printable QR code...</div>
+        <div style={{ fontSize: '14px', color: '#666' }}>Loading printable QR code...</div>
       </div>
     </div>
   );
