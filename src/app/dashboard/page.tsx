@@ -10,9 +10,11 @@ import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import QRCodeCard from "@/components/dashboard/QRCodeCard";
 import ReminderMessageCard from "@/components/dashboard/ReminderMessageCard";
 import EmbedCodeCard from "@/components/dashboard/EmbedCodeCard";
+import BillingCard from "@/components/dashboard/BillingCard";
 
 interface DashboardData {
   clinic: {
+    id: number;
     practice_name: string;
     doctor_name: string;
     slug: string;
@@ -22,11 +24,17 @@ interface DashboardData {
     trial_ends_at: string;
     primary_color: string;
     has_completed_setup: boolean;
+    is_paid?: boolean;
+    subscription_status?: string;
+    current_period_end?: string;
   };
   baseUrl: string;
 }
 
-function SearchParamsHandler({ onSetupComplete }: { onSetupComplete: () => void }) {
+function SearchParamsHandler({ onSetupComplete, onPaymentSuccess }: { 
+  onSetupComplete: () => void;
+  onPaymentSuccess: () => void;
+}) {
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -34,7 +42,13 @@ function SearchParamsHandler({ onSetupComplete }: { onSetupComplete: () => void 
       onSetupComplete();
       window.history.replaceState({}, "", "/dashboard");
     }
-  }, [searchParams, onSetupComplete]);
+    
+    // Handle Stripe success/cancel
+    if (searchParams.get("success") === "true") {
+      onPaymentSuccess();
+      window.history.replaceState({}, "", "/dashboard");
+    }
+  }, [searchParams, onSetupComplete, onPaymentSuccess]);
 
   return null;
 }
@@ -44,6 +58,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showSuccessBanner, setShowSuccessBanner] = useState(false);
+  const [showPaymentSuccessBanner, setShowPaymentSuccessBanner] = useState(false);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -103,9 +118,16 @@ export default function DashboardPage() {
             setShowSuccessBanner(true);
             setTimeout(() => setShowSuccessBanner(false), 5000);
           }}
+          onPaymentSuccess={() => {
+            setShowPaymentSuccessBanner(true);
+            setTimeout(() => setShowPaymentSuccessBanner(false), 7000);
+            // Refresh data to get updated payment status
+            window.location.reload();
+          }}
         />
       </Suspense>
 
+      {/* Success Banner for Setup */}
       {showSuccessBanner && (
         <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-2 fade-in duration-300">
           <div className="bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3">
@@ -121,6 +143,22 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Success Banner for Payment */}
+      {showPaymentSuccessBanner && (
+        <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-2 fade-in duration-300">
+          <div className="bg-purple-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3">
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <span className="font-medium">🎉 Payment successful! Welcome to CalmClinic Pro!</span>
+          </div>
+        </div>
+      )}
+
       <DashboardHeader
         practiceName={data.clinic.practice_name}
         doctorName={data.clinic.doctor_name}
@@ -128,10 +166,18 @@ export default function DashboardPage() {
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-6">
+        {/* First Row - Status and Engagement Tips */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <StatusCard clinic={data.clinic} />
           <EngagementTipsCard hasCompletedSetup={data.clinic.has_completed_setup} />
         </div>
+
+        {/* Second Row - Billing Card (always show) */}
+        <div className="grid grid-cols-1 gap-6">
+          <BillingCard clinic={data.clinic} />
+        </div>
+
+        {/* Third Row - QR Code, Reminder, Embed (only if setup complete) */}
         {data.clinic.has_completed_setup && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
             <QRCodeCard slug={data.clinic.slug} clinic={data.clinic} />
@@ -139,6 +185,8 @@ export default function DashboardPage() {
             <EmbedCodeCard slug={data.clinic.slug} />
           </div>
         )}
+
+        {/* Optional Links Section */}
         <OptionalLinksSection />
       </div>
     </div>

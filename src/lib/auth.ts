@@ -129,3 +129,54 @@ export async function debugUserContext() {
     return null;
   }
 }
+
+// NEW PAYMENT FUNCTIONS - Added for Stripe integration
+export async function checkClinicPaymentStatus(clinicId: number) {
+  try {
+    const { data: clinic, error } = await supabase
+      .from('clinics')
+      .select('is_paid, subscription_status, current_period_end')
+      .eq('id', clinicId)
+      .single();
+
+    if (error) {
+      console.error('Error checking payment status:', error);
+      return { isPaid: false, error: error.message };
+    }
+
+    // Check if subscription is active and not expired
+    const isPaid = clinic.is_paid && 
+                  clinic.subscription_status === 'active' &&
+                  (!clinic.current_period_end || new Date(clinic.current_period_end) > new Date());
+
+    return { 
+      isPaid, 
+      clinic,
+      error: null 
+    };
+  } catch (error) {
+    console.error('Error in checkClinicPaymentStatus:', error);
+    return { isPaid: false, error: 'Failed to check payment status' };
+  }
+}
+
+export async function getClinicWithPaymentStatus() {
+  try {
+    const clinic = await getClinicFromSession();
+    
+    if (!clinic) {
+      return { clinic: null, isPaid: false, error: 'No clinic found' };
+    }
+
+    const paymentCheck = await checkClinicPaymentStatus(clinic.id);
+    
+    return {
+      clinic,
+      isPaid: paymentCheck.isPaid,
+      error: paymentCheck.error
+    };
+  } catch (error) {
+    console.error('Error in getClinicWithPaymentStatus:', error);
+    return { clinic: null, isPaid: false, error: 'Failed to get clinic payment status' };
+  }
+}
