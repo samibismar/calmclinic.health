@@ -8,9 +8,11 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
 
-// Type for subscription with current_period_end
-interface SubscriptionWithPeriod extends Stripe.Subscription {
-  current_period_end: number;
+// Type for subscription with current_period_end - making it optional to handle API variations
+interface SubscriptionWithPeriod {
+  id: string;
+  status: string;
+  current_period_end?: number;
 }
 
 export async function POST(request: NextRequest) {
@@ -50,7 +52,8 @@ export async function POST(request: NextRequest) {
 
         // Get the subscription
         const subscriptionId = session.subscription as string;
-        const subscription = await stripe.subscriptions.retrieve(subscriptionId) as SubscriptionWithPeriod;
+        const subscriptionResponse = await stripe.subscriptions.retrieve(subscriptionId);
+        const subscription = subscriptionResponse as unknown as SubscriptionWithPeriod;
 
         // Update clinic in database
         const { error } = await supabase
