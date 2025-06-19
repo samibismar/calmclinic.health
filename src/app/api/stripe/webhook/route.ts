@@ -6,8 +6,12 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-05-28.basil',
 });
 
-// This will be set up later - for now we'll skip signature verification in development
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
+
+// Type for subscription with current_period_end
+interface SubscriptionWithPeriod extends Stripe.Subscription {
+  current_period_end: number;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -46,11 +50,9 @@ export async function POST(request: NextRequest) {
 
         // Get the subscription
         const subscriptionId = session.subscription as string;
-        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId) as SubscriptionWithPeriod;
 
-        // Update clinic in database - use any type to bypass TypeScript issues
-        const subscriptionData = subscription as any;
-        
+        // Update clinic in database
         const { error } = await supabase
           .from('clinics')
           .update({
@@ -58,8 +60,8 @@ export async function POST(request: NextRequest) {
             stripe_customer_id: session.customer as string,
             stripe_subscription_id: subscriptionId,
             subscription_status: subscription.status,
-            current_period_end: subscriptionData.current_period_end 
-              ? new Date(subscriptionData.current_period_end * 1000).toISOString()
+            current_period_end: subscription.current_period_end 
+              ? new Date(subscription.current_period_end * 1000).toISOString()
               : null,
           })
           .eq('id', parseInt(clinicId));
@@ -73,7 +75,7 @@ export async function POST(request: NextRequest) {
       }
 
       case 'customer.subscription.updated': {
-        const subscription = event.data.object as any;
+        const subscription = event.data.object as SubscriptionWithPeriod;
         console.log('Subscription updated:', subscription.id);
 
         // Update subscription status
@@ -95,7 +97,7 @@ export async function POST(request: NextRequest) {
       }
 
       case 'customer.subscription.deleted': {
-        const subscription = event.data.object as any;
+        const subscription = event.data.object as Stripe.Subscription;
         console.log('Subscription canceled:', subscription.id);
 
         // Mark clinic as not paid
