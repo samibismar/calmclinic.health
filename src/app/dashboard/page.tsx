@@ -60,24 +60,24 @@ export default function DashboardPage() {
   const [showSuccessBanner, setShowSuccessBanner] = useState(false);
   const [showPaymentSuccessBanner, setShowPaymentSuccessBanner] = useState(false);
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const response = await fetch(`/api/dashboard/data?t=${Date.now()}`, {
-          cache: "no-store",
-          headers: { "Cache-Control": "no-cache" },
-        });
-        if (!response.ok) throw new Error("Failed to fetch dashboard data");
-        const result = await response.json();
-        setData(result);
-      } catch (err) {
-        console.error("Dashboard error:", err);
-        setError("Failed to load dashboard data");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchDashboardData = async () => {
+    try {
+      const response = await fetch(`/api/dashboard/data?t=${Date.now()}`, {
+        cache: "no-store",
+        headers: { "Cache-Control": "no-cache" },
+      });
+      if (!response.ok) throw new Error("Failed to fetch dashboard data");
+      const result = await response.json();
+      setData(result);
+    } catch (err) {
+      console.error("Dashboard error:", err);
+      setError("Failed to load dashboard data");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchDashboardData();
   }, []);
 
@@ -121,8 +121,8 @@ export default function DashboardPage() {
           onPaymentSuccess={() => {
             setShowPaymentSuccessBanner(true);
             setTimeout(() => setShowPaymentSuccessBanner(false), 7000);
-            // Refresh data to get updated payment status
-            window.location.reload();
+            // Refresh data to get updated payment status - NO PAGE RELOAD
+            fetchDashboardData();
           }}
         />
       </Suspense>
@@ -155,6 +155,12 @@ export default function DashboardPage() {
               />
             </svg>
             <span className="font-medium">🎉 Payment successful! Welcome to CalmClinic Pro!</span>
+            <button 
+              onClick={() => setShowPaymentSuccessBanner(false)}
+              className="ml-2 text-white/80 hover:text-white"
+            >
+              ×
+            </button>
           </div>
         </div>
       )}
