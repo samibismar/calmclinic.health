@@ -177,7 +177,7 @@ export default function BillingCard({ clinic }: BillingCardProps) {
 
         {isPaid && (
           <div className="text-center py-2">
-            <p className="text-green-300 text-sm">✨ You're on the Pro plan!</p>
+            <p className="text-green-300 text-sm">✨ You&apos;re on the Pro plan!</p>
           </div>
         )}
       </div>
