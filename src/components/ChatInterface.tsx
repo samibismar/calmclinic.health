@@ -182,7 +182,8 @@ export default function ChatInterface({ clinic: clinicSlug }: ChatInterfaceProps
   }
 
   return (
-    <div className="bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col h-full min-h-0 backdrop-blur-sm bg-white/95 max-h-[90vh]">
+    <>
+      <div className="bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col h-full min-h-0 backdrop-blur-sm bg-white/95 max-h-[90vh]">
       {/* Header */}
       <div className="px-6 py-6 text-center border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
         {/* Top Controls */}
@@ -242,7 +243,9 @@ export default function ChatInterface({ clinic: clinicSlug }: ChatInterfaceProps
         <p className="text-sm text-gray-500 mb-3 font-medium">
           {doctorConfig.specialty}
         </p>
-        
+        <p className="text-[11px] text-gray-400 font-medium mb-2">
+          {t.disclaimer}
+        </p>
         <p className="text-gray-700 text-sm leading-relaxed">
           {doctorConfig.welcomeMessage}
         </p>
@@ -252,10 +255,20 @@ export default function ChatInterface({ clinic: clinicSlug }: ChatInterfaceProps
       <div className="flex-1 overflow-y-auto p-4 min-h-0 chat-scroll">
         {messages.length === 0 && (
           <div className="text-center py-4">
+            <p className="text-sm text-gray-500 mb-3 font-medium">
+              {language === 'en' ? 'Tap a question to get started:' : 'Toca una pregunta para comenzar:'}
+            </p>
+            <div className="mt-6">
+              <a
+                href="https://forms.gle/aGKvuwzUwrH7HuEy8"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block text-sm font-medium text-blue-600 hover:underline"
+              >
+                💬 Help us improve → Leave feedback
+              </a>
+            </div>
             <div className="mb-6">
-              <p className="text-sm text-gray-500 mb-3 font-medium">
-                {language === 'en' ? 'Tap a question to get started:' : 'Toca una pregunta para comenzar:'}
-              </p>
               <div className="space-y-2">
                 {getSuggestedPrompts().map((prompt, index) => (
                   <button
@@ -271,10 +284,6 @@ export default function ChatInterface({ clinic: clinicSlug }: ChatInterfaceProps
                 ))}
               </div>
             </div>
-            
-            <p className="text-gray-400 text-xs">
-              {t.disclaimer}
-            </p>
           </div>
         )}
         
@@ -337,6 +346,7 @@ export default function ChatInterface({ clinic: clinicSlug }: ChatInterfaceProps
           </button>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
