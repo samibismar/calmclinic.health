@@ -17,7 +17,7 @@ export default function HomePage() {
                 Login
               </button>
             </Link>
-            <Link href="/signup">
+            <Link href="/signup-unavailable">
               <button className="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded transition text-sm font-semibold">
                 Sign Up
               </button>
@@ -52,7 +52,7 @@ export default function HomePage() {
           A white-labeled, QR-based AI assistant that helps patients in your waiting room — trusted, customizable, and beautifully simple.
         </p>
         <div className="flex justify-center">
-          <Link href="/signup">
+          <Link href="/signup-unavailable">
             <button className="bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-3 px-6 rounded-xl transition shadow-lg">
               Try CalmClinic
             </button>
@@ -134,7 +134,7 @@ export default function HomePage() {
           Ready to transform your clinic?
         </h2>
         <div className="flex justify-center gap-4">
-          <Link href="/signup">
+          <Link href="/signup-unavailable">
             <button className="bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-3 px-6 rounded-xl transition shadow-lg">
               Sign Up Now
             </button>
