@@ -57,7 +57,7 @@ The patient is already in the waiting room and will see Dr. ${doctorName} shortl
 
     // Call OpenAI API
     const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-4o",
       messages: [
         { role: "system", content: systemPrompt },
         ...messages
