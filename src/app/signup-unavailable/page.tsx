@@ -5,8 +5,17 @@ export default function SignupUnavailable() {
       <div>
         <h1 className="text-3xl font-bold mb-4">Signups Are Temporarily Closed</h1>
         <p className="text-lg text-gray-600">
-          Thank you for your interest! We&#39;re not accepting new signups at this time. Please check back soon.
+          To create an account, please contact us directly to get started.
         </p>
+        <div className="mt-6 text-left">
+          <h2 className="text-xl font-semibold mb-2">Interested in a Demo?</h2>
+          <p className="mb-4 text-gray-600">Contact us to schedule a quick demo and learn more.</p>
+          <ul className="text-gray-700">
+            <li><strong>Call:</strong> 817-243-6226</li>
+            <li><strong>Sami Bismar:</strong> sbismar2025@gmail.com</li>
+            <li><strong>Caden George:</strong> csgeorge4@yahoo.com</li>
+          </ul>
+        </div>
       </div>
     </div>
   );

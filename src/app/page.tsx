@@ -119,13 +119,16 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Testimonials / Trust Section */}
-      <section id="testimonials" className="px-6 py-20 max-w-4xl mx-auto text-center text-gray-400">
-        <h2 className="text-2xl font-semibold mb-6 text-cyan-300">Trusted by clinics</h2>
-        <p className="italic mb-4">
-          &quot;CalmClinic transformed our waiting room experience. Patients love it.&quot;
-        </p>
-        <p>— Placeholder Clinic Name</p>
+      {/* Contact Section */}
+      <section id="contact" className="px-6 py-20 max-w-4xl mx-auto text-center text-gray-400">
+        <h2 className="text-2xl font-semibold mb-6 text-cyan-300">Contact Us for a Demo</h2>
+        <p className="mb-2">We’re currently partnering with a few local clinics to test CalmClinic and shape it around real workflows.</p>
+        <p className="mb-6">If you’re interested, reach out directly — we’d love to show you the product.</p>
+        <div className="space-y-2 text-base text-gray-300">
+          <p><span className="font-semibold text-white">Call:</span> 817-243-6226</p>
+          <p><span className="font-semibold text-white">Sami Bismar:</span> sbismar2025@gmail.com</p>
+          <p><span className="font-semibold text-white">Caden George:</span> csgeorge4@yahoo.com</p>
+        </div>
       </section>
 
       {/* Final CTA */}
