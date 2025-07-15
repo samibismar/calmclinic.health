@@ -1,4 +1,6 @@
 import Link from "next/link";
+import DemoAccess from "@/components/DemoAccess";
+
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-950 text-white font-sans">
@@ -9,7 +11,7 @@ export default function HomePage() {
           <nav className="space-x-6 text-sm text-gray-300 hidden sm:block">
             <a href="#features" className="hover:text-cyan-400 transition">Features</a>
             <a href="#how-it-works" className="hover:text-cyan-400 transition">How It Works</a>
-            <a href="#testimonials" className="hover:text-cyan-400 transition">Testimonials</a>
+            <a href="#demo" className="hover:text-cyan-400 transition">Demo</a>
           </nav>
           <div className="space-x-3">
             <Link href="/login">
@@ -116,6 +118,18 @@ export default function HomePage() {
             <div className="text-5xl mb-4">3</div>
             <p>Get help, feel heard, and prep for your visit</p>
           </div>
+        </div>
+      </section>
+
+      {/* Demo Section */}
+      <section id="demo" className="px-6 py-20 bg-gray-950 border-t border-gray-800">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-3xl font-bold text-cyan-400 mb-8">Demo Access</h2>
+          <p className="text-xl text-gray-300 mb-8">
+            Private demo access for authorized users.
+          </p>
+          
+          <DemoAccess />
         </div>
       </section>
 
