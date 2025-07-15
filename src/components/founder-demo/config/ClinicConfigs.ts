@@ -30,6 +30,10 @@ export interface ClinicConfig {
   // Call to action
   cta_message: string;
   contact_preference: 'email' | 'phone' | 'form';
+  
+  // Contact information
+  contact_phone?: string;
+  contact_email?: string;
 }
 
 // Fort Worth Eye Associates Configuration
@@ -65,7 +69,9 @@ export const FORT_WORTH_EYE_CONFIG: ClinicConfig = {
   patient_volume: "500+ patients monthly",
   
   cta_message: "I'd love to show you how CalmClinic could work specifically for your practice and get your thoughts on what we're building.",
-  contact_preference: 'form'
+  contact_preference: 'form',
+  contact_phone: '817-243-6226',
+  contact_email: 'sbismar2025@gmail.com'
 };
 
 // Template for other clinics

@@ -191,21 +191,21 @@ export default function CallToActionSection({ clinic }: CallToActionSectionProps
                 <div>
                   <p className="text-lg font-medium" style={{ color: clinic.colors.text }}>Call us directly:</p>
                   <a 
-                    href="tel:817-243-6226" 
+                    href={`tel:${clinic.contact_phone}`}
                     className="text-2xl font-semibold hover:underline"
                     style={{ color: clinic.colors.secondary }}
                   >
-                    817-243-6226
+                    {clinic.contact_phone}
                   </a>
                 </div>
                 <div>
                   <p className="text-lg font-medium" style={{ color: clinic.colors.text }}>Or email:</p>
                   <a 
-                    href="mailto:sbismar2025@gmail.com" 
+                    href={`mailto:${clinic.contact_email}`}
                     className="text-lg hover:underline"
                     style={{ color: clinic.colors.secondary }}
                   >
-                    sbismar2025@gmail.com
+                    {clinic.contact_email}
                   </a>
                 </div>
               </div>
