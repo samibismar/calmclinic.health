@@ -32,7 +32,7 @@ export default function DifferentiatorsSection({ clinic }: DifferentiatorsSectio
             className="mb-6"
           />
           <p className="text-lg max-w-3xl mx-auto" style={{ color: clinic.colors.text }}>
-            Most AI tools aren't designed for healthcare. CalmClinic is built specifically 
+            Most AI tools aren&apos;t designed for healthcare. CalmClinic is built specifically 
             for medical practices with the right context and boundaries.
           </p>
         </motion.div>

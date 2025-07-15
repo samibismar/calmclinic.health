@@ -158,7 +158,7 @@ export default function CallToActionSection({ clinic }: CallToActionSectionProps
                     }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    Let's talk &rarr;
+                    Let&apos;s talk &rarr;
                   </motion.button>
                 </form>
               ) : (
@@ -173,7 +173,7 @@ export default function CallToActionSection({ clinic }: CallToActionSectionProps
                     Message received!
                   </h3>
                   <p style={{ color: clinic.colors.text }}>
-                    I'll be in touch within 24 hours to set up a time to chat about your practice.
+                    I&apos;ll be in touch within 24 hours to set up a time to chat about your practice.
                   </p>
                 </motion.div>
               )}
