@@ -1,0 +1,171 @@
+{
+  "clinic_name": "Fort Worth Eye Associates",
+  "extraction_timestamp": "2025-07-15T23:55:44.062241",
+  "confidence_levels": {
+    "contact_info": 0.9,
+    "hours_info": 0.8,
+    "provider_info": 0.7,
+    "services_info": 0.85,
+    "insurance_info": 0.8,
+    "patient_experience": 0.6
+  },
+  "identified_gaps": [
+    "Holiday hours not specified",
+    "Emergency/after-hours contact not specified",
+    "Detailed education backgrounds",
+    "Years of experience",
+    "Languages spoken by providers",
+    "Walk-in policy",
+    "Wait time expectations",
+    "Accessibility features"
+  ],
+  "data": {
+    "contact_info": {
+      "phone_numbers": {
+        "main": "817-732-5593",
+        "optical_shop": "817-732-9307",
+        "fax": "817-732-5499"
+      },
+      "address": {
+        "street": "5000 Collinwood Avenue",
+        "city": "Fort Worth",
+        "state": "TX",
+        "zip_code": "76107",
+        "full_address": "5000 Collinwood Avenue, Fort Worth, TX 76107"
+      },
+      "email": null,
+      "website": "https://www.ranelle.com",
+      "social_media": {}
+    },
+    "hours_info": {
+      "regular_hours": {},
+      "holiday_hours": null,
+      "appointment_policies": {
+        "cancellation_policy": "24 hours advance notice required",
+        "missed_appointment_fee": "$25",
+        "scheduling_method": "Call 817-732-5593",
+        "patient_portal_required": true
+      },
+      "emergency_hours": null
+    },
+    "provider_info": [
+      {
+        "name": "Dr. Ann E. Ranelle, DO",
+        "title": "Ophthalmologist",
+        "specialties": [
+          "Comprehensive Ophthalmology",
+          "Pediatric Ophthalmology",
+          "Strabismus"
+        ],
+        "education": null,
+        "experience": "Part of three-generation practice",
+        "languages": null
+      },
+      {
+        "name": "Dr. Tyler B. Moore",
+        "title": "Ophthalmologist",
+        "specialties": [
+          "Comprehensive Ophthalmology"
+        ],
+        "education": null,
+        "experience": null,
+        "languages": null
+      },
+      {
+        "name": "Dr. Kacy D. Pate, OD",
+        "title": "Therapeutic Optometrist",
+        "specialties": [
+          "Therapeutic Optometry",
+          "Comprehensive Eye Care"
+        ],
+        "education": null,
+        "experience": null,
+        "languages": null
+      }
+    ],
+    "services_info": {
+      "medical_services": [
+        "Comprehensive vision screenings",
+        "Annual ophthalmic exams",
+        "Botox treatments"
+      ],
+      "surgical_services": [
+        "Light Adjustable Lens cataract surgery",
+        "Strabismus surgery",
+        "Blepharoplasty (eyelid surgery)"
+      ],
+      "diagnostic_services": [
+        "Glaucoma testing",
+        "Visual acuity testing",
+        "Color perception testing",
+        "Depth perception testing",
+        "Eye focus and coordination testing"
+      ],
+      "optical_services": [
+        "Comprehensive eye examinations",
+        "Eyeglasses prescriptions",
+        "Contact lens fittings",
+        "Vision therapy",
+        "Low-vision rehabilitation"
+      ],
+      "specialty_programs": [
+        "Computer Vision Syndrome treatment",
+        "Blue light reduction lenses",
+        "Diabetic retinopathy screening"
+      ],
+      "conditions_treated": [
+        "Cataracts",
+        "Diabetic Eye Disease",
+        "Glaucoma",
+        "Dry Eye Syndrome",
+        "Strabismus",
+        "Amblyopia (Lazy Eye)",
+        "Macular Degeneration",
+        "Floaters and Flashers"
+      ]
+    },
+    "insurance_info": {
+      "accepted_plans": [
+        "Most major health plans",
+        "Aetna",
+        "Aetna Better Health Medicaid",
+        "Aetna Medicare",
+        "Medicare (for medical visits)"
+      ],
+      "payment_policies": {
+        "deductibles_due_at_service": true,
+        "copays_due_at_service": true,
+        "refraction_fee": "$25 (not covered by insurance)",
+        "missed_appointment_fee": "$25"
+      },
+      "special_notes": [
+        "No longer accepting new Medicaid or CHIP patients as of January 2, 2023",
+        "Routine vs medical visits have different insurance coverage",
+        "Refraction exams typically not covered by insurance"
+      ]
+    },
+    "patient_experience": {
+      "walk_in_policy": null,
+      "wait_time_expectations": null,
+      "what_to_bring": [
+        "Identification",
+        "Medical insurance card",
+        "Current eye medications"
+      ],
+      "facility_policies": [
+        "No food or drinks in waiting room",
+        "No cell phone use in waiting room",
+        "Patient Portal registration required before appointment",
+        "Use Google Chrome for Patient Portal access"
+      ],
+      "accessibility": null,
+      "patient_portal": true,
+      "communication_preferences": [
+        "Clinical questions may have delayed response",
+        "Physicians prioritize in-clinic patient care"
+      ]
+    }
+  },
+  "overall_confidence": 0.775,
+  "data_completeness": 1.04
+}

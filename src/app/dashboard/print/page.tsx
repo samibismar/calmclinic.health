@@ -11,7 +11,7 @@ function PrintPageContent() {
   // Get parameters from URL
   const doctorName = searchParams.get('doctor') || 'Dr. Sam';
   const specialty = searchParams.get('specialty') || 'General Practice';
-  const chatUrl = searchParams.get('url') || 'https://calmclinic-health.vercel.app/chat?c=default';
+  const chatUrl = searchParams.get('url') || 'https://calmclinic.health/chat?c=default';
   const primaryColor = searchParams.get('color') || '#007bff';
 
   useEffect(() => {

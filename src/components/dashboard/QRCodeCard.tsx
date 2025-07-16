@@ -13,7 +13,7 @@ interface QRCodeCardProps {
 }
 
 export default function QRCodeCard({ slug, clinic }: QRCodeCardProps) {
-  const chatUrl = `https://calmclinic-health.vercel.app/chat?c=${slug}`;
+  const chatUrl = `https://calmclinic.health/chat?c=${slug}`;
 
   const downloadQRCode = () => {
     const canvas = document.querySelector("canvas");
