@@ -5,7 +5,7 @@ interface ReminderMessageCardProps {
 }
 
 export default function ReminderMessageCard({ slug }: ReminderMessageCardProps) {
-  const chatUrl = `https://calmclinic-health.vercel.app/chat?c=${slug}`;
+  const chatUrl = `https://calmclinic.health/chat?c=${slug}`;
 
   const message = `Hi! You can chat with our assistant here: ${chatUrl}`;
 

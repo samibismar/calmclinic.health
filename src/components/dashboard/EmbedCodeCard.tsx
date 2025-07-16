@@ -1,7 +1,7 @@
 "use client";
 
 export default function EmbedCodeCard({ slug }: { slug: string }) {
-  const chatUrl = `https://calmclinic-health.vercel.app/chat?c=${slug}`;
+  const chatUrl = `https://calmclinic.health/chat?c=${slug}`;
 
   const iframeCode = `<iframe src="${chatUrl}" width="100%" height="400" style="border:none;"></iframe>`;
 
