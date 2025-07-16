@@ -14,7 +14,7 @@ interface StatusCardProps {
 }
 
 export default function StatusCard({ clinic }: StatusCardProps) {
-  const { practice_name, doctor_name, specialty, has_completed_setup } = clinic;
+  const { has_completed_setup } = clinic;
 
   if (!has_completed_setup) {
     return (

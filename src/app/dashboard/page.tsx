@@ -4,7 +4,6 @@ import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import StatusCard from "@/components/dashboard/StatusCard";
-import EngagementTipsCard from "@/components/dashboard/EngagementTipsCard";
 import OptionalLinksSection from "@/components/dashboard/OptionalLinksSection";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import QRCodeCard from "@/components/dashboard/QRCodeCard";
