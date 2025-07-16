@@ -135,14 +135,22 @@ export default function CustomizePage() {
   // Show loading spinner while fetching data
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12 px-4">
-        <div className="max-w-3xl mx-auto space-y-8">
-          <h1 className="text-2xl font-bold text-gray-900 text-center">Customize Your Assistant</h1>
-          <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="min-h-screen bg-gradient-to-br from-blue-950 to-blue-900 text-white">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="mb-8">
+            <div className="flex items-center space-x-3 mb-2">
+              <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                <div className="w-5 h-5 text-white">⚙️</div>
+              </div>
+              <h1 className="text-3xl font-bold text-white">Customize Your Assistant</h1>
+            </div>
+            <p className="text-blue-100">Configure your AI assistant&apos;s personality and responses</p>
+          </div>
+          <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6">
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
-                <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading your current settings...</p>
+                <div className="w-8 h-8 border-4 border-blue-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p className="text-blue-100">Loading your current settings...</p>
               </div>
             </div>
           </div>
@@ -392,15 +400,35 @@ export default function CustomizePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
-      <div className="max-w-3xl mx-auto space-y-8">
-        <h1 className="text-2xl font-bold text-gray-900 text-center">Customize Your Assistant</h1>
-        <div className="bg-white p-6 rounded-lg shadow-md space-y-10">
+    <div className="min-h-screen bg-gradient-to-br from-blue-950 to-blue-900 text-white">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="inline-flex items-center space-x-2 text-blue-200 hover:text-white transition-colors mb-6"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            <span>Back to Dashboard</span>
+          </button>
+          
+          <div className="flex items-center space-x-3 mb-2">
+            <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+              <div className="w-5 h-5 text-white">⚙️</div>
+            </div>
+            <h1 className="text-3xl font-bold text-white">Customize Your Assistant</h1>
+          </div>
+          <p className="text-blue-100">Configure your AI assistant&apos;s personality and responses</p>
+        </div>
+        
+        <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6 space-y-10">
           {renderStep()}
 
           {/* Error/Warning messages for required fields */}
           {step === 0 && (!doctorName || !specialty) && (
-            <div className="bg-red-100 text-red-700 border border-red-300 rounded-md p-4 text-sm">
+            <div className="bg-red-900/50 text-red-200 border border-red-500/50 rounded-lg p-4 text-sm">
               Please complete all required fields in this section:
               <ul className="list-disc list-inside mt-2">
                 {!doctorName && <li>Doctor Name</li>}
@@ -410,7 +438,7 @@ export default function CustomizePage() {
           )}
 
           {step === 2 && !hasAcceptedPrompt && (
-            <div className="bg-cyan-100 text-cyan-800 border border-cyan-300 rounded-md p-4 text-sm">
+            <div className="bg-cyan-900/50 text-cyan-200 border border-cyan-500/50 rounded-lg p-4 text-sm">
               Please use the AI tool to generate instructions and accept them before continuing.
             </div>
           )}
@@ -419,7 +447,7 @@ export default function CustomizePage() {
             {step > 0 && step < 4 && (
               <button
                 onClick={() => setStep(step - 1)}
-                className="text-sm text-gray-500 hover:underline"
+                className="text-sm text-blue-200 hover:text-white hover:underline transition-colors"
               >
                 ← Back
               </button>
@@ -440,7 +468,7 @@ export default function CustomizePage() {
                     }
                       setStep(step + 1);
                     }}
-                    className="ml-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                    className="ml-auto bg-white text-blue-900 font-semibold px-6 py-3 rounded-lg hover:bg-blue-100 transition-colors"
                   >
                     Next →
                   </button>
@@ -448,7 +476,7 @@ export default function CustomizePage() {
                 {step === 2 && hasAcceptedPrompt && (
                   <button
                     onClick={() => setStep(3)}
-                    className="ml-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                    className="ml-auto bg-white text-blue-900 font-semibold px-6 py-3 rounded-lg hover:bg-blue-100 transition-colors"
                   >
                     Next →
                   </button>

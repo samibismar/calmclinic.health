@@ -29,9 +29,9 @@ const ExampleQuestionsForm = ({
   };
 
   return (
-    <div className="bg-gradient-to-br from-[#0f172a] to-[#1e293b] rounded-2xl shadow-xl border border-gray-700 p-8 space-y-6 text-white">
+    <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-8 space-y-6 text-white">
       <h2 className="text-white font-semibold text-xl mb-4">❓ Example Questions</h2>
-      <label className="block text-sm font-medium text-gray-300 mb-1">
+      <label className="block text-sm font-medium text-blue-100 mb-2">
         Add common questions patients might ask
       </label>
       <div className="flex gap-2 mb-4">
@@ -39,12 +39,12 @@ const ExampleQuestionsForm = ({
           type="text"
           value={newQuestion}
           onChange={(e) => setNewQuestion(e.target.value)}
-          className="flex-1 px-4 py-2 border border-gray-600 rounded-md bg-[#0f172a] text-white placeholder-gray-400 focus:ring-cyan-400 focus:border-cyan-500"
+          className="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
           placeholder="e.g., What should I do before my appointment?"
         />
         <button
           onClick={addQuestion}
-          className="bg-cyan-600 text-white px-4 py-2 rounded-md hover:bg-cyan-700"
+          className="bg-white text-blue-900 font-semibold px-6 py-3 rounded-lg hover:bg-blue-100 transition-colors"
         >
           Add
         </button>
@@ -55,12 +55,12 @@ const ExampleQuestionsForm = ({
           {exampleQuestions.map((q, i) => (
             <li
               key={i}
-              className="flex justify-between items-center bg-[#1e293b] text-white border border-gray-700 px-4 py-2 rounded-md"
+              className="flex justify-between items-center bg-white/5 text-white border border-white/20 px-4 py-3 rounded-lg"
             >
               <span className="text-sm">{q}</span>
               <button
                 onClick={() => removeQuestion(i)}
-                className="text-red-500 hover:underline text-sm"
+                className="text-red-400 hover:text-red-300 text-sm hover:underline transition-colors"
               >
                 Remove
               </button>

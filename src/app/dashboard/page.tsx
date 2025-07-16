@@ -11,6 +11,7 @@ import ReminderMessageCard from "@/components/dashboard/ReminderMessageCard";
 import EmbedCodeCard from "@/components/dashboard/EmbedCodeCard";
 import BillingCard from "@/components/dashboard/BillingCard";
 import ProviderManagement from "@/components/dashboard/ProviderManagement";
+import ClinicIntelligenceCard from "@/components/dashboard/ClinicIntelligenceCard";
 
 interface DashboardData {
   clinic: {
@@ -181,6 +182,13 @@ export default function DashboardPage() {
         {data.clinic.has_completed_setup && (
           <div className="grid grid-cols-1 gap-6">
             <ProviderManagement />
+          </div>
+        )}
+
+        {/* Clinic Intelligence Section (only if setup complete) */}
+        {data.clinic.has_completed_setup && (
+          <div className="grid grid-cols-1 gap-6">
+            <ClinicIntelligenceCard />
           </div>
         )}
 

@@ -46,25 +46,25 @@ const ClinicIdentityForm = ({
   }, []);
 
   return (
-    <div className="bg-gradient-to-br from-[#0f172a] to-[#1e293b] rounded-2xl shadow-xl border border-gray-700 p-8 space-y-8 text-white">
+    <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-8 space-y-8 text-white">
       <div>
         <h2 className="text-2xl font-bold text-white mb-1">🏥 Clinic Identity</h2>
-        <p className="text-sm text-gray-200 mb-6">Personalize the assistant with your clinic&apos;s branding and details.</p>
+        <p className="text-sm text-blue-100 mb-6">Personalize the assistant with your clinic&apos;s branding and details.</p>
 
         <div className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-200 mb-1">Clinic Name</label>
+            <label className="block text-sm font-medium text-blue-100 mb-2">Clinic Name</label>
             <input
               type="text"
               value={clinicName}
               onChange={(e) => setClinicName(e.target.value)}
-              className="w-full px-4 py-2 bg-[#0f172a] text-white border border-gray-600 rounded-md shadow-sm focus:ring-cyan-400 focus:border-cyan-500"
+              className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
               placeholder="e.g., Sunrise Health Center"
             />
           </div>
 
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-sm mt-6">
-            <label htmlFor="brandColor" className="block text-sm font-medium text-white mb-2">
+          <div className="bg-white/5 border border-white/20 rounded-lg p-4 mt-6">
+            <label htmlFor="brandColor" className="block text-sm font-medium text-blue-100 mb-2">
               Primary Brand Color
             </label>
             <input
@@ -72,31 +72,31 @@ const ClinicIdentityForm = ({
               id="brandColor"
               value={brandColor}
               onChange={(e) => setBrandColor(e.target.value)}
-              className="w-full h-10 rounded-md border-gray-600 bg-gray-900 cursor-pointer"
+              className="w-full h-10 rounded-lg border border-white/20 bg-white/10 cursor-pointer"
             />
-            <p className="mt-2 text-xs text-gray-400">
+            <p className="mt-2 text-xs text-blue-300">
               This color will be used for primary elements like buttons and headers.
             </p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-200 mb-1">Doctor Name</label>
+            <label className="block text-sm font-medium text-blue-100 mb-2">Doctor Name</label>
             <input
               type="text"
               value={doctorName}
               onChange={(e) => setDoctorName(e.target.value)}
-              className="w-full px-4 py-2 bg-[#0f172a] text-white border border-gray-600 rounded-md shadow-sm focus:ring-cyan-400 focus:border-cyan-500"
+              className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
               placeholder="e.g., Dr. Elena Ramirez"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-200 mb-1">Specialty</label>
+            <label className="block text-sm font-medium text-blue-100 mb-2">Specialty</label>
             <input
               type="text"
               value={specialty}
               onChange={(e) => setSpecialty(e.target.value)}
-              className="w-full px-4 py-2 bg-[#0f172a] text-white border border-gray-600 rounded-md shadow-sm focus:ring-cyan-400 focus:border-cyan-500"
+              className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
               placeholder="e.g., Pediatrics"
             />
           </div>
