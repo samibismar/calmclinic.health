@@ -11,6 +11,7 @@ import QRCodeCard from "@/components/dashboard/QRCodeCard";
 import ReminderMessageCard from "@/components/dashboard/ReminderMessageCard";
 import EmbedCodeCard from "@/components/dashboard/EmbedCodeCard";
 import BillingCard from "@/components/dashboard/BillingCard";
+import ProviderManagement from "@/components/dashboard/ProviderManagement";
 
 interface DashboardData {
   clinic: {
@@ -172,18 +173,19 @@ export default function DashboardPage() {
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-6">
-        {/* First Row - Status and Engagement Tips */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <StatusCard clinic={data.clinic} />
-          <EngagementTipsCard hasCompletedSetup={data.clinic.has_completed_setup} />
-        </div>
-
-        {/* Second Row - Billing Card (always show) */}
+        {/* Status Card (with engagement tips) */}
         <div className="grid grid-cols-1 gap-6">
-          <BillingCard clinic={data.clinic} />
+          <StatusCard clinic={data.clinic} />
         </div>
 
-        {/* Third Row - QR Code, Reminder, Embed (only if setup complete) */}
+        {/* Provider Management Section (only if setup complete) */}
+        {data.clinic.has_completed_setup && (
+          <div className="grid grid-cols-1 gap-6">
+            <ProviderManagement />
+          </div>
+        )}
+
+        {/* QR Code, Reminder, Embed (only if setup complete) */}
         {data.clinic.has_completed_setup && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
             <QRCodeCard slug={data.clinic.slug} clinic={data.clinic} />
@@ -192,7 +194,12 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Optional Links Section */}
+        {/* Billing Card (always above optional links) */}
+        <div className="grid grid-cols-1 gap-6">
+          <BillingCard clinic={data.clinic} />
+        </div>
+
+        {/* Optional Links Section (always at the very bottom) */}
         <OptionalLinksSection />
       </div>
     </div>

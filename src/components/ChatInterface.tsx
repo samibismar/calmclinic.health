@@ -8,9 +8,23 @@ import Image from "next/image";
 // Add the clinic prop type that your wrapper expects
 type ChatInterfaceProps = {
   clinic: string;
+  providerId?: number | null;
+  providerInfo?: {
+    id: number;
+    name: string;
+    title: string;
+    specialties: string[];
+    bio?: string;
+    experience?: string;
+    languages?: string[];
+    avatar_url?: string;
+    is_active: boolean;
+    is_default: boolean;
+    is_legacy?: boolean;
+  };
 };
 
-export default function ChatInterface({ clinic: clinicSlug }: ChatInterfaceProps) {
+export default function ChatInterface({ clinic: clinicSlug, providerId, providerInfo }: ChatInterfaceProps) {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Array<{role: string, content: string}>>([]);
   const [clinic, setClinic] = useState<Clinic | null>(null);
@@ -68,14 +82,33 @@ export default function ChatInterface({ clinic: clinicSlug }: ChatInterfaceProps
   
   const t = translations[language as keyof typeof translations];
   
-  // Use clinic data if available, otherwise defaults
+  // Helper function to format provider name properly
+  const formatProviderName = (name: string) => {
+    if (!name) return 'Dr. Assistant';
+    
+    // Check if name already starts with Dr.
+    if (name.toLowerCase().startsWith('dr.') || name.toLowerCase().startsWith('doctor')) {
+      return name;
+    }
+    
+    // Add Dr. prefix if not present
+    return `Dr. ${name}`;
+  };
+
+  // Use provider data if available, otherwise fallback to clinic data
   const doctorConfig = {
-    name: clinic?.doctor_name || 'Dr. Assistant',
-    title: clinic?.doctor_name ? `Dr. ${clinic.doctor_name}` : 'Dr. Assistant',
-    welcomeMessage: clinic?.welcome_message || `${t.welcomePrefix} ${clinic?.doctor_name || 'Assistant'}${t.welcomeSuffix}`,
+    name: providerInfo?.name || clinic?.doctor_name || 'Dr. Assistant',
+    title: formatProviderName(providerInfo?.name || clinic?.doctor_name || 'Assistant'),
+    welcomeMessage: clinic?.welcome_message || `${t.welcomePrefix} ${providerInfo?.name || clinic?.doctor_name || 'Assistant'}${t.welcomeSuffix}`,
     accentColor: clinic?.primary_color || '#5BBAD5',
     logoUrl: clinic?.logo_url || null,
-    specialty: clinic?.specialty || 'General Practice'
+    specialty: (providerInfo?.specialties && providerInfo.specialties.length > 0) 
+      ? providerInfo.specialties[0] 
+      : clinic?.specialty || 'General Practice',
+    allSpecialties: providerInfo?.specialties || (clinic?.specialty ? [clinic.specialty] : ['General Practice']),
+    bio: providerInfo?.bio || null,
+    experience: providerInfo?.experience || null,
+    providerTitle: providerInfo?.title || 'Doctor'
   };
 
   // Suggested prompts based on specialty or custom prompts
@@ -143,6 +176,9 @@ export default function ChatInterface({ clinic: clinicSlug }: ChatInterfaceProps
             specialty: doctorConfig.specialty,
             language,
             aiInstructions: clinic?.ai_instructions || null,
+            providerId: providerId,
+            providerSpecialties: doctorConfig.allSpecialties,
+            providerTitle: doctorConfig.providerTitle,
           }),
         });
 
@@ -240,9 +276,21 @@ export default function ChatInterface({ clinic: clinicSlug }: ChatInterfaceProps
           {doctorConfig.title}
         </h1>
         
-        <p className="text-sm text-gray-500 mb-3 font-medium">
-          {doctorConfig.specialty}
-        </p>
+        {/* Only show specialties if different from provider title */}
+        {doctorConfig.allSpecialties.length > 0 && 
+         doctorConfig.allSpecialties.some(specialty => specialty.toLowerCase() !== doctorConfig.providerTitle.toLowerCase()) && (
+          <p className="text-xs text-blue-600 mb-3 font-medium">
+            {doctorConfig.allSpecialties.filter(specialty => specialty.toLowerCase() !== doctorConfig.providerTitle.toLowerCase()).join(", ")}
+          </p>
+        )}
+        
+        {/* Show provider title only if no specialties or if title is different */}
+        {(!doctorConfig.allSpecialties.length || 
+          !doctorConfig.allSpecialties.some(specialty => specialty.toLowerCase() === doctorConfig.providerTitle.toLowerCase())) && (
+          <p className="text-sm text-gray-500 mb-3 font-medium">
+            {doctorConfig.providerTitle}
+          </p>
+        )}
         <p className="text-[11px] text-gray-400 font-medium mb-2">
           {t.disclaimer}
         </p>

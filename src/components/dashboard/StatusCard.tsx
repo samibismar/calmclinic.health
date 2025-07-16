@@ -43,15 +43,16 @@ export default function StatusCard({ clinic }: StatusCardProps) {
   return (
     <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6">
       <h2 className="text-xl font-bold text-white mb-4">✅ Your Assistant Is Up and Running</h2>
-      <ul className="text-sm text-blue-100 space-y-2 mb-4">
-        <li><span className="font-semibold text-white">Practice:</span> {practice_name}</li>
-        <li><span className="font-semibold text-white">Doctor:</span> Dr. {doctor_name}</li>
-        <li><span className="font-semibold text-white">Specialty:</span> {specialty}</li>
-        <li><span className="font-semibold text-white">Status:</span> Active and answering questions</li>
-      </ul>
-      <p className="text-sm text-blue-300 mb-2">Want to change something? You can update your assistant anytime.</p>
-      {/* Optionally show last updated info in the future */}
-      {/* <div className="text-xs text-blue-300 mb-2">Last customized: {lastUpdated}</div> */}
+      <p className="text-blue-100 text-sm mb-4">Your AI assistant is live and ready for patients. Manage your providers, update your assistant, or use the tools below to boost engagement.</p>
+      <div className="mb-4">
+        <p className="text-blue-100 text-sm mb-2">Now that your assistant is live, use these tools to help more patients interact with it before and during their visit:</p>
+        <ul className="text-blue-100 text-sm list-disc list-inside space-y-1 pl-2">
+          <li>📎 Print your QR code and post it in your waiting room</li>
+          <li>📱 Use the reminder message template in texts or emails</li>
+          <li>🌐 Embed your assistant on your clinic website</li>
+          <li>🌍 Support additional languages to serve more patients</li>
+        </ul>
+      </div>
       <Link
         href="/dashboard/customize"
         className="inline-block mt-3 px-5 py-2 bg-white text-blue-900 font-semibold rounded-lg hover:bg-blue-100 transition"
