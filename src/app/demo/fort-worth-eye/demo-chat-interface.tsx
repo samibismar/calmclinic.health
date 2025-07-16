@@ -7,13 +7,13 @@ import { DEMO_CLINIC_CONFIG, DEMO_CONVERSATION_HISTORY, DEMO_ACTIVITY_METRICS } 
 export default function DemoChatInterface() {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState(DEMO_CONVERSATION_HISTORY);
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
   const [isAiTyping, setIsAiTyping] = useState(false);
   
   // Get language from URL parameters
   const searchParams = useSearchParams();
   const langParam = searchParams.get('lang');
-  const [language, setLanguage] = useState(langParam === 'es' ? 'es' : 'en');
+  const [language] = useState(langParam === 'es' ? 'es' : 'en');
   
   // Translations
   const translations = {

@@ -21,6 +21,7 @@ export default function AssistantLiveEmail({
       <p>
         Here’s your link: <a href={chatUrl}>{chatUrl}</a>
       </p>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={qrCodeUrl}
         alt="QR Code to chat with assistant"

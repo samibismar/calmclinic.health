@@ -176,10 +176,10 @@ export default function DemoQRCard({
           <div className="bg-sky-50 p-4 rounded-lg border-l-4 border-sky-500">
             <h3 className="font-semibold text-sky-700 mb-3">📱 How to Use Your AI Assistant</h3>
             <ol className="text-sm text-gray-700 space-y-2">
-              <li>1. Open your phone's camera</li>
+              <li>1. Open your phone&apos;s camera</li>
               <li>2. Point it at this QR code</li>
               <li>3. Tap the notification to open</li>
-              <li>4. Start chatting with Dr. Ranelle's AI assistant!</li>
+              <li>4. Start chatting with Dr. Ranelle&apos;s AI assistant!</li>
             </ol>
           </div>
         )}
