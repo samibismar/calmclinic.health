@@ -95,11 +95,28 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
     return `Dr. ${name}`;
   };
 
+  // Helper function to format welcome message properly
+  const formatWelcomeMessage = (name: string) => {
+    if (!name) return `${t.welcomePrefix} Assistant${t.welcomeSuffix}`;
+    
+    // Check if name already starts with Dr.
+    if (name.toLowerCase().startsWith('dr.') || name.toLowerCase().startsWith('doctor')) {
+      // For Spanish, use different prefix
+      if (language === 'es') {
+        return `¡Hola! Soy ${name}${t.welcomeSuffix}`;
+      }
+      return `Hello! I'm ${name}${t.welcomeSuffix}`;
+    }
+    
+    // Add Dr. prefix if not present
+    return `${t.welcomePrefix} ${name}${t.welcomeSuffix}`;
+  };
+
   // Use provider data if available, otherwise fallback to clinic data
   const doctorConfig = {
     name: providerInfo?.name || clinic?.doctor_name || 'Dr. Assistant',
     title: formatProviderName(providerInfo?.name || clinic?.doctor_name || 'Assistant'),
-    welcomeMessage: clinic?.welcome_message || `${t.welcomePrefix} ${providerInfo?.name || clinic?.doctor_name || 'Assistant'}${t.welcomeSuffix}`,
+    welcomeMessage: clinic?.welcome_message || formatWelcomeMessage(providerInfo?.name || clinic?.doctor_name || 'Assistant'),
     accentColor: clinic?.primary_color || '#5BBAD5',
     logoUrl: clinic?.logo_url || null,
     specialty: (providerInfo?.specialties && providerInfo.specialties.length > 0) 

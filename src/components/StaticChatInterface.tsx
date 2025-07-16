@@ -37,11 +37,28 @@ export default function StaticChatInterface({ clinicConfig }: StaticChatInterfac
   
   const t = translations[language as keyof typeof translations];
   
+  // Helper function to format welcome message properly
+  const formatWelcomeMessage = (name: string) => {
+    if (!name) return `${t.welcomePrefix} Assistant${t.welcomeSuffix}`;
+    
+    // Check if name already starts with Dr.
+    if (name.toLowerCase().startsWith('dr.') || name.toLowerCase().startsWith('doctor')) {
+      // For Spanish, use different prefix
+      if (language === 'es') {
+        return `¡Hola! Soy ${name}${t.welcomeSuffix}`;
+      }
+      return `Hello! I'm ${name}${t.welcomeSuffix}`;
+    }
+    
+    // Add Dr. prefix if not present
+    return `${t.welcomePrefix} ${name}${t.welcomeSuffix}`;
+  };
+  
   // Use static clinic config data
   const doctorConfig = {
     name: clinicConfig.doctor_name,
     title: `${clinicConfig.doctor_name}`,
-    welcomeMessage: `${t.welcomePrefix} ${clinicConfig.doctor_name}${t.welcomeSuffix}`,
+    welcomeMessage: formatWelcomeMessage(clinicConfig.doctor_name),
     accentColor: clinicConfig.colors.primary,
     logoUrl: null,
     specialty: clinicConfig.specialty
