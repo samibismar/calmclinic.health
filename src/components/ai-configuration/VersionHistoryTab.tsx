@@ -54,7 +54,15 @@ export default function VersionHistoryTab({ clinicData }: VersionHistoryTabProps
         const data = await response.json();
         const history = data.history || [];
         // Ensure version_name is always a string
-        const processedHistory = history.map((version: any) => ({
+        const processedHistory = history.map((version: {
+          id: number;
+          version: number;
+          version_name: string | null;
+          prompt_text: string;
+          created_at: string;
+          created_by: string;
+          is_current: boolean;
+        }) => ({
           ...version,
           version_name: version.version_name || `Version ${version.version}`,
           is_current: Boolean(version.is_current)

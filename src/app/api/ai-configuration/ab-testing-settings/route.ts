@@ -41,7 +41,11 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const updateData: any = {
+    const updateData: {
+      ab_testing_enabled: boolean;
+      updated_at: string;
+      ab_test_percentage?: number;
+    } = {
       ab_testing_enabled: enabled,
       updated_at: new Date().toISOString()
     };

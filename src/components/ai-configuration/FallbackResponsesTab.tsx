@@ -221,7 +221,7 @@ export default function FallbackResponsesTab({ aiConfig, onConfigChange }: Fallb
           <h3 className="text-sm font-medium text-blue-200 mb-2">🛡️ What are Fallback Responses?</h3>
           <p className="text-xs text-blue-300 mb-2">
             Fallback responses are optional safety measures that provide backup messages for specific situations. 
-            Your AI is highly capable and won't say anything inappropriate or incorrect thanks to extensive system prompt configuration.
+            Your AI is highly capable and won&apos;t say anything inappropriate or incorrect thanks to extensive system prompt configuration.
           </p>
           <p className="text-xs text-blue-300 mb-2">
             <strong>These are NOT required</strong> - your AI is smart and well-trained. Fallback responses are simply an extra layer of control 
@@ -229,7 +229,7 @@ export default function FallbackResponsesTab({ aiConfig, onConfigChange }: Fallb
           </p>
           <p className="text-xs text-blue-300">
             <strong>How they work:</strong> When your AI detects specific triggers (uncertainty, after-hours, emergencies), 
-            it can use these pre-written responses instead of generating its own. Think of them as "safety nets" for extra peace of mind.
+            it can use these pre-written responses instead of generating its own. Think of them as &quot;safety nets&quot; for extra peace of mind.
           </p>
         </div>
 
