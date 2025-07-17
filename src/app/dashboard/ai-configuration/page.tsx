@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowLeft, Bot, Brain, Settings, TestTube, AlertCircle, CheckCircle } from "lucide-react";
+import { ArrowLeft, Bot, Brain, Settings, TestTube, AlertCircle } from "lucide-react";
 import Link from "next/link";
 
 // AI Configuration components
@@ -28,9 +28,10 @@ interface AIConfiguration {
   tone: string;
   languages: string[];
   custom_instructions: string;
-  fallback_responses: {
+  fallback_responses?: {
     uncertain: string;
     after_hours: string;
+    emergency: string;
   };
   last_updated: string;
   version: number;
@@ -40,7 +41,7 @@ const sections = [
   {
     id: 'status',
     name: 'Assistant Status',
-    icon: CheckCircle,
+    icon: Bot,
     description: 'Monitor & test your AI'
   },
   {
@@ -116,7 +117,6 @@ export default function AIConfigurationPage() {
       case 'personality':
         return (
           <PersonalitySettings 
-            clinicData={clinicData} 
             aiConfig={aiConfig}
             onConfigChange={() => setHasUnsavedChanges(true)}
           />

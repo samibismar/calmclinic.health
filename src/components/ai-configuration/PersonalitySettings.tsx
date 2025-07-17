@@ -4,14 +4,6 @@ import { useState, useEffect } from "react";
 import { Settings, Plus, X, Save, RefreshCw } from "lucide-react";
 import { toast } from "react-hot-toast";
 
-interface ClinicData {
-  id: number;
-  practice_name: string;
-  doctor_name: string;
-  slug: string;
-  specialty: string;
-  primary_color: string;
-}
 
 interface AIConfiguration {
   tone: string;
@@ -20,12 +12,11 @@ interface AIConfiguration {
 }
 
 interface PersonalitySettingsProps {
-  clinicData: ClinicData | null;
   aiConfig: AIConfiguration | null;
   onConfigChange: () => void;
 }
 
-export default function PersonalitySettings({ clinicData, aiConfig, onConfigChange }: PersonalitySettingsProps) {
+export default function PersonalitySettings({ aiConfig, onConfigChange }: PersonalitySettingsProps) {
   const [tone, setTone] = useState('professional');
   const [customTone, setCustomTone] = useState('');
   const [languages, setLanguages] = useState<string[]>(['English']);

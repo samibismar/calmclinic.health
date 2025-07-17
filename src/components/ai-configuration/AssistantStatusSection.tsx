@@ -203,7 +203,7 @@ export default function AssistantStatusSection({ clinicData, aiConfig }: Assista
                     onClick={() => setTestMessage(question)}
                     className="w-full text-left p-3 bg-white/5 border border-white/20 rounded-lg hover:bg-white/10 transition-colors text-sm text-blue-200"
                   >
-                    "{question}"
+                    &quot;{question}&quot;
                   </button>
                 ))}
               </div>

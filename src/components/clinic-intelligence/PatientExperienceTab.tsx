@@ -33,7 +33,6 @@ export default function PatientExperienceTab() {
   const [policies, setPolicies] = useState<ClinicPolicy[]>([]);
   const [commonQuestions, setCommonQuestions] = useState<CommonQuestion[]>([]);
   const [loading, setLoading] = useState(true);
-  const [questionsLoading, setQuestionsLoading] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showQuestionForm, setShowQuestionForm] = useState(false);
   const [editingPolicy, setEditingPolicy] = useState<ClinicPolicy | null>(null);
@@ -137,7 +136,6 @@ export default function PatientExperienceTab() {
   };
 
   const fetchCommonQuestions = async () => {
-    setQuestionsLoading(true);
     try {
       const response = await fetch('/api/clinic-intelligence/common-questions');
       const data = await response.json();
@@ -147,7 +145,6 @@ export default function PatientExperienceTab() {
     } catch (error) {
       console.error('Error fetching common questions:', error);
     } finally {
-      setQuestionsLoading(false);
     }
   };
 
@@ -349,7 +346,7 @@ export default function PatientExperienceTab() {
             {getTopQuestions().map((question) => (
               <div key={question.id} className="flex items-center justify-between p-4 bg-white/5 border border-white/20 rounded-lg">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white truncate">"{question.question_text}"</p>
+                  <p className="text-sm font-medium text-white truncate">&quot;{question.question_text}&quot;</p>
                   <div className="flex items-center space-x-4 mt-1">
                     <span className="text-xs text-blue-300 capitalize">{question.category}</span>
                     <span className="text-xs text-green-400">Used {question.usage_count} times</span>

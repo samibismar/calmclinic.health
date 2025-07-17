@@ -336,7 +336,7 @@ Never provide:
             <h4 className="font-medium text-green-400 mb-2">✅ Best Practices</h4>
             <ul className="text-sm text-blue-200 space-y-1">
               <li>• Be specific about your practice and specialty</li>
-              <li>• Include your clinic's values and approach</li>
+              <li>• Include your clinic&apos;s values and approach</li>
               <li>• Mention key services and policies</li>
               <li>• Set clear communication guidelines</li>
               <li>• Include emergency contact information</li>

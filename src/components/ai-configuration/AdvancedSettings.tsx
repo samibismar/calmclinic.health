@@ -202,7 +202,7 @@ export default function AdvancedSettings({ clinicData, aiConfig, onConfigChange 
         <div className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-blue-100 mb-2">
-              When Uncertain or Doesn't Know
+              When Uncertain or Doesn&apos;t Know
             </label>
             <textarea
               value={fallbackResponses.uncertain}

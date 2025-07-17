@@ -88,7 +88,7 @@ export default function AIConfigurationCard() {
           </div>
           <div>
             <h2 className="text-xl font-semibold text-white">AI Configuration</h2>
-            <p className="text-blue-200 text-sm">Configure your AI assistant's behavior and personality</p>
+            <p className="text-blue-200 text-sm">Configure your AI assistant&apos;s behavior and personality</p>
           </div>
         </div>
         
@@ -218,7 +218,7 @@ export default function AIConfigurationCard() {
       {!aiConfig && (
         <div className="mt-4 bg-blue-900/30 border border-blue-500/30 rounded-lg p-4">
           <p className="text-sm text-blue-200">
-            ✨ <strong>Get started:</strong> Configure your AI assistant's personality, behavior, and responses to create a unique experience for your patients.
+            ✨ <strong>Get started:</strong> Configure your AI assistant&apos;s personality, behavior, and responses to create a unique experience for your patients.
           </p>
         </div>
       )}
