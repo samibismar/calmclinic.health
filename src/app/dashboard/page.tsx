@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import StatusCard from "@/components/dashboard/StatusCard";
+import CompactAIStatusCard from "@/components/dashboard/CompactAIStatusCard";
 import OptionalLinksSection from "@/components/dashboard/OptionalLinksSection";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import QRCodeCard from "@/components/dashboard/QRCodeCard";
@@ -12,6 +12,7 @@ import EmbedCodeCard from "@/components/dashboard/EmbedCodeCard";
 import BillingCard from "@/components/dashboard/BillingCard";
 import ProviderManagement from "@/components/dashboard/ProviderManagement";
 import ClinicIntelligenceCard from "@/components/dashboard/ClinicIntelligenceCard";
+import AIConfigurationCard from "@/components/dashboard/AIConfigurationCard";
 
 interface DashboardData {
   clinic: {
@@ -173,9 +174,16 @@ export default function DashboardPage() {
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-6">
-        {/* Status Card (with engagement tips) */}
-        <div className="grid grid-cols-1 gap-6">
-          <StatusCard clinic={data.clinic} />
+        {/* Top Row: Clinic Intelligence + AI Status */}
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+          <div className="xl:col-span-3">
+            <ClinicIntelligenceCard />
+          </div>
+          {data.clinic.has_completed_setup && (
+            <div className="xl:col-span-1">
+              <CompactAIStatusCard viewChatUrl={`/chat?c=${data.clinic.slug}`} />
+            </div>
+          )}
         </div>
 
         {/* Provider Management Section (only if setup complete) */}
@@ -185,10 +193,10 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Clinic Intelligence Section (only if setup complete) */}
+        {/* AI Configuration Section (only if setup complete) */}
         {data.clinic.has_completed_setup && (
           <div className="grid grid-cols-1 gap-6">
-            <ClinicIntelligenceCard />
+            <AIConfigurationCard />
           </div>
         )}
 

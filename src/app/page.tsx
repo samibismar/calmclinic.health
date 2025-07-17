@@ -74,9 +74,6 @@ export default function HomePage() {
               • Clinic-branded customization with live updates
             </li>
             <li>
-              • AI tools for symptom insights and care direction (coming soon)
-            </li>
-            <li>
               • QR-based setup — no apps, no downloads, no hassle
             </li>
           </ul>

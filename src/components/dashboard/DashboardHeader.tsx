@@ -30,6 +30,7 @@ export default function DashboardHeader({ practiceName, doctorName, viewChatUrl 
             </div>
           </div>
 
+          {/* View Chat button */}
           {viewChatUrl && (
             <a
               href={viewChatUrl}
