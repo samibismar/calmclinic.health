@@ -18,7 +18,7 @@ async function getClinicFromSession() {
 }
 
 // Update version name
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const clinic = await getClinicFromSession();
     
@@ -27,7 +27,8 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     }
 
     const { version_name } = await request.json();
-    const versionId = parseInt(params.id);
+    const resolvedParams = await params;
+    const versionId = parseInt(resolvedParams.id);
 
     if (!version_name || !version_name.trim()) {
       return NextResponse.json({ error: 'Version name is required' }, { status: 400 });
@@ -105,7 +106,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 }
 
 // Delete version
-export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const clinic = await getClinicFromSession();
     
@@ -113,7 +114,8 @@ export async function DELETE(_request: NextRequest, { params }: { params: { id: 
       return NextResponse.json({ error: 'Not logged in' }, { status: 401 });
     }
 
-    const versionId = parseInt(params.id);
+    const resolvedParams = await params;
+    const versionId = parseInt(resolvedParams.id);
 
     // Verify the version belongs to this clinic and is not current
     const { data: existingVersion, error: fetchError } = await supabase

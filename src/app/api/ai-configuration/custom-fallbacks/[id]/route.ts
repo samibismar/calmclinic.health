@@ -18,7 +18,7 @@ async function getClinicFromSession() {
 }
 
 // Update custom fallback
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const clinic = await getClinicFromSession();
     
@@ -28,7 +28,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     const body = await request.json();
     const { trigger_type, trigger_description, response_text } = body;
-    const fallbackId = parseInt(params.id);
+    const resolvedParams = await params;
+    const fallbackId = parseInt(resolvedParams.id);
 
     if (!trigger_type || !trigger_description || !response_text) {
       return NextResponse.json({ 
@@ -111,7 +112,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 }
 
 // Delete custom fallback
-export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const clinic = await getClinicFromSession();
     
@@ -119,7 +120,8 @@ export async function DELETE(_request: NextRequest, { params }: { params: { id: 
       return NextResponse.json({ error: 'Not logged in' }, { status: 401 });
     }
 
-    const fallbackId = parseInt(params.id);
+    const resolvedParams = await params;
+    const fallbackId = parseInt(resolvedParams.id);
 
     // Verify the fallback belongs to this clinic
     const { data: existingFallback, error: fetchError } = await supabase
