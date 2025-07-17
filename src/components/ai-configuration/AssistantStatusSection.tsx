@@ -69,15 +69,15 @@ export default function AssistantStatusSection({ clinicData, aiConfig }: Assista
     "What services do you offer?"
   ];
 
-  // Mock stats - in a real implementation, these would come from analytics
-  const stats = {
-    totalConversations: 1247,
-    avgResponseTime: '2.3s',
-    satisfactionRate: 4.8,
-    activeToday: 23
-  };
-
   const assistantStatus = clinicData?.has_completed_setup ? 'live' : 'setup_required';
+
+  // Dynamic stats that show setup status rather than fake metrics
+  const stats = {
+    totalConversations: assistantStatus === 'live' ? 'Analytics Coming Soon' : 'Not Active',
+    avgResponseTime: assistantStatus === 'live' ? 'Real-time' : 'N/A',
+    satisfactionRate: assistantStatus === 'live' ? 'Monitoring' : 'N/A',
+    activeToday: assistantStatus === 'live' ? 'Live' : 'Inactive'
+  };
 
   return (
     <div className="space-y-6">
@@ -128,7 +128,7 @@ export default function AssistantStatusSection({ clinicData, aiConfig }: Assista
               <MessageCircle className="w-4 h-4 text-blue-400" />
               <span className="text-sm text-blue-200">Total Conversations</span>
             </div>
-            <div className="text-2xl font-semibold text-white">{stats.totalConversations.toLocaleString()}</div>
+            <div className="text-2xl font-semibold text-white">{stats.totalConversations}</div>
           </div>
           
           <div className="bg-white/5 border border-white/20 rounded-lg p-4">
@@ -144,7 +144,7 @@ export default function AssistantStatusSection({ clinicData, aiConfig }: Assista
               <CheckCircle className="w-4 h-4 text-purple-400" />
               <span className="text-sm text-blue-200">Satisfaction Rate</span>
             </div>
-            <div className="text-2xl font-semibold text-white">{stats.satisfactionRate}/5</div>
+            <div className="text-2xl font-semibold text-white">{stats.satisfactionRate}</div>
           </div>
           
           <div className="bg-white/5 border border-white/20 rounded-lg p-4">

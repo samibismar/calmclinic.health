@@ -26,18 +26,18 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { version } = body;
+    const { version_id } = body;
 
-    if (!version) {
-      return NextResponse.json({ error: 'Version number is required' }, { status: 400 });
+    if (!version_id) {
+      return NextResponse.json({ error: 'Version ID is required' }, { status: 400 });
     }
 
     // Fetch the specific version from history
     const { data: versionData, error: versionError } = await supabase
       .from('ai_prompt_history')
       .select('*')
+      .eq('id', version_id)
       .eq('clinic_id', clinic.id)
-      .eq('version', version)
       .single();
 
     if (versionError || !versionData) {
@@ -47,27 +47,40 @@ export async function POST(request: NextRequest) {
       }, { status: 404 });
     }
 
-    const newVersion = (clinic.ai_version || 1) + 1;
+    // Don't restore if it's already current
+    if (versionData.is_current) {
+      return NextResponse.json({ 
+        error: 'This version is already current' 
+      }, { status: 400 });
+    }
 
-    // Create a new history entry for the restoration
-    try {
-      await supabase
-        .from('ai_prompt_history')
-        .insert({
-          clinic_id: clinic.id,
-          prompt_text: versionData.prompt_text,
-          version: newVersion,
-          created_at: new Date().toISOString(),
-          created_by: `restored-from-v${version}`,
-          restoration_data: {
-            restored_from_version: version,
-            original_created_at: versionData.created_at,
-            original_created_by: versionData.created_by
-          }
-        });
-    } catch (historyError) {
-      console.error('Error creating restoration history:', historyError);
-      // Continue anyway, we'll still update the main record
+    // Start a transaction-like operation
+    // First, unset all current versions for this clinic
+    const { error: unsetError } = await supabase
+      .from('ai_prompt_history')
+      .update({ is_current: false })
+      .eq('clinic_id', clinic.id)
+      .eq('is_current', true);
+
+    if (unsetError) {
+      return NextResponse.json({ 
+        error: 'Failed to prepare for restoration', 
+        details: unsetError 
+      }, { status: 500 });
+    }
+
+    // Set the selected version as current
+    const { error: setCurrentError } = await supabase
+      .from('ai_prompt_history')
+      .update({ is_current: true })
+      .eq('id', version_id)
+      .eq('clinic_id', clinic.id);
+
+    if (setCurrentError) {
+      return NextResponse.json({ 
+        error: 'Failed to set version as current', 
+        details: setCurrentError 
+      }, { status: 500 });
     }
 
     // Update the clinic with the restored prompt
@@ -75,7 +88,7 @@ export async function POST(request: NextRequest) {
       .from('clinics')
       .update({
         ai_instructions: versionData.prompt_text,
-        ai_version: newVersion,
+        ai_version: versionData.version,
         updated_at: new Date().toISOString()
       })
       .eq('id', clinic.id)
@@ -96,8 +109,9 @@ export async function POST(request: NextRequest) {
           clinic_id: clinic.id,
           change_type: 'version_restored',
           change_data: {
-            restored_from_version: version,
-            new_version: newVersion,
+            restored_version_id: version_id,
+            restored_version: versionData.version,
+            version_name: versionData.version_name,
             prompt_text: versionData.prompt_text
           },
           changed_by: 'user',
@@ -105,14 +119,13 @@ export async function POST(request: NextRequest) {
         });
     } catch (logError) {
       console.error('Error logging restoration:', logError);
-      // Continue anyway, logging is optional
     }
 
     return NextResponse.json({ 
       success: true, 
       clinic: updateResult?.[0],
-      restored_version: version,
-      new_version: newVersion
+      restored_version: versionData.version,
+      version_name: versionData.version_name
     });
 
   } catch (error) {

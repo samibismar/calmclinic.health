@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Bot, Play, Settings, MessageCircle, ArrowRight } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Bot, Play, Settings, MessageCircle, ArrowRight, FileText, Eye } from "lucide-react";
 import Link from "next/link";
 
 interface ClinicData {
@@ -25,9 +25,29 @@ export default function AIAssistantTab({ clinicData }: AIAssistantTabProps) {
     isEnabled: true
   });
 
+  const [systemPrompt, setSystemPrompt] = useState('');
+  const [promptLoading, setPromptLoading] = useState(true);
   const [previewMessage, setPreviewMessage] = useState('');
   const [previewResponse, setPreviewResponse] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+
+  useEffect(() => {
+    fetchSystemPrompt();
+  }, []);
+
+  const fetchSystemPrompt = async () => {
+    try {
+      const response = await fetch('/api/ai-configuration/settings');
+      const data = await response.json();
+      if (response.ok && data.config?.system_prompt) {
+        setSystemPrompt(data.config.system_prompt);
+      }
+    } catch (error) {
+      console.error('Error fetching system prompt:', error);
+    } finally {
+      setPromptLoading(false);
+    }
+  };
 
   const handlePreview = async () => {
     if (!previewMessage.trim()) return;
@@ -76,28 +96,56 @@ export default function AIAssistantTab({ clinicData }: AIAssistantTabProps) {
             <h2 className="text-xl font-semibold text-white">AI Assistant Configuration</h2>
           </div>
           <Link
-            href="/dashboard/customize"
+            href="/dashboard/ai-configuration"
             className="flex items-center space-x-2 bg-white text-blue-900 font-semibold px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors"
           >
             <Settings className="w-4 h-4" />
-            <span>Advanced Settings</span>
+            <span>Go to AI Configuration</span>
           </Link>
         </div>
 
-        <div className="text-center py-12">
-          <Bot className="w-16 h-16 text-blue-300 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-white mb-2">AI Assistant Configuration</h3>
-          <p className="text-blue-200 mb-6 max-w-md mx-auto">
-            Configure your AI assistant&apos;s personality and behavior through our comprehensive customization system.
-          </p>
-          <Link
-            href="/dashboard/customize"
-            className="inline-flex items-center space-x-2 bg-white text-blue-900 font-semibold px-6 py-3 rounded-lg hover:bg-blue-100 transition-colors"
-          >
-            <Bot className="w-5 h-5" />
-            <span>Configure AI Assistant</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+        {/* System Prompt Preview */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-white">Current System Prompt</h3>
+            <div className="flex items-center space-x-2">
+              <Eye className="w-4 h-4 text-blue-400" />
+              <span className="text-sm text-blue-200">Read-only preview</span>
+            </div>
+          </div>
+
+          {promptLoading ? (
+            <div className="bg-white/5 border border-white/20 rounded-lg p-4">
+              <div className="animate-pulse space-y-2">
+                <div className="h-4 bg-white/20 rounded w-3/4"></div>
+                <div className="h-4 bg-white/20 rounded w-1/2"></div>
+                <div className="h-4 bg-white/20 rounded w-5/6"></div>
+              </div>
+            </div>
+          ) : systemPrompt ? (
+            <div className="bg-white/5 border border-white/20 rounded-lg p-4">
+              <div className="text-sm text-white whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto">
+                {systemPrompt}
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white/5 border border-white/20 rounded-lg p-4 text-center">
+              <FileText className="w-12 h-12 text-blue-400 mx-auto mb-3" />
+              <p className="text-blue-200 mb-2">No system prompt configured</p>
+              <p className="text-sm text-blue-300">Configure your AI assistant to get started</p>
+            </div>
+          )}
+
+          <div className="flex justify-center">
+            <Link
+              href="/dashboard/ai-configuration"
+              className="inline-flex items-center space-x-2 bg-white text-blue-900 font-semibold px-6 py-3 rounded-lg hover:bg-blue-100 transition-colors"
+            >
+              <Settings className="w-5 h-5" />
+              <span>Go to AI Configuration</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -193,7 +241,7 @@ export default function AIAssistantTab({ clinicData }: AIAssistantTabProps) {
         <h3 className="text-lg font-semibold text-white mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <Link
-            href="/dashboard/customize"
+            href="/dashboard/ai-configuration"
             className="flex items-center space-x-3 p-4 bg-white/5 border border-white/20 rounded-lg hover:bg-white/10 transition-colors"
           >
             <Settings className="w-5 h-5 text-blue-400" />

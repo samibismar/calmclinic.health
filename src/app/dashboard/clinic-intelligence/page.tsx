@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowLeft, BarChart3, Building2, Users, Stethoscope, CreditCard, Heart, Bot, AlertCircle } from "lucide-react";
+import { ArrowLeft, BarChart3, Building2, Users, Stethoscope, CreditCard, Heart, Bot, AlertCircle, HelpCircle } from "lucide-react";
 import Link from "next/link";
 
 // Tab components (we'll create these)
@@ -11,6 +11,7 @@ import ProvidersTab from "@/components/clinic-intelligence/ProvidersTab";
 import ServicesTab from "@/components/clinic-intelligence/ServicesTab";
 import InsuranceTab from "@/components/clinic-intelligence/InsuranceTab";
 import PatientExperienceTab from "@/components/clinic-intelligence/PatientExperienceTab";
+import CommonQuestionsTab from "@/components/clinic-intelligence/CommonQuestionsTab";
 import AIAssistantTab from "@/components/clinic-intelligence/AIAssistantTab";
 
 interface ClinicData {
@@ -66,6 +67,12 @@ const tabs = [
     name: 'Patient Experience',
     icon: Heart,
     description: 'Policies & procedures'
+  },
+  {
+    id: 'common-questions',
+    name: 'Common Questions',
+    icon: HelpCircle,
+    description: 'Patient question suggestions'
   },
   {
     id: 'ai-assistant',
@@ -130,6 +137,8 @@ export default function ClinicIntelligencePage() {
         return <InsuranceTab />;
       case 'patient-experience':
         return <PatientExperienceTab />;
+      case 'common-questions':
+        return <CommonQuestionsTab />;
       case 'ai-assistant':
         return <AIAssistantTab clinicData={clinicData} />;
       default:

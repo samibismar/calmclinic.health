@@ -1,14 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowLeft, Bot, Brain, Settings, TestTube, AlertCircle } from "lucide-react";
+import { ArrowLeft, Bot, Brain, Settings, TestTube, AlertCircle, History, Shield, FlaskConical } from "lucide-react";
 import Link from "next/link";
 
 // AI Configuration components
 import AssistantStatusSection from "@/components/ai-configuration/AssistantStatusSection";
 import SystemPromptBuilder from "@/components/ai-configuration/SystemPromptBuilder";
 import PersonalitySettings from "@/components/ai-configuration/PersonalitySettings";
-import AdvancedSettings from "@/components/ai-configuration/AdvancedSettings";
+import FallbackResponsesTab from "@/components/ai-configuration/FallbackResponsesTab";
+import VersionHistoryTab from "@/components/ai-configuration/VersionHistoryTab";
+import ABTestingTab from "@/components/ai-configuration/ABTestingTab";
 
 interface ClinicData {
   id: number;
@@ -57,10 +59,22 @@ const sections = [
     description: 'Tone & behavior settings'
   },
   {
-    id: 'advanced',
-    name: 'Advanced',
-    icon: TestTube,
-    description: 'Fallbacks & history'
+    id: 'fallbacks',
+    name: 'Fallback Responses',
+    icon: Shield,
+    description: 'Emergency & uncertain responses'
+  },
+  {
+    id: 'history',
+    name: 'Version History',
+    icon: History,
+    description: 'Prompt evolution & rollback'
+  },
+  {
+    id: 'testing',
+    name: 'A/B Testing',
+    icon: FlaskConical,
+    description: 'Test prompt variations'
   }
 ];
 
@@ -121,9 +135,24 @@ export default function AIConfigurationPage() {
             onConfigChange={() => setHasUnsavedChanges(true)}
           />
         );
-      case 'advanced':
+      case 'fallbacks':
         return (
-          <AdvancedSettings 
+          <FallbackResponsesTab 
+            clinicData={clinicData} 
+            aiConfig={aiConfig}
+            onConfigChange={() => setHasUnsavedChanges(true)}
+          />
+        );
+      case 'history':
+        return (
+          <VersionHistoryTab 
+            clinicData={clinicData} 
+            aiConfig={aiConfig}
+          />
+        );
+      case 'testing':
+        return (
+          <ABTestingTab 
             clinicData={clinicData} 
             aiConfig={aiConfig}
             onConfigChange={() => setHasUnsavedChanges(true)}

@@ -196,10 +196,21 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
 
         {/* Template Selection */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-blue-100 mb-3">
-            Choose a template (optional)
-          </label>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <div className="flex items-center justify-between mb-3">
+            <label className="block text-sm font-medium text-blue-100">
+              Choose a template (optional)
+            </label>
+            {selectedTemplate && (
+              <button
+                onClick={() => setSelectedTemplate('')}
+                className="text-xs text-blue-300 hover:text-white px-2 py-1 rounded bg-white/5 hover:bg-white/10 transition-colors"
+              >
+                Clear Selection
+              </button>
+            )}
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
             {templates.map((template) => (
               <button
                 key={template.id}
@@ -215,6 +226,23 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
               </button>
             ))}
           </div>
+
+          {/* Custom Mode Indicator */}
+          {!selectedTemplate && (
+            <div className="bg-orange-900/30 border border-orange-500/30 rounded-lg p-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                <h4 className="text-sm font-medium text-orange-200">Custom Mode Active</h4>
+              </div>
+              <p className="text-xs text-orange-300 mb-2">
+                You&apos;re in custom mode without a template. Your system prompt may not be as effective.
+              </p>
+              <p className="text-xs text-orange-300">
+                💡 <strong>Tip:</strong> Try selecting a template above, or describe your practice in one sentence for better results. 
+                Look at the template descriptions for inspiration.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Auto-Generate Section */}
