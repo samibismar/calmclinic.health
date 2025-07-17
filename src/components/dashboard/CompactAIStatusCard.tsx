@@ -142,13 +142,6 @@ export default function CompactAIStatusCard({ viewChatUrl }: CompactAIStatusCard
         </div>
       )}
       
-      {statusInfo.status === 'active' && (
-        <div className="mt-4 p-3 bg-green-900/30 border border-green-500/30 rounded-lg">
-          <p className="text-sm text-green-200">
-            ✨ Your AI assistant is live and responding
-          </p>
-        </div>
-      )}
     </div>
   );
 }
