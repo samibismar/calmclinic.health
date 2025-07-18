@@ -318,7 +318,6 @@ Use these tools to provide accurate, up-to-date information to help patients pre
       
       for (const toolCall of response.tool_calls) {
         let result;
-        const args = JSON.parse(toolCall.function.arguments || '{}');
         
         switch (toolCall.function.name) {
           case 'get_clinic_services':

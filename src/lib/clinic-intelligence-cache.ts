@@ -8,12 +8,12 @@ interface CacheEntry<T> {
 }
 
 class ClinicIntelligenceCache {
-  private cache = new Map<string, CacheEntry<any>>();
+  private cache = new Map<string, CacheEntry<unknown>>();
   private readonly DEFAULT_TTL = 5 * 60 * 1000; // 5 minutes
   private readonly LONG_TTL = 30 * 60 * 1000; // 30 minutes for stable data
 
   // Generate cache key for clinic data
-  private getCacheKey(clinicId: number, type: string, params?: any): string {
+  private getCacheKey(clinicId: number, type: string, params?: Record<string, unknown>): string {
     const paramString = params ? JSON.stringify(params) : '';
     return `clinic:${clinicId}:${type}:${paramString}`;
   }
@@ -24,7 +24,7 @@ class ClinicIntelligenceCache {
   }
 
   // Get data from cache
-  get<T>(clinicId: number, type: string, params?: any): T | null {
+  get<T>(clinicId: number, type: string, params?: Record<string, unknown>): T | null {
     const key = this.getCacheKey(clinicId, type, params);
     const entry = this.cache.get(key);
     
@@ -42,7 +42,7 @@ class ClinicIntelligenceCache {
   }
 
   // Set data in cache
-  set<T>(clinicId: number, type: string, data: T, params?: any, customTtl?: number): void {
+  set<T>(clinicId: number, type: string, data: T, params?: Record<string, unknown>, customTtl?: number): void {
     const key = this.getCacheKey(clinicId, type, params);
     const ttl = customTtl || this.getTtlForType(type);
     
@@ -60,8 +60,8 @@ class ClinicIntelligenceCache {
     // Stable data that rarely changes - longer TTL
     const stableTypes = ['contact_info', 'clinic_hours', 'insurance_info', 'provider_info'];
     
-    // Dynamic data that may change more frequently - shorter TTL
-    const dynamicTypes = ['services', 'conditions', 'policies'];
+    // Dynamic data that may change more frequently - shorter TTL  
+    // const dynamicTypes = ['services', 'conditions', 'policies'];
     
     if (stableTypes.includes(type)) {
       return this.LONG_TTL;
@@ -102,7 +102,7 @@ class ClinicIntelligenceCache {
 
   // Cleanup expired entries
   cleanup(): void {
-    const beforeSize = this.cache.size;
+    // const beforeSize = this.cache.size;
     const keysToDelete: string[] = [];
     
     this.cache.forEach((entry, key) => {
@@ -170,10 +170,10 @@ export class ToolContextAnalyzer {
       suggestedTools.push('get_conditions_treated');
     }
 
-    // General search keywords
-    if (this.hasKeywords(conversationText, ['find', 'search', 'look', 'information', 'details', 'about'])) {
-      suggestedTools.push('search_clinic_knowledge');
-    }
+    // General search keywords - removed search_clinic_knowledge tool
+    // if (this.hasKeywords(conversationText, ['find', 'search', 'look', 'information', 'details', 'about'])) {
+    //   suggestedTools.push('search_clinic_knowledge');
+    // }
 
     return [...new Set(suggestedTools)]; // Remove duplicates
   }
