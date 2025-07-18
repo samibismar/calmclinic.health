@@ -30,7 +30,7 @@ class ClinicIntelligenceCache {
     
     if (entry && this.isValid(entry)) {
       console.log(`📋 Cache HIT for ${type}:`, clinicId);
-      return entry.data;
+      return entry.data as T;
     }
     
     if (entry) {

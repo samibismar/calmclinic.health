@@ -252,8 +252,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
             providerId: providerId,
             providerSpecialties: doctorConfig.allSpecialties,
             providerTitle: doctorConfig.providerTitle,
-            clinicName: clinic?.practice_name || clinic?.clinic_name,
-            tone: clinic?.tone,
+            clinicName: clinic?.slug,
           }),
         });
 
@@ -459,7 +458,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
             type="text"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             placeholder={t.placeholder}
             className="flex-1 px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm text-sm text-gray-900 placeholder-gray-500"
             disabled={isAiTyping}
