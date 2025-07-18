@@ -169,7 +169,6 @@ export default function DashboardPage() {
 
       <DashboardHeader
         practiceName={data.clinic.practice_name}
-        doctorName={data.clinic.doctor_name}
         viewChatUrl={data.clinic.has_completed_setup ? `/chat?c=${data.clinic.slug}` : undefined}
       />
 
