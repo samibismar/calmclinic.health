@@ -179,7 +179,7 @@ export default function LiveDemoSection({ clinic }: LiveDemoSectionProps) {
                   color: 'white'
                 }}
               >
-                Try Live Demo
+                Try Live Demo 
                 <span>↗</span>
               </a>
             </motion.div>

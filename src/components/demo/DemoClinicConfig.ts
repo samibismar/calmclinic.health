@@ -4,7 +4,7 @@ export const DEMO_CLINIC_CONFIG = {
   id: 'demo-fort-worth-eye',
   slug: 'fort-worth-eye-demo',
   practice_name: 'Fort Worth Eye Associates',
-  doctor_name: 'Dr. Ranelle',
+  doctor_name: 'Ranelle',
   specialty: 'Ophthalmology',
   
   // Branding

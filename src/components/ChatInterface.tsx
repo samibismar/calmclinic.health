@@ -44,15 +44,33 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
   const langParam = searchParams.get('lang');
   const [language, setLanguage] = useState(langParam === 'es' ? 'es' : 'en');
   
+  // Feature flag for Response API (enable with ?responses=true)
+  const useResponseAPI = searchParams.get('responses') === 'true';
+  
   useEffect(() => {
     async function fetchClinic() {
       if (clinicSlug) {
         try {
-          const { data, error } = await supabase
+          // Try to fetch by slug first, then fallback to ID if that fails
+          let { data, error } = await supabase
             .from('clinics')
             .select('*')
             .eq('slug', clinicSlug)
             .single();
+          
+          // If slug lookup failed, try by ID (for compatibility with ?c=id format)
+          if (error && clinicSlug) {
+            const { data: dataById, error: errorById } = await supabase
+              .from('clinics')
+              .select('*')
+              .eq('id', parseInt(clinicSlug))
+              .single();
+            
+            if (!errorById && dataById) {
+              data = dataById;
+              error = null;
+            }
+          }
           
           if (error) throw error;
           if (data) setClinic(data);
@@ -219,7 +237,10 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
       setIsAiTyping(true);
 
       try {
-        const response = await fetch("/api/chat", {
+        // Choose API endpoint based on feature flag
+        const apiEndpoint = useResponseAPI ? "/api/responses" : "/api/chat";
+        
+        const response = await fetch(apiEndpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -231,6 +252,8 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
             providerId: providerId,
             providerSpecialties: doctorConfig.allSpecialties,
             providerTitle: doctorConfig.providerTitle,
+            clinicName: clinic?.practice_name || clinic?.clinic_name,
+            tone: clinic?.tone,
           }),
         });
 
@@ -289,13 +312,23 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
             </button>
           )}
           
-          {/* Language Toggle */}
-          <button
-            onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-900 text-white transition-all duration-200 text-xs font-medium shadow-md hover:shadow-lg"
-          >
-            <span>{language === 'en' ? '🇺🇸 EN' : '🇪🇸 ES'}</span>
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Response API Indicator */}
+            {useResponseAPI && (
+              <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-green-100 text-green-700 text-xs font-medium">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span>Smart</span>
+              </div>
+            )}
+            
+            {/* Language Toggle */}
+            <button
+              onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-900 text-white transition-all duration-200 text-xs font-medium shadow-md hover:shadow-lg"
+            >
+              <span>{language === 'en' ? '🇺🇸 EN' : '🇪🇸 ES'}</span>
+            </button>
+          </div>
         </div>
 
         {/* Logo/Icon */}
