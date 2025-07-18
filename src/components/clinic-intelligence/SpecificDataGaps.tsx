@@ -9,8 +9,7 @@ import {
   CreditCard, 
   Heart, 
   Stethoscope,
-  ArrowRight,
-  ExternalLink
+  ArrowRight
 } from "lucide-react";
 
 interface SpecificGap {
@@ -264,16 +263,6 @@ export default function SpecificDataGaps({ onNavigateToTab, clinicData }: Specif
         })}
       </div>
 
-      <div className="mt-6 p-4 bg-blue-900/30 border border-blue-500/50 rounded-lg">
-        <div className="flex items-center space-x-2 mb-2">
-          <ExternalLink className="w-4 h-4 text-blue-400" />
-          <span className="text-sm font-medium text-blue-200">Quick Tip</span>
-        </div>
-        <p className="text-sm text-blue-300">
-          Click &quot;Fill This In&quot; buttons to navigate directly to the section where you can add the missing information. 
-          Completing high-priority items first will have the biggest impact on your clinic profile.
-        </p>
-      </div>
     </div>
   );
 }

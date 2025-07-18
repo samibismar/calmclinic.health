@@ -21,7 +21,6 @@ export default function StaticChatInterface({ clinicConfig }: StaticChatInterfac
       placeholder: "Type a question about your symptoms...",
       send: "Send",
       clearMessages: "Clear",
-      disclaimer: "This assistant is for educational purposes only.",
       errorMessage: "I apologize, but I'm having trouble connecting right now. Please try again later."
     },
     es: {
@@ -30,7 +29,6 @@ export default function StaticChatInterface({ clinicConfig }: StaticChatInterfac
       placeholder: "Escribe una pregunta sobre tus síntomas...",
       send: "Enviar",
       clearMessages: "Borrar",
-      disclaimer: "Este asistente es solo para fines educativos.",
       errorMessage: "Lo siento, tengo problemas para conectarme ahora. Por favor, inténtalo más tarde."
     }
   };
@@ -152,9 +150,6 @@ export default function StaticChatInterface({ clinicConfig }: StaticChatInterfac
         
         <p className="text-sm text-gray-500 mb-3 font-medium">
           {doctorConfig.specialty}
-        </p>
-        <p className="text-[11px] text-gray-400 font-medium mb-2">
-          {t.disclaimer}
         </p>
         <p className="text-gray-700 text-sm leading-relaxed">
           {doctorConfig.welcomeMessage}

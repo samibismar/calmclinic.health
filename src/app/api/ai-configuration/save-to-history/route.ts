@@ -34,18 +34,7 @@ export async function POST(request: NextRequest) {
 
     const newVersion = (clinic.ai_version || 1) + 1;
 
-    // First, unset all current versions for this clinic
-    try {
-      await supabase
-        .from('ai_prompt_history')
-        .update({ is_current: false })
-        .eq('clinic_id', clinic.id)
-        .eq('is_current', true);
-    } catch (error) {
-      console.error('Error unsetting current versions:', error);
-    }
-
-    // Save to prompt history with new schema
+    // Save to prompt history WITHOUT making it current
     try {
       await supabase
         .from('ai_prompt_history')
@@ -54,29 +43,30 @@ export async function POST(request: NextRequest) {
           prompt_text: system_prompt.trim(),
           version: newVersion,
           version_name: `Version ${newVersion}`,
-          is_current: true,
+          is_current: false, // This is the key difference - NOT making it current
           created_at: new Date().toISOString(),
-          created_by: 'manual-edit'
+          created_by: 'manual-save'
         });
     } catch (historyError) {
       console.error('Error saving to prompt history:', historyError);
-      // Continue anyway, we'll still update the main record
+      return NextResponse.json({ 
+        error: 'Failed to save to history', 
+        details: historyError 
+      }, { status: 500 });
     }
 
-    // Update the clinic with new prompt
-    const { data: updateResult, error: updateError } = await supabase
+    // Update the clinic's ai_version but NOT the ai_instructions
+    const { error: updateError } = await supabase
       .from('clinics')
       .update({
-        ai_instructions: system_prompt.trim(),
         ai_version: newVersion,
         updated_at: new Date().toISOString()
       })
-      .eq('id', clinic.id)
-      .select('*');
+      .eq('id', clinic.id);
 
     if (updateError) {
       return NextResponse.json({ 
-        error: 'Failed to save system prompt', 
+        error: 'Failed to update clinic version', 
         details: updateError 
       }, { status: 500 });
     }
@@ -87,7 +77,7 @@ export async function POST(request: NextRequest) {
         .from('ai_configuration_log')
         .insert({
           clinic_id: clinic.id,
-          change_type: 'system_prompt_saved',
+          change_type: 'system_prompt_saved_to_history',
           change_data: {
             prompt_text: system_prompt.trim(),
             version: newVersion,
@@ -97,19 +87,19 @@ export async function POST(request: NextRequest) {
           created_at: new Date().toISOString()
         });
     } catch (logError) {
-      console.error('Error logging prompt save:', logError);
+      console.error('Error logging save to history:', logError);
     }
 
     return NextResponse.json({ 
       success: true, 
-      clinic: updateResult?.[0],
-      version: newVersion
+      version: newVersion,
+      message: 'Saved to history without making current'
     });
 
   } catch (error) {
-    console.error('Error saving system prompt:', error);
+    console.error('Error saving to history:', error);
     return NextResponse.json({ 
-      error: 'Failed to save system prompt',
+      error: 'Failed to save to history',
       details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }

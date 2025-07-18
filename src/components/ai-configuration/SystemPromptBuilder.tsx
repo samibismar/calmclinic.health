@@ -32,8 +32,10 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
   const [systemPrompt, setSystemPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
+  const [showPreview, setShowPreview] = useState(true); // Default to preview mode
   const [selectedTemplate, setSelectedTemplate] = useState('');
+  const [customPrompt, setCustomPrompt] = useState('');
+  const [isNewlyGenerated, setIsNewlyGenerated] = useState(false); // Track if prompt is newly generated
 
   useEffect(() => {
     if (aiConfig?.system_prompt) {
@@ -73,6 +75,11 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
       id: 'pediatric',
       name: 'Pediatric',
       description: 'Child-friendly and parent-focused communication'
+    },
+    {
+      id: 'custom',
+      name: 'Custom Template',
+      description: 'Write your own system prompt manually'
     }
   ];
 
@@ -103,13 +110,16 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
           profile: profileData,
           services: servicesData,
           insurance: insuranceData,
-          template: selectedTemplate
+          template: selectedTemplate,
+          custom_instructions: selectedTemplate === 'custom' ? customPrompt : ''
         })
       });
 
       const data = await response.json();
       if (response.ok) {
         setSystemPrompt(data.prompt);
+        setIsNewlyGenerated(true); // Mark as newly generated
+        setShowPreview(false); // Show in EDIT mode for newly generated prompts
         onConfigChange();
         toast.success('Intelligent prompt generated successfully!');
       } else {
@@ -123,7 +133,7 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
     }
   };
 
-  const handleSave = async () => {
+  const handleSaveAndMakeCurrent = async () => {
     if (!systemPrompt.trim()) {
       toast.error('System prompt cannot be empty');
       return;
@@ -140,7 +150,9 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
       });
 
       if (response.ok) {
-        toast.success('System prompt saved successfully!');
+        toast.success('System prompt saved and made current!');
+        setIsNewlyGenerated(false); // No longer newly generated
+        setShowPreview(true); // Return to preview mode
         onConfigChange();
       } else {
         toast.error('Failed to save system prompt');
@@ -152,6 +164,85 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
       setIsSaving(false);
     }
   };
+
+  const handleSaveToHistory = async () => {
+    if (!systemPrompt.trim()) {
+      toast.error('System prompt cannot be empty');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      // Create a new API endpoint for saving to history without making current
+      const response = await fetch('/api/ai-configuration/save-to-history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_prompt: systemPrompt
+        })
+      });
+
+      if (response.ok) {
+        toast.success('System prompt saved to history!');
+        setIsNewlyGenerated(false); // No longer newly generated
+        setShowPreview(true); // Return to preview mode
+        onConfigChange();
+      } else {
+        toast.error('Failed to save to history');
+      }
+    } catch (error) {
+      console.error('Error saving to history:', error);
+      toast.error('Failed to save to history');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSaveChanges = async () => {
+    if (!systemPrompt.trim()) {
+      toast.error('System prompt cannot be empty');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const response = await fetch('/api/ai-configuration/save-prompt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_prompt: systemPrompt
+        })
+      });
+
+      if (response.ok) {
+        toast.success('Changes saved successfully!');
+        setShowPreview(true); // Return to preview mode
+        onConfigChange();
+      } else {
+        toast.error('Failed to save changes');
+      }
+    } catch (error) {
+      console.error('Error saving changes:', error);
+      toast.error('Failed to save changes');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleRegenerate = async () => {
+    // Regenerate with the same settings
+    await handleAutoGenerate();
+  };
+
+  const handleDiscard = () => {
+    if (window.confirm('Are you sure you want to discard this prompt? This action cannot be undone.\n\nYou can generate a new prompt by clicking the "Auto-Generate" button again.')) {
+      setSystemPrompt('');
+      setIsNewlyGenerated(false);
+      setShowPreview(true); // Return to preview mode
+      toast.success('Prompt discarded');
+    }
+  };
+
 
   const handleExport = () => {
     const exportData = {
@@ -243,6 +334,34 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
               </p>
             </div>
           )}
+
+          {/* Custom Template Input */}
+          {selectedTemplate === 'custom' && (
+            <div className="bg-blue-900/30 border border-blue-500/30 rounded-lg p-4">
+              <div className="flex items-center space-x-2 mb-3">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <h4 className="text-sm font-medium text-blue-200">Custom Template Description</h4>
+              </div>
+              <p className="text-xs text-blue-300 mb-4">
+                Describe your practice style and approach in 1-2 sentences or bullet points. This will guide the AI when generating your system prompt.
+              </p>
+              <div className="space-y-3">
+                <label className="block text-sm font-medium text-blue-100">
+                  Template Description
+                </label>
+                <input
+                  type="text"
+                  value={customPrompt}
+                  onChange={(e) => setCustomPrompt(e.target.value)}
+                  placeholder="e.g., Family-focused practice with emphasis on preventive care and patient education"
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                />
+                <div className="text-xs text-blue-300">
+                  💡 <strong>Examples:</strong> &quot;Holistic approach with natural remedies focus&quot; • &quot;High-volume urgent care with efficient triage&quot; • &quot;Specialist practice emphasizing patient education&quot;
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Auto-Generate Section */}
@@ -307,6 +426,7 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
               value={systemPrompt}
               onChange={(e) => {
                 setSystemPrompt(e.target.value);
+                setIsNewlyGenerated(false); // Clear newly generated flag when editing
                 onConfigChange();
               }}
               rows={16}
@@ -335,18 +455,71 @@ Never provide:
               <div className="text-sm text-blue-300">
                 {characterCount.toLocaleString()} characters • {wordCount.toLocaleString()} words
               </div>
-              <button
-                onClick={handleSave}
-                disabled={isSaving || !systemPrompt.trim()}
-                className="flex items-center space-x-2 bg-white text-blue-900 font-semibold px-6 py-2 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSaving ? (
-                  <RefreshCw className="w-4 h-4 animate-spin" />
+              <div className="flex items-center space-x-3">
+                {showPreview ? (
+                  // Preview mode - only show Edit button
+                  <button
+                    onClick={() => setShowPreview(false)}
+                    className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors"
+                  >
+                    <Eye className="w-4 h-4" />
+                    <span>Edit</span>
+                  </button>
                 ) : (
-                  <Save className="w-4 h-4" />
+                  // Edit mode - show different buttons based on whether it's newly generated
+                  <>
+                    {isNewlyGenerated ? (
+                      // 4 buttons for newly generated prompts
+                      <>
+                        <button
+                          onClick={handleDiscard}
+                          className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg transition-colors"
+                        >
+                          <span>Discard</span>
+                        </button>
+                        <button
+                          onClick={handleRegenerate}
+                          disabled={isSaving || isGenerating}
+                          className="flex items-center space-x-2 bg-gray-600 hover:bg-gray-700 text-white font-medium px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <RefreshCw className="w-4 h-4" />
+                          <span>Regenerate</span>
+                        </button>
+                        <button
+                          onClick={handleSaveToHistory}
+                          disabled={isSaving || !systemPrompt.trim()}
+                          className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <Save className="w-4 h-4" />
+                          <span>Save to History</span>
+                        </button>
+                        <button
+                          onClick={handleSaveAndMakeCurrent}
+                          disabled={isSaving || !systemPrompt.trim()}
+                          className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <Brain className="w-4 h-4" />
+                          <span>{isSaving ? 'Saving...' : 'Save & Make Current'}</span>
+                        </button>
+                      </>
+                    ) : (
+                      // Regular edit mode - only Save Changes button
+                      <button
+                        onClick={handleSaveChanges}
+                        disabled={isSaving || !systemPrompt.trim()}
+                        className="flex items-center space-x-2 bg-white text-blue-900 font-semibold px-6 py-2 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isSaving ? (
+                          <RefreshCw className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Save className="w-4 h-4" />
+                        )}
+                        <span>{isSaving ? 'Saving...' : 'Save Changes'}</span>
+                      </button>
+                    )}
+                  </>
                 )}
-                <span>{isSaving ? 'Saving...' : 'Save Prompt'}</span>
-              </button>
+              </div>
             </div>
           </div>
         )}

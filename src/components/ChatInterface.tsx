@@ -24,12 +24,20 @@ type ChatInterfaceProps = {
   };
 };
 
+interface CommonQuestion {
+  id: number;
+  question_text: string;
+  is_active: boolean;
+  category?: string;
+}
+
 export default function ChatInterface({ clinic: clinicSlug, providerId, providerInfo }: ChatInterfaceProps) {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Array<{role: string, content: string}>>([]);
   const [clinic, setClinic] = useState<Clinic | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAiTyping, setIsAiTyping] = useState(false);
+  const [commonQuestions, setCommonQuestions] = useState<string[]>([]);
   
   // Get language from URL parameters
   const searchParams = useSearchParams();
@@ -57,6 +65,30 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
     
     fetchClinic();
   }, [clinicSlug]);
+
+  // Fetch common questions from database
+  useEffect(() => {
+    async function fetchCommonQuestions() {
+      if (clinic?.slug) {
+        try {
+          const response = await fetch(`/api/clinic-intelligence/common-questions?clinic=${clinic.slug}`);
+          if (response.ok) {
+            const data = await response.json();
+            // Extract question texts from the database questions
+            const questions = (data.questions || [])
+              .filter((q: CommonQuestion) => q.is_active)
+              .map((q: CommonQuestion) => q.question_text)
+              .slice(0, 4); // Limit to 4 questions for UI
+            setCommonQuestions(questions);
+          }
+        } catch (error) {
+          console.error('Error fetching common questions:', error);
+        }
+      }
+    }
+    
+    fetchCommonQuestions();
+  }, [clinic]);
   
   // Translations
   const translations = {
@@ -66,7 +98,6 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
       placeholder: "Type a question about your symptoms...",
       send: "Send",
       clearMessages: "Clear",
-      disclaimer: "This assistant is for educational purposes only.",
       errorMessage: "I apologize, but I'm having trouble connecting right now. Please try again later."
     },
     es: {
@@ -75,7 +106,6 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
       placeholder: "Escribe una pregunta sobre tus síntomas...",
       send: "Enviar",
       clearMessages: "Borrar",
-      disclaimer: "Este asistente es solo para fines educativos.",
       errorMessage: "Lo siento, tengo problemas para conectarme ahora. Por favor, inténtalo más tarde."
     }
   };
@@ -128,9 +158,14 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
     providerTitle: providerInfo?.title || 'Doctor'
   };
 
-  // Suggested prompts based on specialty or custom prompts
+  // Suggested prompts based on database common questions or fallback prompts
   const getSuggestedPrompts = () => {
-    // First check if clinic has custom prompts
+    // First check if we have common questions from the database
+    if (commonQuestions.length > 0) {
+      return commonQuestions;
+    }
+    
+    // Then check if clinic has custom prompts
     if (clinic?.suggested_prompts) {
       const prompts = clinic.suggested_prompts[language as keyof typeof clinic.suggested_prompts];
       if (prompts && prompts.length > 0) {
@@ -308,9 +343,6 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
             {doctorConfig.providerTitle}
           </p>
         )}
-        <p className="text-[11px] text-gray-400 font-medium mb-2">
-          {t.disclaimer}
-        </p>
         <p className="text-gray-700 text-sm leading-relaxed">
           {doctorConfig.welcomeMessage}
         </p>

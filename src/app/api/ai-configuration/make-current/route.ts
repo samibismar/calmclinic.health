@@ -32,43 +32,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'System prompt is required' }, { status: 400 });
     }
 
-    const newVersion = (clinic.ai_version || 1) + 1;
-
-    // First, unset all current versions for this clinic
-    try {
-      await supabase
-        .from('ai_prompt_history')
-        .update({ is_current: false })
-        .eq('clinic_id', clinic.id)
-        .eq('is_current', true);
-    } catch (error) {
-      console.error('Error unsetting current versions:', error);
-    }
-
-    // Save to prompt history with new schema
-    try {
-      await supabase
-        .from('ai_prompt_history')
-        .insert({
-          clinic_id: clinic.id,
-          prompt_text: system_prompt.trim(),
-          version: newVersion,
-          version_name: `Version ${newVersion}`,
-          is_current: true,
-          created_at: new Date().toISOString(),
-          created_by: 'manual-edit'
-        });
-    } catch (historyError) {
-      console.error('Error saving to prompt history:', historyError);
-      // Continue anyway, we'll still update the main record
-    }
-
-    // Update the clinic with new prompt
+    // Update the clinic with new current prompt (without creating new version)
     const { data: updateResult, error: updateError } = await supabase
       .from('clinics')
       .update({
         ai_instructions: system_prompt.trim(),
-        ai_version: newVersion,
         updated_at: new Date().toISOString()
       })
       .eq('id', clinic.id)
@@ -76,7 +44,7 @@ export async function POST(request: NextRequest) {
 
     if (updateError) {
       return NextResponse.json({ 
-        error: 'Failed to save system prompt', 
+        error: 'Failed to make prompt current', 
         details: updateError 
       }, { status: 500 });
     }
@@ -87,29 +55,27 @@ export async function POST(request: NextRequest) {
         .from('ai_configuration_log')
         .insert({
           clinic_id: clinic.id,
-          change_type: 'system_prompt_saved',
+          change_type: 'system_prompt_made_current',
           change_data: {
             prompt_text: system_prompt.trim(),
-            version: newVersion,
-            saved_at: new Date().toISOString()
+            made_current_at: new Date().toISOString()
           },
           changed_by: 'user',
           created_at: new Date().toISOString()
         });
     } catch (logError) {
-      console.error('Error logging prompt save:', logError);
+      console.error('Error logging prompt make current:', logError);
     }
 
     return NextResponse.json({ 
       success: true, 
-      clinic: updateResult?.[0],
-      version: newVersion
+      clinic: updateResult?.[0]
     });
 
   } catch (error) {
-    console.error('Error saving system prompt:', error);
+    console.error('Error making prompt current:', error);
     return NextResponse.json({ 
-      error: 'Failed to save system prompt',
+      error: 'Failed to make prompt current',
       details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }

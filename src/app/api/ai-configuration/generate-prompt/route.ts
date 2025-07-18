@@ -78,6 +78,19 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { template = '', custom_instructions = '' } = body;
 
+    // Define template descriptions that match the frontend
+    const templateDescriptions = {
+      'general': 'Balanced approach for family medicine and general health',
+      'urgent-care': 'Efficient triage and quick assessment focus',
+      'specialist': 'Detailed, condition-specific guidance',
+      'dental': 'Oral health and dental procedure focused',
+      'mental-health': 'Compassionate, supportive, and non-judgmental',
+      'pediatric': 'Child-friendly and parent-focused communication',
+      'custom': custom_instructions || 'Custom practice approach'
+    };
+
+    const templateDescription = templateDescriptions[template as keyof typeof templateDescriptions] || 'General healthcare practice';
+
     // Fetch comprehensive clinic data
     const intelligenceData = await fetchClinicIntelligenceData(clinic.id);
 
@@ -134,21 +147,22 @@ ${services.map(s => `• ${s.name}${s.description ? ` - ${s.description}` : ''}`
 INSURANCE ACCEPTED:
 ${insurance.filter(i => i.accepted).map(i => `• ${i.plan_name}${i.notes ? ` (${i.notes})` : ''}`).join('\n')}
 
-TEMPLATE PREFERENCE: ${template || 'General healthcare practice'}
-ADDITIONAL INSTRUCTIONS: ${custom_instructions || 'None specified'}
+TEMPLATE APPROACH: ${templateDescription}
+ADDITIONAL INSTRUCTIONS: ${template !== 'custom' ? (custom_instructions || 'None specified') : 'Use the template description above as the primary guidance for tone and approach'}
 
 REQUIREMENTS:
 Create a system prompt that:
 1. Establishes the AI as a helpful assistant for this specific clinic
-2. Includes all relevant clinic information naturally
-3. Sets appropriate boundaries (no medical advice, diagnoses, prescriptions)
-4. Provides clear guidance on when to escalate to human staff
-5. Maintains a professional yet approachable tone
-6. Incorporates the clinic's specialty and services
-7. Includes emergency and after-hours guidance
-8. Mentions accepted insurance and payment policies
-9. Provides appointment scheduling guidance
-10. Reflects the clinic's specific character and approach
+2. MOST IMPORTANTLY: Embodies the template approach described above throughout the entire prompt
+3. Includes all relevant clinic information naturally
+4. Sets appropriate boundaries (no medical advice, diagnoses, prescriptions)
+5. Provides clear guidance on when to escalate to human staff
+6. Maintains a tone and style that matches the template approach
+7. Incorporates the clinic's specialty and services in a way that aligns with the template
+8. Includes emergency and after-hours guidance
+9. Mentions accepted insurance and payment policies
+10. Provides appointment scheduling guidance
+11. Reflects the template approach in every aspect of the assistant's behavior and responses
 
 The prompt should be comprehensive but natural, avoiding bullet points or overly structured formatting. Write it as if speaking directly to the AI assistant about its role and responsibilities.
 

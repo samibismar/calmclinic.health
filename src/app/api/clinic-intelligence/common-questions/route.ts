@@ -17,12 +17,32 @@ async function getClinicFromSession() {
   return clinic;
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const clinic = await getClinicFromSession();
+    const { searchParams } = new URL(request.url);
+    const clinicSlug = searchParams.get('clinic');
     
-    if (!clinic) {
-      return NextResponse.json({ error: 'Not logged in' }, { status: 401 });
+    let clinic = null;
+    
+    if (clinicSlug) {
+      // Public access via clinic slug (for chat interface)
+      const { data: clinicData, error: clinicError } = await supabase
+        .from('clinics')
+        .select('*')
+        .eq('slug', clinicSlug)
+        .single();
+      
+      if (clinicError || !clinicData) {
+        return NextResponse.json({ error: 'Clinic not found' }, { status: 404 });
+      }
+      clinic = clinicData;
+    } else {
+      // Authenticated access (for admin dashboard)
+      clinic = await getClinicFromSession();
+      
+      if (!clinic) {
+        return NextResponse.json({ error: 'Not logged in' }, { status: 401 });
+      }
     }
 
     // Fetch common questions for this clinic

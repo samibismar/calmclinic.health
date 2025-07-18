@@ -101,7 +101,7 @@ when appropriate.
 
 ${aiInstructions ? `\nAdditional specialized knowledge:\n${aiInstructions}` : ''}
 
-Remember: This is for educational purposes only.`;
+`;
   }
 }
 
