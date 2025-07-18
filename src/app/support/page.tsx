@@ -162,19 +162,40 @@ export default function SupportPage() {
               <h3 className="text-lg font-semibold mb-2">Email Support</h3>
               <p className="text-blue-200 mb-4">Get detailed help via email</p>
               <a
-                href="mailto:support@calmclinic.health"
+                href="mailto:sbismar2025@gmail.com"
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
               >
-                support@calmclinic.health
+                sbismar2025@gmail.com
               </a>
             </div>
             <div className="text-center">
               <MessageSquare className="w-12 h-12 text-green-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Live Chat</h3>
-              <p className="text-blue-200 mb-4">Chat with our support team</p>
-              <button className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors">
-                Start Chat
-              </button>
+              <h3 className="text-lg font-semibold mb-2">Direct Contact</h3>
+              <p className="text-blue-200 mb-4">Call Sami Bismar directly</p>
+              <a
+                href="tel:8172436226"
+                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+              >
+                817-243-6226
+              </a>
+            </div>
+          </div>
+          
+          {/* Additional Developer Contact Info */}
+          <div className="mt-8 p-4 bg-blue-900/30 border border-blue-500/30 rounded-lg text-center">
+            <h4 className="text-lg font-semibold text-blue-200 mb-2">Developer Contact</h4>
+            <p className="text-blue-300 text-sm mb-3">
+              For technical issues or feature requests, contact the developer directly:
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <div className="flex items-center space-x-2">
+                <Mail className="w-4 h-4 text-blue-400" />
+                <span className="text-blue-200">sbismar2025@gmail.com</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <MessageSquare className="w-4 h-4 text-green-400" />
+                <span className="text-blue-200">817-243-6226</span>
+              </div>
             </div>
           </div>
         </div>

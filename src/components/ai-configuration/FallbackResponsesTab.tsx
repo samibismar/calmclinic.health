@@ -47,6 +47,14 @@ export default function FallbackResponsesTab({ aiConfig, onConfigChange, onConfi
     after_hours: "We're currently closed. For urgent matters, please call our emergency line at [phone]. Otherwise, I'm happy to help you schedule an appointment for when we reopen.",
     emergency: "This sounds like it might be urgent. Please call 911 for emergencies, or contact our clinic directly at [phone] for immediate medical concerns."
   });
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  
+  // Track original values to detect changes
+  const [originalState, setOriginalState] = useState({
+    uncertain: "I'm not sure about that. Let me connect you with our staff who can help you better.",
+    after_hours: "We're currently closed. For urgent matters, please call our emergency line at [phone]. Otherwise, I'm happy to help you schedule an appointment for when we reopen.",
+    emergency: "This sounds like it might be urgent. Please call 911 for emergencies, or contact our clinic directly at [phone] for immediate medical concerns."
+  });
   
   const [customFallbacks, setCustomFallbacks] = useState<FallbackResponse[]>([]);
   const [showCustomForm, setShowCustomForm] = useState(false);
@@ -62,13 +70,30 @@ export default function FallbackResponsesTab({ aiConfig, onConfigChange, onConfi
 
   useEffect(() => {
     if (aiConfig?.fallback_responses) {
-      setFallbackResponses(prev => ({
-        ...prev,
-        ...aiConfig.fallback_responses
-      }));
+      const newResponses = {
+        uncertain: aiConfig.fallback_responses.uncertain || "I'm not sure about that. Let me connect you with our staff who can help you better.",
+        after_hours: aiConfig.fallback_responses.after_hours || "We're currently closed. For urgent matters, please call our emergency line at [phone]. Otherwise, I'm happy to help you schedule an appointment for when we reopen.",
+        emergency: aiConfig.fallback_responses.emergency || "This sounds like it might be urgent. Please call 911 for emergencies, or contact our clinic directly at [phone] for immediate medical concerns."
+      };
+      setFallbackResponses(newResponses);
+      setOriginalState(newResponses);
     }
     fetchCustomFallbacks();
   }, [aiConfig]);
+
+  // Check for changes whenever fallback responses change
+  useEffect(() => {
+    const hasChanges = 
+      fallbackResponses.uncertain !== originalState.uncertain ||
+      fallbackResponses.after_hours !== originalState.after_hours ||
+      fallbackResponses.emergency !== originalState.emergency;
+    
+    setHasUnsavedChanges(hasChanges);
+    
+    if (hasChanges) {
+      onConfigChange();
+    }
+  }, [fallbackResponses, originalState, onConfigChange]);
 
   const fetchCustomFallbacks = async () => {
     try {
@@ -100,6 +125,9 @@ export default function FallbackResponsesTab({ aiConfig, onConfigChange, onConfi
 
       if (response.ok) {
         toast.success('Fallback responses saved successfully!');
+        // Update original state to current state after successful save
+        setOriginalState(fallbackResponses);
+        setHasUnsavedChanges(false);
         onConfigSaved?.(); // Call the saved callback to clear unsaved changes
       } else {
         toast.error('Failed to save fallback responses');
@@ -254,7 +282,6 @@ export default function FallbackResponsesTab({ aiConfig, onConfigChange, onConfi
                       ...fallbackResponses,
                       [type.key]: e.target.value
                     });
-                    onConfigChange();
                   }}
                   rows={3}
                   className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-none"
@@ -265,26 +292,28 @@ export default function FallbackResponsesTab({ aiConfig, onConfigChange, onConfi
           })}
         </div>
 
-        {/* Save Button */}
-        <div className="flex justify-end mt-6">
-          <button
-            onClick={handleSaveFallbacks}
-            disabled={isSaving}
-            className="flex items-center space-x-2 bg-white text-blue-900 font-semibold px-6 py-3 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50"
-          >
-            {isSaving ? (
-              <>
-                <div className="w-4 h-4 border-2 border-blue-900 border-t-transparent rounded-full animate-spin"></div>
-                <span>Saving...</span>
-              </>
-            ) : (
-              <>
-                <Save className="w-4 h-4" />
-                <span>Save Fallback Responses</span>
-              </>
-            )}
-          </button>
-        </div>
+        {/* Save Button - Only show when there are unsaved changes */}
+        {hasUnsavedChanges && (
+          <div className="flex justify-end mt-6">
+            <button
+              onClick={handleSaveFallbacks}
+              disabled={isSaving}
+              className="flex items-center space-x-2 bg-white text-blue-900 font-semibold px-6 py-3 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50"
+            >
+              {isSaving ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-blue-900 border-t-transparent rounded-full animate-spin"></div>
+                  <span>Saving...</span>
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  <span>Save Fallback Responses</span>
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Custom Fallback Responses */}

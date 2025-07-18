@@ -10,7 +10,7 @@ interface DashboardHeaderProps {
   viewChatUrl?: string;
 }
 
-export default function DashboardHeader({ practiceName, viewChatUrl }: DashboardHeaderProps) {
+export default function DashboardHeader({ practiceName }: DashboardHeaderProps) {
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -56,7 +56,7 @@ export default function DashboardHeader({ practiceName, viewChatUrl }: Dashboard
             </a>
 
             {/* View Chat button */}
-            {viewChatUrl && (
+            {/* {viewChatUrl && (
               <a
                 href={viewChatUrl}
                 target="_blank"
@@ -68,7 +68,7 @@ export default function DashboardHeader({ practiceName, viewChatUrl }: Dashboard
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                 </svg>
               </a>
-            )}
+            )} */}
 
             {/* Logout */}
             <button

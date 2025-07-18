@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowLeft, BarChart3, Building2, Users, Stethoscope, CreditCard, Heart, Bot, AlertCircle, HelpCircle } from "lucide-react";
+import { ArrowLeft, BarChart3, Building2, Users, Stethoscope, CreditCard, Heart, Bot, HelpCircle, FileText } from "lucide-react";
 import Link from "next/link";
 
 // Tab components (we'll create these)
@@ -12,6 +12,7 @@ import ServicesTab from "@/components/clinic-intelligence/ServicesTab";
 import InsuranceTab from "@/components/clinic-intelligence/InsuranceTab";
 import PatientExperienceTab from "@/components/clinic-intelligence/PatientExperienceTab";
 import CommonQuestionsTab from "@/components/clinic-intelligence/CommonQuestionsTab";
+import AdditionalInfoTab from "@/components/clinic-intelligence/AdditionalInfoTab";
 import AIAssistantTab from "@/components/clinic-intelligence/AIAssistantTab";
 
 interface ClinicData {
@@ -73,6 +74,12 @@ const tabs = [
     name: 'Common Questions',
     icon: HelpCircle,
     description: 'Patient question suggestions'
+  },
+  {
+    id: 'additional-info',
+    name: 'Additional Info',
+    icon: FileText,
+    description: 'Extra clinic information'
   },
   {
     id: 'ai-assistant',
@@ -139,6 +146,8 @@ export default function ClinicIntelligencePage() {
         return <PatientExperienceTab />;
       case 'common-questions':
         return <CommonQuestionsTab />;
+      case 'additional-info':
+        return <AdditionalInfoTab />;
       case 'ai-assistant':
         return <AIAssistantTab clinicData={clinicData} />;
       default:
@@ -146,8 +155,7 @@ export default function ClinicIntelligencePage() {
     }
   };
 
-  const unfilledGaps = dataGaps.filter(gap => !gap.is_filled);
-  const highPriorityGaps = unfilledGaps.filter(gap => gap.priority_level === 3);
+  // Removed gap tracking logic as gap banner was removed
 
   if (loading) {
     return (
@@ -191,16 +199,8 @@ export default function ClinicIntelligencePage() {
               </p>
             </div>
             
-            {/* Quick stats */}
+            {/* Practice name only */}
             <div className="mt-4 sm:mt-0 flex items-center space-x-4">
-              {highPriorityGaps.length > 0 && (
-                <div className="flex items-center space-x-2 bg-orange-900/50 text-orange-200 px-3 py-2 rounded-lg">
-                  <AlertCircle className="w-4 h-4" />
-                  <span className="text-sm font-medium">
-                    {highPriorityGaps.length} high priority gap{highPriorityGaps.length !== 1 ? 's' : ''}
-                  </span>
-                </div>
-              )}
               <div className="flex items-center space-x-2 bg-white/10 text-blue-200 px-3 py-2 rounded-lg">
                 <Building2 className="w-4 h-4" />
                 <span className="text-sm font-medium">{clinicData?.practice_name}</span>

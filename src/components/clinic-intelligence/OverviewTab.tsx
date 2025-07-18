@@ -3,12 +3,11 @@
 import { useState, useEffect } from "react";
 import { 
   BarChart3, 
-  AlertCircle, 
-  CheckCircle, 
-  TrendingUp,
   Users,
   Stethoscope,
-  CreditCard
+  CreditCard,
+  Globe,
+  ArrowRight
 } from "lucide-react";
 import SpecificDataGaps from "./SpecificDataGaps";
 
@@ -34,8 +33,6 @@ interface OverviewTabProps {
   dataGaps: DataGap[];
   onNavigateToTab: (tabId: string) => void;
 }
-
-// Removed unused constants
 
 export default function OverviewTab({ clinicData, dataGaps, onNavigateToTab }: OverviewTabProps) {
   const [completionStats, setCompletionStats] = useState({
@@ -105,91 +102,100 @@ export default function OverviewTab({ clinicData, dataGaps, onNavigateToTab }: O
     }
   };
 
-  // Removed unused functions and variables
+  const handleScraperSystemClick = () => {
+    window.open('/scraper-system', '_blank');
+  };
 
   return (
     <div className="space-y-6">
-      {/* Data Intelligence Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6">
-          <div className="flex items-center space-x-3 mb-3">
-            <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
-              <BarChart3 className="w-5 h-5 text-white" />
-            </div>
-            <h3 className="text-lg font-semibold text-white">Data Completeness</h3>
+      {/* Data Completeness Progress - Keep this */}
+      <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6">
+        <div className="flex items-center space-x-3 mb-4">
+          <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+            <BarChart3 className="w-5 h-5 text-white" />
           </div>
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-blue-100">Overall Progress</span>
-              <span className="text-white font-bold">{completionStats.completionPercentage}%</span>
-            </div>
-            <div className="w-full bg-white/20 rounded-full h-2">
-              <div 
-                className="bg-blue-400 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${completionStats.completionPercentage}%` }}
-              ></div>
-            </div>
-            <p className="text-sm text-blue-200">
-              {completionStats.completedDataPoints} of {completionStats.totalDataPoints} data categories complete
-            </p>
-          </div>
+          <h3 className="text-xl font-semibold text-white">Data Completeness Overview</h3>
         </div>
-
-        <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6">
-          <div className="flex items-center space-x-3 mb-3">
-            <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
-              <CheckCircle className="w-5 h-5 text-white" />
-            </div>
-            <h3 className="text-lg font-semibold text-white">Data Categories</h3>
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <span className="text-blue-100 text-lg">Overall Progress</span>
+            <span className="text-white font-bold text-xl">{completionStats.completionPercentage}%</span>
           </div>
-          <div className="space-y-2">
-            <div className="text-3xl font-bold text-white">{completionStats.completedDataPoints}</div>
-            <p className="text-sm text-blue-200">Categories with data</p>
+          <div className="w-full bg-white/20 rounded-full h-3">
+            <div 
+              className="bg-blue-400 h-3 rounded-full transition-all duration-300"
+              style={{ width: `${completionStats.completionPercentage}%` }}
+            ></div>
           </div>
-        </div>
-
-        <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6">
-          <div className="flex items-center space-x-3 mb-3">
-            <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
-              <AlertCircle className="w-5 h-5 text-white" />
-            </div>
-            <h3 className="text-lg font-semibold text-white">High Priority</h3>
-          </div>
-          <div className="space-y-2">
-            <div className="text-3xl font-bold text-white">{completionStats.highPriorityGaps}</div>
-            <p className="text-sm text-blue-200">Critical gaps to fill</p>
-          </div>
-        </div>
-
-        <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6">
-          <div className="flex items-center space-x-3 mb-3">
-            <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-white" />
-            </div>
-            <h3 className="text-lg font-semibold text-white">Improvement</h3>
-          </div>
-          <div className="space-y-2">
-            <div className="text-3xl font-bold text-white">
-              {completionStats.completionPercentage > 75 ? 'Excellent' : 
-               completionStats.completionPercentage > 50 ? 'Good' : 
-               completionStats.completionPercentage > 25 ? 'Fair' : 'Needs Work'}
-            </div>
-            <p className="text-sm text-blue-200">Data quality score</p>
+          <p className="text-blue-200">
+            {completionStats.completedDataPoints} of {completionStats.totalDataPoints} data categories complete
+          </p>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-blue-300">
+              Quality Score: {completionStats.completionPercentage > 75 ? 'Excellent' : 
+                            completionStats.completionPercentage > 50 ? 'Good' : 
+                            completionStats.completionPercentage > 25 ? 'Fair' : 'Needs Work'}
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Specific Data Gaps */}
+      {/* Website Data Extraction System - Replaces the 3 metric cards */}
+      <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-blue-500/20 border border-blue-400/30 rounded-full flex items-center justify-center">
+              <Globe className="w-6 h-6 text-blue-400" />
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold text-white">Website Data Extraction</h3>
+              <p className="text-blue-200">Automatically extract clinic info from your website</p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={handleScraperSystemClick}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-200 hover:scale-105 flex items-center space-x-2"
+            >
+              <span>Learn More</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+        <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+          <div className="flex items-center space-x-2">
+            <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+            <span className="text-blue-200">Contact Info</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+            <span className="text-blue-200">Services</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+            <span className="text-blue-200">Insurance</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+            <span className="text-blue-200">Policies</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Specific Data Gaps - Keep this exactly as it was */}
       <SpecificDataGaps 
         onNavigateToTab={onNavigateToTab}
         clinicData={clinicData}
       />
 
-      {/* Quick Actions */}
+      {/* Quick Actions - Keep this exactly as it was */}
       <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6">
         <h2 className="text-xl font-semibold text-white mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <button className="flex items-center space-x-3 p-4 bg-white/5 border border-white/20 rounded-lg hover:bg-white/10 transition-colors text-left">
+          <button 
+            onClick={() => onNavigateToTab('providers')}
+            className="flex items-center space-x-3 p-4 bg-white/5 border border-white/20 rounded-lg hover:bg-white/10 transition-colors text-left"
+          >
             <Users className="w-5 h-5 text-blue-400" />
             <div>
               <div className="text-sm font-medium text-white">Manage Providers</div>
@@ -197,7 +203,10 @@ export default function OverviewTab({ clinicData, dataGaps, onNavigateToTab }: O
             </div>
           </button>
           
-          <button className="flex items-center space-x-3 p-4 bg-white/5 border border-white/20 rounded-lg hover:bg-white/10 transition-colors text-left">
+          <button 
+            onClick={() => onNavigateToTab('services')}
+            className="flex items-center space-x-3 p-4 bg-white/5 border border-white/20 rounded-lg hover:bg-white/10 transition-colors text-left"
+          >
             <Stethoscope className="w-5 h-5 text-blue-400" />
             <div>
               <div className="text-sm font-medium text-white">Update Services</div>
@@ -205,7 +214,10 @@ export default function OverviewTab({ clinicData, dataGaps, onNavigateToTab }: O
             </div>
           </button>
           
-          <button className="flex items-center space-x-3 p-4 bg-white/5 border border-white/20 rounded-lg hover:bg-white/10 transition-colors text-left">
+          <button 
+            onClick={() => onNavigateToTab('insurance')}
+            className="flex items-center space-x-3 p-4 bg-white/5 border border-white/20 rounded-lg hover:bg-white/10 transition-colors text-left"
+          >
             <CreditCard className="w-5 h-5 text-blue-400" />
             <div>
               <div className="text-sm font-medium text-white">Insurance Plans</div>

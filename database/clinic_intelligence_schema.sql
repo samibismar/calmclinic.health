@@ -102,6 +102,16 @@ CREATE TABLE IF NOT EXISTS clinic_data_gaps (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Additional clinic information for AI assistant
+CREATE TABLE IF NOT EXISTS clinic_additional_info (
+    id SERIAL PRIMARY KEY,
+    clinic_id INTEGER REFERENCES clinics(id) ON DELETE CASCADE,
+    additional_info TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(clinic_id)
+);
+
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_clinic_scraped_data_clinic_id ON clinic_scraped_data(clinic_id);
 CREATE INDEX IF NOT EXISTS idx_clinic_scraped_data_category ON clinic_scraped_data(data_category);
@@ -112,6 +122,7 @@ CREATE INDEX IF NOT EXISTS idx_clinic_conditions_clinic_id ON clinic_conditions(
 CREATE INDEX IF NOT EXISTS idx_clinic_contact_info_clinic_id ON clinic_contact_info(clinic_id);
 CREATE INDEX IF NOT EXISTS idx_clinic_hours_clinic_id ON clinic_hours(clinic_id);
 CREATE INDEX IF NOT EXISTS idx_clinic_data_gaps_clinic_id ON clinic_data_gaps(clinic_id);
+CREATE INDEX IF NOT EXISTS idx_clinic_additional_info_clinic_id ON clinic_additional_info(clinic_id);
 
 -- Add a trigger to update the updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -125,3 +136,4 @@ $$ language 'plpgsql';
 CREATE TRIGGER update_clinic_services_updated_at BEFORE UPDATE ON clinic_services FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_clinic_insurance_updated_at BEFORE UPDATE ON clinic_insurance FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_clinic_policies_updated_at BEFORE UPDATE ON clinic_policies FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_clinic_additional_info_updated_at BEFORE UPDATE ON clinic_additional_info FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

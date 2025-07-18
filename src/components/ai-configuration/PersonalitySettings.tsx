@@ -27,13 +27,59 @@ export default function PersonalitySettings({ aiConfig, onConfigChange, onConfig
   const [newAlwaysInclude, setNewAlwaysInclude] = useState('');
   const [newNeverInclude, setNewNeverInclude] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  
+  // Track original values to detect changes
+  const [originalState, setOriginalState] = useState({
+    tone: 'professional',
+    customTone: '',
+    languages: ['English'],
+    alwaysInclude: [] as string[],
+    neverInclude: [] as string[]
+  });
 
   useEffect(() => {
     if (aiConfig) {
-      setTone(aiConfig.tone || 'professional');
-      setLanguages(aiConfig.languages || ['English']);
+      const newTone = aiConfig.tone || 'professional';
+      const newLanguages = aiConfig.languages || ['English'];
+      
+      setTone(newTone);
+      setLanguages(newLanguages);
+      
+      // Set original state when aiConfig loads
+      setOriginalState({
+        tone: newTone,
+        customTone: '',
+        languages: newLanguages,
+        alwaysInclude: [],
+        neverInclude: []
+      });
     }
   }, [aiConfig]);
+
+  // Check for changes whenever state updates
+  useEffect(() => {
+    const currentState = {
+      tone,
+      customTone,
+      languages,
+      alwaysInclude,
+      neverInclude
+    };
+    
+    const hasChanges = 
+      currentState.tone !== originalState.tone ||
+      currentState.customTone !== originalState.customTone ||
+      JSON.stringify(currentState.languages) !== JSON.stringify(originalState.languages) ||
+      JSON.stringify(currentState.alwaysInclude) !== JSON.stringify(originalState.alwaysInclude) ||
+      JSON.stringify(currentState.neverInclude) !== JSON.stringify(originalState.neverInclude);
+    
+    setHasUnsavedChanges(hasChanges);
+    
+    if (hasChanges) {
+      onConfigChange();
+    }
+  }, [tone, customTone, languages, alwaysInclude, neverInclude, originalState, onConfigChange]);
 
   const toneOptions = [
     { id: 'professional', name: 'Professional', description: 'Formal, respectful, and clinical' },
@@ -75,14 +121,12 @@ export default function PersonalitySettings({ aiConfig, onConfigChange, onConfig
     if (newLanguage && !languages.includes(newLanguage)) {
       setLanguages([...languages, newLanguage]);
       setNewLanguage('');
-      onConfigChange();
     }
   };
 
   const handleRemoveLanguage = (languageToRemove: string) => {
     if (languages.length > 1) { // Keep at least one language
       setLanguages(languages.filter(lang => lang !== languageToRemove));
-      onConfigChange();
     }
   };
 
@@ -90,26 +134,22 @@ export default function PersonalitySettings({ aiConfig, onConfigChange, onConfig
     if (newAlwaysInclude && !alwaysInclude.includes(newAlwaysInclude)) {
       setAlwaysInclude([...alwaysInclude, newAlwaysInclude]);
       setNewAlwaysInclude('');
-      onConfigChange();
     }
   };
 
   const handleRemoveAlwaysInclude = (item: string) => {
     setAlwaysInclude(alwaysInclude.filter(i => i !== item));
-    onConfigChange();
   };
 
   const handleAddNeverInclude = () => {
     if (newNeverInclude && !neverInclude.includes(newNeverInclude)) {
       setNeverInclude([...neverInclude, newNeverInclude]);
       setNewNeverInclude('');
-      onConfigChange();
     }
   };
 
   const handleRemoveNeverInclude = (item: string) => {
     setNeverInclude(neverInclude.filter(i => i !== item));
-    onConfigChange();
   };
 
   const handleSave = async () => {
@@ -128,6 +168,15 @@ export default function PersonalitySettings({ aiConfig, onConfigChange, onConfig
 
       if (response.ok) {
         toast.success('Personality settings saved successfully!');
+        // Update original state to current state after successful save
+        setOriginalState({
+          tone,
+          customTone,
+          languages,
+          alwaysInclude,
+          neverInclude
+        });
+        setHasUnsavedChanges(false);
         onConfigSaved?.(); // Call the saved callback to clear unsaved changes
       } else {
         toast.error('Failed to save personality settings');
@@ -168,7 +217,6 @@ export default function PersonalitySettings({ aiConfig, onConfigChange, onConfig
                   key={option.id}
                   onClick={() => {
                     setTone(option.id);
-                    onConfigChange();
                   }}
                   className={`p-4 rounded-lg border text-left transition-all ${
                     tone === option.id
@@ -189,7 +237,6 @@ export default function PersonalitySettings({ aiConfig, onConfigChange, onConfig
                   value={customTone}
                   onChange={(e) => {
                     setCustomTone(e.target.value);
-                    onConfigChange();
                   }}
                   placeholder="Describe your custom tone (e.g., 'Warm but professional, with a touch of humor')"
                   className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
@@ -306,7 +353,6 @@ export default function PersonalitySettings({ aiConfig, onConfigChange, onConfig
                       key={suggestion}
                       onClick={() => {
                         setAlwaysInclude([...alwaysInclude, suggestion]);
-                        onConfigChange();
                       }}
                       className="text-xs bg-white/5 hover:bg-white/10 text-blue-200 px-2 py-1 rounded transition-colors"
                     >
@@ -372,7 +418,6 @@ export default function PersonalitySettings({ aiConfig, onConfigChange, onConfig
                       key={suggestion}
                       onClick={() => {
                         setNeverInclude([...neverInclude, suggestion]);
-                        onConfigChange();
                       }}
                       className="text-xs bg-white/5 hover:bg-white/10 text-blue-200 px-2 py-1 rounded transition-colors"
                     >
@@ -385,21 +430,23 @@ export default function PersonalitySettings({ aiConfig, onConfigChange, onConfig
         </div>
       </div>
 
-      {/* Save Button */}
-      <div className="flex justify-end">
-        <button
-          onClick={handleSave}
-          disabled={isSaving}
-          className="flex items-center space-x-2 bg-white text-blue-900 font-semibold px-6 py-3 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50"
-        >
-          {isSaving ? (
-            <RefreshCw className="w-4 h-4 animate-spin" />
-          ) : (
-            <Save className="w-4 h-4" />
-          )}
-          <span>{isSaving ? 'Saving...' : 'Save Personality Settings'}</span>
-        </button>
-      </div>
+      {/* Save Button - Only show when there are unsaved changes */}
+      {hasUnsavedChanges && (
+        <div className="flex justify-end">
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="flex items-center space-x-2 bg-white text-blue-900 font-semibold px-6 py-3 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50"
+          >
+            {isSaving ? (
+              <RefreshCw className="w-4 h-4 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4" />
+            )}
+            <span>{isSaving ? 'Saving...' : 'Save Personality Settings'}</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -13,7 +13,6 @@ export default function SignupUnavailable() {
           <ul className="text-gray-700">
             <li><strong>Call:</strong> 817-243-6226</li>
             <li><strong>Sami Bismar:</strong> sbismar2025@gmail.com</li>
-            <li><strong>Caden George:</strong> csgeorge4@yahoo.com</li>
           </ul>
         </div>
       </div>

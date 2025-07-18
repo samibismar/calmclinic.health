@@ -85,7 +85,8 @@ async function fetchClinicIntelligenceData(clinicId: number) {
       questionsResponse,
       policiesResponse,
       conditionsResponse,
-      profileResponse
+      profileResponse,
+      additionalInfoResponse
     ] = await Promise.all([
       supabase.from('clinic_contact_info').select('*').eq('clinic_id', clinicId),
       supabase.from('clinic_hours').select('*').eq('clinic_id', clinicId),
@@ -94,7 +95,8 @@ async function fetchClinicIntelligenceData(clinicId: number) {
       supabase.from('clinic_common_questions').select('*').eq('clinic_id', clinicId),
       supabase.from('clinic_policies').select('*').eq('clinic_id', clinicId),
       supabase.from('clinic_conditions').select('*').eq('clinic_id', clinicId),
-      supabase.from('clinic_profile').select('*').eq('clinic_id', clinicId)
+      supabase.from('clinic_profile').select('*').eq('clinic_id', clinicId),
+      supabase.from('clinic_additional_info').select('*').eq('clinic_id', clinicId)
     ]);
 
     return {
@@ -105,11 +107,12 @@ async function fetchClinicIntelligenceData(clinicId: number) {
       questions: (questionsResponse.data || []) as QuestionInfo[],
       policies: (policiesResponse.data || []) as PolicyInfo[],
       conditions: (conditionsResponse.data || []) as ConditionInfo[],
-      profile: (profileResponse.data || []) as ProfileInfo[]
+      profile: (profileResponse.data || []) as ProfileInfo[],
+      additionalInfo: additionalInfoResponse.data?.[0]?.additional_info || ''
     };
   } catch (error) {
     console.error('Error fetching clinic intelligence data:', error);
-    return { contacts: [], hours: [], services: [], insurance: [], questions: [], policies: [], conditions: [], profile: [] };
+    return { contacts: [], hours: [], services: [], insurance: [], questions: [], policies: [], conditions: [], profile: [], additionalInfo: '' };
   }
 }
 
@@ -228,6 +231,9 @@ Approach: ${profile.approach || 'Not specified'}
 Experience: ${profile.experience || 'Not specified'}
 ` : 'No profile information available'}
 
+ADDITIONAL CLINIC INFORMATION:
+${intelligenceData.additionalInfo || 'None specified'}
+
 TEMPLATE APPROACH: ${templateDescription}
 ADDITIONAL INSTRUCTIONS: ${template !== 'custom' ? (custom_instructions || 'None specified') : 'Use the template description above as the primary guidance for tone and approach'}
 
@@ -311,7 +317,8 @@ Return only the system prompt text, ready to be used directly with the AI assist
         questions: questions.length,
         policies: policies.length,
         conditions: conditions.length,
-        profile: profile ? 1 : 0
+        profile: profile ? 1 : 0,
+        additionalInfo: intelligenceData.additionalInfo ? 1 : 0
       }
     });
 

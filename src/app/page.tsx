@@ -138,7 +138,6 @@ export default function HomePage() {
         <div className="space-y-2 text-base text-gray-300">
           <p><span className="font-semibold text-white">Call:</span> 817-243-6226</p>
           <p><span className="font-semibold text-white">Sami Bismar:</span> sbismar2025@gmail.com</p>
-          <p><span className="font-semibold text-white">Caden George:</span> csgeorge4@yahoo.com</p>
         </div>
       </section>
 
