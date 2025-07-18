@@ -14,9 +14,10 @@ interface AIConfiguration {
 interface PersonalitySettingsProps {
   aiConfig: AIConfiguration | null;
   onConfigChange: () => void;
+  onConfigSaved?: () => void;
 }
 
-export default function PersonalitySettings({ aiConfig, onConfigChange }: PersonalitySettingsProps) {
+export default function PersonalitySettings({ aiConfig, onConfigChange, onConfigSaved }: PersonalitySettingsProps) {
   const [tone, setTone] = useState('professional');
   const [customTone, setCustomTone] = useState('');
   const [languages, setLanguages] = useState<string[]>(['English']);
@@ -127,7 +128,7 @@ export default function PersonalitySettings({ aiConfig, onConfigChange }: Person
 
       if (response.ok) {
         toast.success('Personality settings saved successfully!');
-        onConfigChange();
+        onConfigSaved?.(); // Call the saved callback to clear unsaved changes
       } else {
         toast.error('Failed to save personality settings');
       }

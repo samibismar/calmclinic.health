@@ -38,9 +38,10 @@ interface FallbackResponsesTabProps {
   clinicData: ClinicData | null;
   aiConfig: AIConfiguration | null;
   onConfigChange: () => void;
+  onConfigSaved?: () => void;
 }
 
-export default function FallbackResponsesTab({ aiConfig, onConfigChange }: FallbackResponsesTabProps) {
+export default function FallbackResponsesTab({ aiConfig, onConfigChange, onConfigSaved }: FallbackResponsesTabProps) {
   const [fallbackResponses, setFallbackResponses] = useState({
     uncertain: "I'm not sure about that. Let me connect you with our staff who can help you better.",
     after_hours: "We're currently closed. For urgent matters, please call our emergency line at [phone]. Otherwise, I'm happy to help you schedule an appointment for when we reopen.",
@@ -99,7 +100,7 @@ export default function FallbackResponsesTab({ aiConfig, onConfigChange }: Fallb
 
       if (response.ok) {
         toast.success('Fallback responses saved successfully!');
-        onConfigChange();
+        onConfigSaved?.(); // Call the saved callback to clear unsaved changes
       } else {
         toast.error('Failed to save fallback responses');
       }
@@ -248,10 +249,13 @@ export default function FallbackResponsesTab({ aiConfig, onConfigChange }: Fallb
                 <p className="text-xs text-blue-300 mb-2">{type.description}</p>
                 <textarea
                   value={fallbackResponses[type.key as keyof typeof fallbackResponses]}
-                  onChange={(e) => setFallbackResponses({
-                    ...fallbackResponses,
-                    [type.key]: e.target.value
-                  })}
+                  onChange={(e) => {
+                    setFallbackResponses({
+                      ...fallbackResponses,
+                      [type.key]: e.target.value
+                    });
+                    onConfigChange();
+                  }}
                   rows={3}
                   className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-none"
                   placeholder={`What should the assistant say when ${type.key === 'uncertain' ? 'it doesn\'t know something' : type.key === 'after_hours' ? 'contacted outside business hours' : 'it detects an emergency'}?`}

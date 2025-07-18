@@ -116,6 +116,16 @@ export default function AIConfigurationPage() {
     }
   };
 
+  const handleConfigChange = () => {
+    setHasUnsavedChanges(true);
+  };
+
+  const handleConfigSaved = () => {
+    setHasUnsavedChanges(false);
+    // Refresh the AI configuration data
+    fetchAIConfiguration();
+  };
+
   const renderSectionContent = () => {
     switch (activeSection) {
       case 'status':
@@ -125,14 +135,16 @@ export default function AIConfigurationPage() {
           <SystemPromptBuilder 
             clinicData={clinicData} 
             aiConfig={aiConfig}
-            onConfigChange={() => setHasUnsavedChanges(true)}
+            onConfigChange={handleConfigChange}
+            onConfigSaved={handleConfigSaved}
           />
         );
       case 'personality':
         return (
           <PersonalitySettings 
             aiConfig={aiConfig}
-            onConfigChange={() => setHasUnsavedChanges(true)}
+            onConfigChange={handleConfigChange}
+            onConfigSaved={handleConfigSaved}
           />
         );
       case 'fallbacks':
@@ -140,7 +152,8 @@ export default function AIConfigurationPage() {
           <FallbackResponsesTab 
             clinicData={clinicData} 
             aiConfig={aiConfig}
-            onConfigChange={() => setHasUnsavedChanges(true)}
+            onConfigChange={handleConfigChange}
+            onConfigSaved={handleConfigSaved}
           />
         );
       case 'history':
@@ -155,7 +168,8 @@ export default function AIConfigurationPage() {
           <ABTestingTab 
             clinicData={clinicData} 
             aiConfig={aiConfig}
-            onConfigChange={() => setHasUnsavedChanges(true)}
+            onConfigChange={handleConfigChange}
+            onConfigSaved={handleConfigSaved}
           />
         );
       default:

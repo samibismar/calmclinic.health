@@ -219,6 +219,112 @@ function buildPatientExperienceSection(patientExperience: any): string { // esli
   return section;
 }
 
+// Function to enhance system prompt with personality settings
+function enhanceSystemPromptWithPersonality(
+  basePrompt: string, 
+  clinic: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+  language: string
+): string {
+  let enhancedPrompt = basePrompt;
+  
+  // Add tone guidance
+  if (clinic.tone) {
+    const toneGuidance = {
+      'professional': 'Maintain a professional, respectful, and clinical tone in all interactions.',
+      'friendly': 'Use a warm, approachable, and personable tone that puts patients at ease.',
+      'calm': 'Keep a soothing, reassuring, and peaceful tone that reduces patient anxiety.',
+      'empathetic': 'Show understanding, compassion, and emotional support in your responses.',
+      'efficient': 'Be direct, concise, and to-the-point while remaining helpful.'
+    };
+    
+    const guidance = toneGuidance[clinic.tone as keyof typeof toneGuidance];
+    if (guidance) {
+      enhancedPrompt += `\n\n--- TONE & COMMUNICATION STYLE ---\n${guidance}`;
+    }
+  }
+  
+  // Add supported languages
+  if (clinic.languages && clinic.languages.length > 0) {
+    enhancedPrompt += `\n\n--- LANGUAGE SUPPORT ---\nYou can communicate in: ${clinic.languages.join(', ')}`;
+    
+    // Add specific language instructions
+    if (language === 'es' && clinic.languages.includes('Spanish')) {
+      enhancedPrompt += '\nIMPORTANT: Always respond in Spanish for this conversation.';
+    } else if (language === 'es') {
+      enhancedPrompt += '\nIMPORTANT: Always respond in Spanish.';
+    }
+  }
+  
+  // Add always include guidance
+  if (clinic.ai_always_include && clinic.ai_always_include.length > 0) {
+    enhancedPrompt += '\n\n--- ALWAYS INCLUDE ---\n';
+    enhancedPrompt += 'Make sure to consistently include these elements in your responses:\n';
+    clinic.ai_always_include.forEach((item: string) => {
+      enhancedPrompt += `• ${item}\n`;
+    });
+  }
+  
+  // Add never include guidance
+  if (clinic.ai_never_include && clinic.ai_never_include.length > 0) {
+    enhancedPrompt += '\n\n--- NEVER INCLUDE ---\n';
+    enhancedPrompt += 'Never mention or include these things in your responses:\n';
+    clinic.ai_never_include.forEach((item: string) => {
+      enhancedPrompt += `• ${item}\n`;
+    });
+  }
+  
+  // Add fallback response guidance
+  if (clinic.fallback_uncertain || clinic.fallback_after_hours || clinic.fallback_emergency) {
+    enhancedPrompt += '\n\n--- FALLBACK RESPONSES ---\n';
+    enhancedPrompt += 'When you encounter these situations, use these specific responses:\n';
+    
+    if (clinic.fallback_uncertain) {
+      enhancedPrompt += `\nWhen uncertain or lacking information: "${clinic.fallback_uncertain}"`;
+    }
+    
+    if (clinic.fallback_after_hours) {
+      enhancedPrompt += `\nFor after-hours inquiries: "${clinic.fallback_after_hours}"`;
+    }
+    
+    if (clinic.fallback_emergency) {
+      enhancedPrompt += `\nFor emergency situations: "${clinic.fallback_emergency}"`;
+    }
+  }
+  
+  return enhancedPrompt;
+}
+
+// Function to detect if user message requires fallback response
+function shouldUseFallbackResponse(userMessage: string, clinic: any): string | null { // eslint-disable-line @typescript-eslint/no-explicit-any
+  if (!clinic) return null;
+  
+  const message = userMessage.toLowerCase();
+  
+  // Emergency detection keywords
+  const emergencyKeywords = [
+    'emergency', 'urgent', 'help', 'chest pain', 'heart attack', 'stroke',
+    'bleeding', 'unconscious', 'choking', 'poison', '911', 'ambulance',
+    'can\'t breathe', 'severe pain', 'accident', 'injured'
+  ];
+  
+  // After hours detection (this would need to be enhanced with actual clinic hours)
+  const afterHoursKeywords = [
+    'closed', 'after hours', 'weekend', 'holiday', 'late night', 'early morning'
+  ];
+  
+  // Emergency detection
+  if (emergencyKeywords.some(keyword => message.includes(keyword))) {
+    return clinic.fallback_emergency;
+  }
+  
+  // After hours detection (simplified - in practice, you'd check actual time vs clinic hours)
+  if (afterHoursKeywords.some(keyword => message.includes(keyword))) {
+    return clinic.fallback_after_hours;
+  }
+  
+  return null;
+}
+
 export async function POST(request: Request) {
   try {
     const { 
@@ -236,6 +342,7 @@ export async function POST(request: Request) {
     // Fetch the current system prompt from AI configuration
     let systemPrompt = null;
     let clinicData = null;
+    let clinicConfig = null;
     
     if (providerId) {
       try {
@@ -255,16 +362,26 @@ export async function POST(request: Request) {
             .eq('is_current', true)
             .single();
 
+          // Also fetch AI configuration settings (tone, languages, fallback responses, personality settings)
+          const { data: clinic } = await supabase
+            .from('clinics')
+            .select('id, tone, languages, fallback_uncertain, fallback_after_hours, fallback_emergency, ai_always_include, ai_never_include')
+            .eq('id', provider.clinic_id)
+            .single();
+
+          // Store clinic config for later use
+          clinicConfig = clinic;
+
           if (currentPrompt && currentPrompt.prompt_text) {
             // Use the generated system prompt from AI configuration
             systemPrompt = currentPrompt.prompt_text;
             
-            // Add language preference
-            if (language === 'es') {
-              systemPrompt += '\n\nIMPORTANT: Always respond in Spanish.';
+            // Enhance with personality settings
+            if (clinic) {
+              systemPrompt = enhanceSystemPromptWithPersonality(systemPrompt, clinic, language);
             }
             
-            console.log('✅ Using AI-generated system prompt for clinic:', provider.clinic_id);
+            console.log('✅ Using AI-generated system prompt with personality settings for clinic:', provider.clinic_id);
           } else {
             console.log('⚠️ No current AI-generated prompt found, falling back to legacy system');
             // Fallback to legacy system for backward compatibility
@@ -303,6 +420,18 @@ export async function POST(request: Request) {
 
       systemPrompt = basePrompt;
       console.log('⚠️ Using legacy hardcoded system prompt');
+    }
+
+    // Check if we should use a fallback response instead of generating one
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage && lastMessage.role === 'user' && clinicConfig) {
+      const fallbackResponse = shouldUseFallbackResponse(lastMessage.content, clinicConfig);
+      if (fallbackResponse) {
+        console.log('🛡️ Using fallback response for detected situation');
+        return NextResponse.json({ 
+          message: fallbackResponse 
+        });
+      }
     }
 
     // Call OpenAI API

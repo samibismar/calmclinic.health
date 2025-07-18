@@ -26,9 +26,10 @@ interface SystemPromptBuilderProps {
   clinicData: ClinicData | null;
   aiConfig: AIConfiguration | null;
   onConfigChange: () => void;
+  onConfigSaved?: () => void;
 }
 
-export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChange }: SystemPromptBuilderProps) {
+export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChange, onConfigSaved }: SystemPromptBuilderProps) {
   const [systemPrompt, setSystemPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -153,7 +154,7 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
         toast.success('System prompt saved and made current!');
         setIsNewlyGenerated(false); // No longer newly generated
         setShowPreview(true); // Return to preview mode
-        onConfigChange();
+        onConfigSaved?.(); // Call the saved callback to clear unsaved changes
       } else {
         toast.error('Failed to save system prompt');
       }
@@ -186,7 +187,7 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
         toast.success('System prompt saved to history!');
         setIsNewlyGenerated(false); // No longer newly generated
         setShowPreview(true); // Return to preview mode
-        onConfigChange();
+        onConfigSaved?.(); // Call the saved callback to clear unsaved changes
       } else {
         toast.error('Failed to save to history');
       }

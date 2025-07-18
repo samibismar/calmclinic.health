@@ -45,9 +45,10 @@ interface ABTestingTabProps {
   clinicData: ClinicData | null;
   aiConfig: AIConfiguration | null;
   onConfigChange: () => void;
+  onConfigSaved?: () => void;
 }
 
-export default function ABTestingTab({ onConfigChange }: ABTestingTabProps) {
+export default function ABTestingTab({ onConfigChange, onConfigSaved }: ABTestingTabProps) {
   const [abTests, setAbTests] = useState<ABTest[]>([]);
   const [abTestingEnabled, setAbTestingEnabled] = useState(false);
   const [trafficPercentage, setTrafficPercentage] = useState(10);
@@ -96,7 +97,7 @@ export default function ABTestingTab({ onConfigChange }: ABTestingTabProps) {
       if (response.ok) {
         setAbTestingEnabled(!abTestingEnabled);
         toast.success(`A/B testing ${!abTestingEnabled ? 'enabled' : 'disabled'}`);
-        onConfigChange();
+        onConfigSaved?.(); // Call the saved callback to clear unsaved changes
       } else {
         toast.error('API endpoint not implemented yet');
       }
@@ -120,7 +121,7 @@ export default function ABTestingTab({ onConfigChange }: ABTestingTabProps) {
       if (response.ok) {
         setTrafficPercentage(percentage);
         toast.success('Traffic percentage updated');
-        onConfigChange();
+        onConfigSaved?.(); // Call the saved callback to clear unsaved changes
       } else {
         toast.error('API endpoint not implemented yet');
       }
@@ -245,6 +246,7 @@ export default function ABTestingTab({ onConfigChange }: ABTestingTabProps) {
                     onChange={(e) => {
                       const value = Number(e.target.value);
                       setTrafficPercentage(value);
+                      onConfigChange();
                     }}
                     onMouseUp={(e) => {
                       const value = Number((e.target as HTMLInputElement).value);

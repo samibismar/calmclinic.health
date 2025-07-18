@@ -186,17 +186,17 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Provider Management Section (only if setup complete) */}
-        {data.clinic.has_completed_setup && (
-          <div className="grid grid-cols-1 gap-6">
-            <ProviderManagement />
-          </div>
-        )}
-
         {/* AI Configuration Section (only if setup complete) */}
         {data.clinic.has_completed_setup && (
           <div className="grid grid-cols-1 gap-6">
             <AIConfigurationCard />
+          </div>
+        )}
+
+        {/* Provider Management Section (only if setup complete) */}
+        {data.clinic.has_completed_setup && (
+          <div className="grid grid-cols-1 gap-6">
+            <ProviderManagement />
           </div>
         )}
 

@@ -43,16 +43,39 @@ export default function AIConfigurationCard() {
   };
 
   const getConfigurationStatus = () => {
-    if (!aiConfig) return { status: 'incomplete', message: 'Not configured', color: 'text-red-400' };
+    if (!aiConfig) return { 
+      status: 'incomplete', 
+      message: 'Generate system prompt to get started', 
+      color: 'text-red-400',
+      gaps: ['System prompt not generated'],
+      actionText: 'Generate System Prompt'
+    };
     
     const hasSystemPrompt = aiConfig.system_prompt && aiConfig.system_prompt.trim().length > 0;
     const hasTone = aiConfig.tone && aiConfig.tone !== '';
     const hasLanguages = aiConfig.languages && aiConfig.languages.length > 0;
     
+    const gaps = [];
+    if (!hasSystemPrompt) gaps.push('System prompt');
+    if (!hasTone) gaps.push('Tone setting');
+    if (!hasLanguages) gaps.push('Language preferences');
+    
     if (hasSystemPrompt && hasTone && hasLanguages) {
-      return { status: 'complete', message: 'Fully configured', color: 'text-green-400' };
+      return { 
+        status: 'complete', 
+        message: 'Fully configured', 
+        color: 'text-green-400',
+        gaps: [],
+        actionText: 'Configure AI Assistant'
+      };
     } else {
-      return { status: 'partial', message: 'Partially configured', color: 'text-orange-400' };
+      return { 
+        status: 'partial', 
+        message: `Missing: ${gaps.join(', ')}`, 
+        color: 'text-orange-400',
+        gaps,
+        actionText: 'Complete Configuration'
+      };
     }
   };
 
@@ -210,7 +233,7 @@ export default function AIConfigurationCard() {
           className="inline-flex items-center space-x-2 bg-white text-blue-900 font-semibold px-6 py-3 rounded-lg hover:bg-blue-100 transition-colors"
         >
           <Bot className="w-5 h-5" />
-          <span>Configure AI Assistant</span>
+          <span>{configStatus.actionText}</span>
           <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
