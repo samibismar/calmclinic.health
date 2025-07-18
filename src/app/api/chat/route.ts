@@ -233,10 +233,13 @@ export async function POST(request: Request) {
       providerTitle
     } = await request.json();
 
-    // Fetch comprehensive clinic data if providerId is available
+    // Fetch the current system prompt from AI configuration
+    let systemPrompt = null;
     let clinicData = null;
+    
     if (providerId) {
       try {
+        // Get the clinic from the provider
         const { data: provider } = await supabase
           .from('providers')
           .select('clinic_id')
@@ -244,37 +247,63 @@ export async function POST(request: Request) {
           .single();
 
         if (provider) {
-          const { data } = await supabase
-            .from('clinic_data')
-            .select('*')
+          // First try to get the current system prompt from AI configuration
+          const { data: currentPrompt } = await supabase
+            .from('ai_prompt_history')
+            .select('prompt_text')
             .eq('clinic_id', provider.clinic_id)
+            .eq('is_current', true)
             .single();
-          
-          clinicData = data;
+
+          if (currentPrompt && currentPrompt.prompt_text) {
+            // Use the generated system prompt from AI configuration
+            systemPrompt = currentPrompt.prompt_text;
+            
+            // Add language preference
+            if (language === 'es') {
+              systemPrompt += '\n\nIMPORTANT: Always respond in Spanish.';
+            }
+            
+            console.log('✅ Using AI-generated system prompt for clinic:', provider.clinic_id);
+          } else {
+            console.log('⚠️ No current AI-generated prompt found, falling back to legacy system');
+            // Fallback to legacy system for backward compatibility
+            const { data } = await supabase
+              .from('clinic_data')
+              .select('*')
+              .eq('clinic_id', provider.clinic_id)
+              .single();
+            
+            clinicData = data;
+          }
         }
       } catch (error) {
-        console.log('No comprehensive clinic data available, using basic prompt', error);
+        console.log('Error fetching AI-generated prompt, using fallback:', error);
       }
     }
 
-    const nameIntro = patientName ? `The patient's name is ${patientName}. ` : '';
-    const providerName = doctorName || 'Dr. Assistant';
-    const providerSpecialtiesText = providerSpecialties && providerSpecialties.length > 0 
-      ? providerSpecialties.join(', ') 
-      : specialty || 'General Practice';
+    // If no AI-generated prompt found, use legacy system
+    if (!systemPrompt) {
+      const nameIntro = patientName ? `The patient's name is ${patientName}. ` : '';
+      const providerName = doctorName || 'Dr. Assistant';
+      const providerSpecialtiesText = providerSpecialties && providerSpecialties.length > 0 
+        ? providerSpecialties.join(', ') 
+        : specialty || 'General Practice';
 
-    // Generate comprehensive system prompt
-    const basePrompt = await generateComprehensivePrompt({
-      language,
-      nameIntro,
-      providerName,
-      providerTitle: providerTitle || 'Doctor',
-      providerSpecialties: providerSpecialtiesText,
-      clinicData,
-      aiInstructions
-    });
+      // Generate comprehensive system prompt (legacy)
+      const basePrompt = await generateComprehensivePrompt({
+        language,
+        nameIntro,
+        providerName,
+        providerTitle: providerTitle || 'Doctor',
+        providerSpecialties: providerSpecialtiesText,
+        clinicData,
+        aiInstructions
+      });
 
-    const systemPrompt = basePrompt;
+      systemPrompt = basePrompt;
+      console.log('⚠️ Using legacy hardcoded system prompt');
+    }
 
     // Call OpenAI API
     const completion = await openai.chat.completions.create({

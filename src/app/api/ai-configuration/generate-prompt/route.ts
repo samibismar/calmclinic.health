@@ -46,24 +46,70 @@ interface InsuranceInfo {
   notes: string;
 }
 
+interface QuestionInfo {
+  id: number;
+  question_text: string;
+  is_active: boolean;
+  category?: string;
+}
+
+interface PolicyInfo {
+  id: number;
+  policy_type: string;
+  policy_description: string;
+  is_active: boolean;
+}
+
+interface ConditionInfo {
+  id: number;
+  condition_name: string;
+  description?: string;
+  is_active: boolean;
+}
+
+interface ProfileInfo {
+  id: number;
+  mission?: string;
+  values?: string;
+  approach?: string;
+  experience?: string;
+}
+
 async function fetchClinicIntelligenceData(clinicId: number) {
   try {
-    const [contactResponse, hoursResponse, servicesResponse, insuranceResponse] = await Promise.all([
+    const [
+      contactResponse, 
+      hoursResponse, 
+      servicesResponse, 
+      insuranceResponse,
+      questionsResponse,
+      policiesResponse,
+      conditionsResponse,
+      profileResponse
+    ] = await Promise.all([
       supabase.from('clinic_contact_info').select('*').eq('clinic_id', clinicId),
       supabase.from('clinic_hours').select('*').eq('clinic_id', clinicId),
       supabase.from('clinic_services').select('*').eq('clinic_id', clinicId),
-      supabase.from('clinic_insurance').select('*').eq('clinic_id', clinicId)
+      supabase.from('clinic_insurance').select('*').eq('clinic_id', clinicId),
+      supabase.from('clinic_common_questions').select('*').eq('clinic_id', clinicId),
+      supabase.from('clinic_policies').select('*').eq('clinic_id', clinicId),
+      supabase.from('clinic_conditions').select('*').eq('clinic_id', clinicId),
+      supabase.from('clinic_profile').select('*').eq('clinic_id', clinicId)
     ]);
 
     return {
       contacts: (contactResponse.data || []) as ContactInfo[],
       hours: (hoursResponse.data || []) as HourInfo[],
       services: (servicesResponse.data || []) as ServiceInfo[],
-      insurance: (insuranceResponse.data || []) as InsuranceInfo[]
+      insurance: (insuranceResponse.data || []) as InsuranceInfo[],
+      questions: (questionsResponse.data || []) as QuestionInfo[],
+      policies: (policiesResponse.data || []) as PolicyInfo[],
+      conditions: (conditionsResponse.data || []) as ConditionInfo[],
+      profile: (profileResponse.data || []) as ProfileInfo[]
     };
   } catch (error) {
     console.error('Error fetching clinic intelligence data:', error);
-    return { contacts: [], hours: [], services: [], insurance: [] };
+    return { contacts: [], hours: [], services: [], insurance: [], questions: [], policies: [], conditions: [], profile: [] };
   }
 }
 
@@ -125,6 +171,24 @@ export async function POST(request: NextRequest) {
       notes: ins.notes
     }));
 
+    // Build common questions list  
+    const questions = intelligenceData.questions
+      .filter((q: QuestionInfo) => q.is_active)
+      .map((q: QuestionInfo) => q.question_text);
+
+    // Build policies list
+    const policies = intelligenceData.policies
+      .filter((p: PolicyInfo) => p.is_active)
+      .map((p: PolicyInfo) => `${p.policy_type}: ${p.policy_description}`);
+
+    // Build conditions list
+    const conditions = intelligenceData.conditions
+      .filter((c: ConditionInfo) => c.is_active)
+      .map((c: ConditionInfo) => `${c.condition_name}${c.description ? ` - ${c.description}` : ''}`);
+
+    // Build profile information
+    const profile = intelligenceData.profile.length > 0 ? intelligenceData.profile[0] : null;
+
     // Create comprehensive prompt for GPT
     const userPrompt = `
 You are an expert in crafting system prompts for AI assistants in healthcare clinics. Create a comprehensive, intelligent system prompt for an AI assistant based on the detailed clinic information provided below.
@@ -147,22 +211,45 @@ ${services.map(s => `• ${s.name}${s.description ? ` - ${s.description}` : ''}`
 INSURANCE ACCEPTED:
 ${insurance.filter(i => i.accepted).map(i => `• ${i.plan_name}${i.notes ? ` (${i.notes})` : ''}`).join('\n')}
 
+COMMON PATIENT QUESTIONS:
+${questions.length > 0 ? questions.map(q => `• ${q}`).join('\n') : 'None specified'}
+
+CLINIC POLICIES:
+${policies.length > 0 ? policies.map(p => `• ${p}`).join('\n') : 'None specified'}
+
+CONDITIONS TREATED:
+${conditions.length > 0 ? conditions.map(c => `• ${c}`).join('\n') : 'None specified'}
+
+CLINIC PROFILE:
+${profile ? `
+Mission: ${profile.mission || 'Not specified'}
+Values: ${profile.values || 'Not specified'}
+Approach: ${profile.approach || 'Not specified'}
+Experience: ${profile.experience || 'Not specified'}
+` : 'No profile information available'}
+
 TEMPLATE APPROACH: ${templateDescription}
 ADDITIONAL INSTRUCTIONS: ${template !== 'custom' ? (custom_instructions || 'None specified') : 'Use the template description above as the primary guidance for tone and approach'}
 
 REQUIREMENTS:
 Create a system prompt that:
-1. Establishes the AI as a helpful assistant for this specific clinic
-2. MOST IMPORTANTLY: Embodies the template approach described above throughout the entire prompt
-3. Includes all relevant clinic information naturally
-4. Sets appropriate boundaries (no medical advice, diagnoses, prescriptions)
-5. Provides clear guidance on when to escalate to human staff
-6. Maintains a tone and style that matches the template approach
-7. Incorporates the clinic's specialty and services in a way that aligns with the template
-8. Includes emergency and after-hours guidance
-9. Mentions accepted insurance and payment policies
-10. Provides appointment scheduling guidance
-11. Reflects the template approach in every aspect of the assistant's behavior and responses
+1. Establishes the AI as a highly specialized assistant for this specific clinic
+2. Embodies the template approach described above throughout the entire prompt
+3. Optimizes the AI to answer practically any question related to this clinic using the provided data
+4. Leverages the AI's existing medical knowledge while specializing it for this clinic's specific approach
+5. Includes all relevant clinic information naturally woven throughout the prompt
+6. Sets appropriate boundaries (no medical advice, diagnoses, prescriptions)
+7. Provides clear guidance on when to escalate to human staff
+8. Maintains a tone and style that matches the template approach
+9. Incorporates the clinic's specialty and services in a way that aligns with the template
+10. Includes emergency and after-hours guidance
+11. Mentions accepted insurance and payment policies
+12. Provides appointment scheduling guidance
+13. Creates a specialized knowledge base that combines the AI's general medical knowledge with this clinic's specific information
+14. Enables the AI to provide detailed, clinic-specific answers about procedures, conditions, and treatments relevant to this practice
+
+SPECIALIZATION GOAL:
+The system prompt should transform the AI into a specialized assistant that can answer practically any clinic-related question by combining its existing medical knowledge with the comprehensive clinic data provided. The AI should be able to discuss medical topics (like dilation, procedures, conditions) while always relating them back to this specific clinic's approach, services, and policies.
 
 The prompt should be comprehensive but natural, avoiding bullet points or overly structured formatting. Write it as if speaking directly to the AI assistant about its role and responsibilities.
 
@@ -220,7 +307,11 @@ Return only the system prompt text, ready to be used directly with the AI assist
         contacts: Object.keys(contacts).length,
         hours: hours.length,
         services: services.length,
-        insurance: insurance.length
+        insurance: insurance.length,
+        questions: questions.length,
+        policies: policies.length,
+        conditions: conditions.length,
+        profile: profile ? 1 : 0
       }
     });
 
