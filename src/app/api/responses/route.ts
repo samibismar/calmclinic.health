@@ -256,6 +256,28 @@ const tools = [
   }
 ];
 
+interface OpenAIResponseOutputItem {
+  type: string;
+  name?: string;
+  call_id?: string;
+  id?: string;
+  function?: { name: string };
+  [key: string]: unknown;
+}
+
+interface ToolResult {
+  function_call_id: string;
+  result: unknown;
+}
+
+interface OpenAIResponsesAPIResult {
+  id: string;
+  output?: OpenAIResponseOutputItem[];
+  output_text?: string;
+  text?: string;
+  [key: string]: unknown;
+}
+
 export async function POST(request: Request) {
   try {
     console.log('📝 Response API called');
@@ -359,19 +381,19 @@ Use these tools to provide accurate, up-to-date information to help patients pre
 
         console.log('📤 Sending to Responses API:', JSON.stringify(responsesAPIParams, null, 2));
         
-        const response = await ((openai as unknown) as {responses: {create: (params: unknown) => Promise<any>}}).responses.create(responsesAPIParams);
+        const response = await ((openai as unknown) as {responses: {create: (params: unknown) => Promise<OpenAIResponsesAPIResult>}}).responses.create(responsesAPIParams);
 
         console.log('✅ Responses API successful');
         console.log('📥 Raw response:', JSON.stringify(response, null, 2));
 
         // Check if the response contains function calls that need execution
-        const toolCalls = response.output?.filter((item: any) => item.type === 'function_call') || [];
+        const toolCalls = response.output?.filter((item: OpenAIResponseOutputItem) => item.type === 'function_call') || [];
         
         if (toolCalls.length > 0) {
           console.log(`🔧 Found ${toolCalls.length} tool calls to execute`);
           
           // Execute the tools on our server
-          const toolResults = [];
+          const toolResults: ToolResult[] = [];
           for (const toolCall of toolCalls) {
             console.log('🔧 Processing tool call:', JSON.stringify(toolCall, null, 2));
             
@@ -405,7 +427,7 @@ Use these tools to provide accurate, up-to-date information to help patients pre
             }
             
             toolResults.push({
-              function_call_id: toolCall.call_id || toolCall.id, // Try call_id first, fallback to id
+              function_call_id: toolCall.call_id || toolCall.id || '', // Try call_id first, fallback to id
               result: result
             });
             
@@ -432,13 +454,13 @@ Use these tools to provide accurate, up-to-date information to help patients pre
           console.log('📤 Continue params:', JSON.stringify(continueParams, null, 2));
           
           // Continue the response by creating a new response with tool outputs
-          const finalResponse = await ((openai as unknown) as {responses: {create: (params: unknown) => Promise<any>}}).responses.create(continueParams);
+          const finalResponse = await ((openai as unknown) as {responses: {create: (params: unknown) => Promise<OpenAIResponsesAPIResult>}}).responses.create(continueParams);
           
           console.log('📥 Final response with tool results:', JSON.stringify(finalResponse, null, 2));
           
           return NextResponse.json({ 
             message: finalResponse.output_text || finalResponse.text,
-            tools_used: toolCalls.map((tc: any) => tc.function?.name).filter(Boolean),
+            tools_used: toolCalls.map((tc: OpenAIResponseOutputItem) => tc.function?.name).filter(Boolean),
             response_id: finalResponse.id
           });
         }
