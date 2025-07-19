@@ -261,7 +261,7 @@ export async function POST(request: Request) {
     console.log('📝 Response API called');
     
     const body = await request.json();
-    const { messages, providerId } = body;
+    const { messages, providerId, previousResponseId } = body;
 
     let clinicId = null;
     if (providerId) {
@@ -282,6 +282,20 @@ export async function POST(request: Request) {
       });
     }
 
+    // Use our custom clinic tools - the Responses API will try to call them
+    // If it fails, we'll catch the error and handle tools manually in the fallback
+    const responsesAPITools = [
+      // Our clinic intelligence tools
+      ...tools.map(tool => ({
+        type: "function" as const,
+        name: tool.function.name,
+        description: tool.function.description,
+        parameters: tool.function.parameters
+      })),
+      // Add OpenAI's built-in web search tool as backup
+      { type: "web_search_preview" as const }
+    ];
+
     const systemPrompt = `You are an intelligent medical assistant with access to comprehensive clinic information.
 
 AVAILABLE TOOLS:
@@ -292,18 +306,163 @@ AVAILABLE TOOLS:
 - get_appointment_policies: Get scheduling and cancellation policies
 - get_conditions_treated: Get medical conditions treated at the clinic
 - get_provider_info: Get healthcare provider details
+- web_search_preview: Search the internet for current medical information or clinic details
 
-Use these tools to provide accurate, up-to-date information to help patients prepare for their appointments and answer their questions about the clinic.`;
+Use these tools to provide accurate, up-to-date information to help patients prepare for their appointments and answer their questions about the clinic. ALWAYS prioritize using the clinic-specific tools first before using web search.`;
 
-    console.log('🤖 Calling OpenAI...');
+    // Get the last user message for the Responses API
+    const lastUserMessage = messages[messages.length - 1];
+    const userInput = lastUserMessage?.content || "";
+
+    // Get conversation history for context (excluding the last message since it goes in input)
+    const conversationContext = messages.slice(0, -1);
+    const contextString = conversationContext.length > 0 
+      ? `Previous conversation:\n${conversationContext.map((m: {role: string, content: string}) => `${m.role}: ${m.content}`).join('\n')}\n\nSystem: ${systemPrompt}\n\nCurrent question: `
+      : `${systemPrompt}\n\nQuestion: `;
+
+    console.log('🚀 Attempting to use OpenAI Responses API...');
+    console.log('🔧 Tools structure:', JSON.stringify(responsesAPITools, null, 2));
     
+    // Check if Responses API is available
+    let responseAPIAvailable = false;
+    try {
+      // Check if responses endpoint exists
+      responseAPIAvailable = typeof openai.responses?.create === 'function';
+    } catch {
+      responseAPIAvailable = false;
+    }
+
+    console.log('📡 Responses API available:', responseAPIAvailable);
+
+    if (!responseAPIAvailable) {
+      console.log('⚠️ Responses API not available in current SDK, using enhanced Chat Completions with state simulation');
+    }
+
+    // Try using the new Responses API if available
+    if (responseAPIAvailable) {
+      try {
+        const responsesAPIParams = {
+          model: "gpt-4o",
+          input: `${contextString}${userInput}`,
+          tools: responsesAPITools,
+          temperature: 0.7,
+          max_output_tokens: 500, // Responses API uses max_output_tokens instead of max_tokens
+          store: true, // Enable state management
+        };
+
+        // Disable conversation continuity when using custom tools to avoid tool output conflicts
+        // Each request is independent until we implement proper tool output handling
+        if (previousResponseId && false) { // Disabled for custom tools
+          (responsesAPIParams as Record<string, unknown>).previous_response_id = previousResponseId;
+          console.log(`🔗 Continuing conversation from response: ${previousResponseId}`);
+        }
+
+        console.log('📤 Sending to Responses API:', JSON.stringify(responsesAPIParams, null, 2));
+        
+        const response = await ((openai as unknown) as {responses: {create: (params: unknown) => Promise<any>}}).responses.create(responsesAPIParams);
+
+        console.log('✅ Responses API successful');
+        console.log('📥 Raw response:', JSON.stringify(response, null, 2));
+
+        // Check if the response contains function calls that need execution
+        const toolCalls = response.output?.filter((item: any) => item.type === 'function_call') || [];
+        
+        if (toolCalls.length > 0) {
+          console.log(`🔧 Found ${toolCalls.length} tool calls to execute`);
+          
+          // Execute the tools on our server
+          const toolResults = [];
+          for (const toolCall of toolCalls) {
+            console.log('🔧 Processing tool call:', JSON.stringify(toolCall, null, 2));
+            
+            let result;
+            const functionName = toolCall.name; // Use toolCall.name directly from the response structure
+            
+            switch (functionName) {
+              case 'get_clinic_services':
+                result = await getClinicServices(clinicId);
+                break;
+              case 'get_clinic_hours':
+                result = await getClinicHours(clinicId);
+                break;
+              case 'get_insurance_info':
+                result = await getInsuranceInfo(clinicId);
+                break;
+              case 'get_contact_info':
+                result = await getContactInfo(clinicId);
+                break;
+              case 'get_appointment_policies':
+                result = await getAppointmentPolicies(clinicId);
+                break;
+              case 'get_conditions_treated':
+                result = await getConditionsTreated(clinicId);
+                break;
+              case 'get_provider_info':
+                result = await getProviderInfo(providerId || 0);
+                break;
+              default:
+                result = { error: 'Unknown tool' };
+            }
+            
+            toolResults.push({
+              function_call_id: toolCall.call_id || toolCall.id, // Try call_id first, fallback to id
+              result: result
+            });
+            
+            console.log('🔧 Tool result for', functionName, ':', JSON.stringify(result, null, 2));
+          }
+          
+          // Now send the tool results back to continue the response
+          console.log('📤 Sending tool results back to Responses API');
+          
+          // Continue the response with tool results - needs input parameter
+          const continueParams = {
+            model: "gpt-4o",
+            input: toolResults.map(tr => ({
+              type: "function_call_output",
+              call_id: tr.function_call_id,
+              output: JSON.stringify(tr.result)
+            })),
+            previous_response_id: response.id,
+            temperature: 0.7,
+            max_output_tokens: 500,
+            store: true
+          };
+          
+          console.log('📤 Continue params:', JSON.stringify(continueParams, null, 2));
+          
+          // Continue the response by creating a new response with tool outputs
+          const finalResponse = await ((openai as unknown) as {responses: {create: (params: unknown) => Promise<any>}}).responses.create(continueParams);
+          
+          console.log('📥 Final response with tool results:', JSON.stringify(finalResponse, null, 2));
+          
+          return NextResponse.json({ 
+            message: finalResponse.output_text || finalResponse.text,
+            tools_used: toolCalls.map((tc: any) => tc.function?.name).filter(Boolean),
+            response_id: finalResponse.id
+          });
+        }
+        
+        // No tool calls, return the direct response
+        return NextResponse.json({ 
+          message: response.output_text || response.text,
+          tools_used: [],
+          response_id: response.id
+        });
+
+      } catch (responsesError) {
+        console.warn('⚠️ Responses API failed, falling back to Chat Completions:', responsesError);
+      }
+    }
+    
+    // Fallback to Chat Completions API
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
         { role: "system", content: systemPrompt },
         ...messages
       ],
-      tools: tools,
+      tools: tools, // Use original tools without web search for fallback
       tool_choice: "auto",
       temperature: 0.7,
       max_tokens: 500,
@@ -312,7 +471,7 @@ Use these tools to provide accurate, up-to-date information to help patients pre
     const response = completion.choices[0].message;
 
     if (response.tool_calls && response.tool_calls.length > 0) {
-      console.log(`🔧 Processing ${response.tool_calls.length} tool calls`);
+      console.log(`🔧 Processing ${response.tool_calls.length} tool calls (fallback)`);
       
       const toolResults = [];
       
@@ -366,13 +525,17 @@ Use these tools to provide accurate, up-to-date information to help patients pre
 
       return NextResponse.json({ 
         message: finalCompletion.choices[0].message.content,
-        tools_used: response.tool_calls.map(tc => tc.function.name)
+        tools_used: response.tool_calls.map(tc => tc.function.name),
+        fallback_used: true,
+        response_id: `fallback_${Date.now()}_${Math.random().toString(36).substring(2, 11)}` // Simulated response ID
       });
     }
 
     return NextResponse.json({ 
       message: response.content,
-      tools_used: []
+      tools_used: [],
+      fallback_used: true,
+      response_id: `fallback_${Date.now()}_${Math.random().toString(36).substring(2, 11)}` // Simulated response ID
     });
 
   } catch (error) {

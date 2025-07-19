@@ -38,6 +38,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
   const [loading, setLoading] = useState(true);
   const [isAiTyping, setIsAiTyping] = useState(false);
   const [commonQuestions, setCommonQuestions] = useState<string[]>([]);
+  const [conversationResponseId, setConversationResponseId] = useState<string | null>(null);
   
   // Get language from URL parameters
   const searchParams = useSearchParams();
@@ -240,25 +241,49 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
         // Choose API endpoint based on feature flag
         const apiEndpoint = useResponseAPI ? "/api/responses" : "/api/chat";
         
+        const requestBody: {
+          messages: Array<{role: string, content: string}>;
+          doctorName: string;
+          specialty: string;
+          language: string;
+          aiInstructions: string | null;
+          providerId: number | null | undefined;
+          providerSpecialties: string[];
+          providerTitle: string;
+          clinicName: string | undefined;
+          previousResponseId?: string;
+        } = {
+          messages: updatedMessages,
+          doctorName: doctorConfig.name,
+          specialty: doctorConfig.specialty,
+          language,
+          aiInstructions: clinic?.ai_instructions || null,
+          providerId: providerId,
+          providerSpecialties: doctorConfig.allSpecialties,
+          providerTitle: doctorConfig.providerTitle,
+          clinicName: clinic?.slug,
+        };
+
+        // Add conversation continuity for Responses API
+        if (useResponseAPI && conversationResponseId) {
+          requestBody.previousResponseId = conversationResponseId;
+        }
+
         const response = await fetch(apiEndpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            messages: updatedMessages,
-            doctorName: doctorConfig.name,
-            specialty: doctorConfig.specialty,
-            language,
-            aiInstructions: clinic?.ai_instructions || null,
-            providerId: providerId,
-            providerSpecialties: doctorConfig.allSpecialties,
-            providerTitle: doctorConfig.providerTitle,
-            clinicName: clinic?.slug,
-          }),
+          body: JSON.stringify(requestBody),
         });
 
         if (!response.ok) throw new Error("Failed to get response");
 
         const data = await response.json();
+
+        // Store response ID for conversation continuity (Responses API)
+        if (useResponseAPI && data.response_id) {
+          setConversationResponseId(data.response_id);
+          console.log('🔗 Stored conversation response ID:', data.response_id);
+        }
 
         setMessages([...updatedMessages, {
           role: "assistant",
@@ -301,7 +326,10 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
           {/* Clear Chat Button */}
           {messages.length > 0 && (
             <button
-              onClick={() => setMessages([])}
+              onClick={() => {
+                setMessages([]);
+                setConversationResponseId(null); // Reset conversation for fresh start
+              }}
               className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-gray-900 text-white hover:bg-gray-800 transition-all duration-200 text-xs font-medium shadow-md"
             >
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
