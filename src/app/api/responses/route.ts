@@ -319,26 +319,13 @@ export async function POST(request: Request) {
       { type: "web_search_preview" as const }
     ];
 
-    // Get clinic info for prompt assembly
-    const { data: clinicInfo } = await supabase
-      .from('clinics')
-      .select('practice_name, specialty')
-      .eq('id', clinicId)
-      .single();
-
     // Assemble the system prompt dynamically
     console.log('🔧 Assembling system prompt for clinic:', clinicId);
-    const assembledPrompt = await assembleSystemPrompt(
-      clinicId, 
-      clinicInfo?.practice_name, 
-      clinicInfo?.specialty
-    );
+    const systemPrompt = await assembleSystemPrompt(clinicId);
     
-    if (!validatePromptAssembly(assembledPrompt)) {
+    if (!validatePromptAssembly(systemPrompt)) {
       console.warn('⚠️ Prompt assembly validation failed, using fallback');
     }
-    
-    const systemPrompt = assembledPrompt.fullPrompt;
     console.log('✅ System prompt assembled successfully:', systemPrompt.length, 'characters');
 
     // Get the last user message for the Responses API

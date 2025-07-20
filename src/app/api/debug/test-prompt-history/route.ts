@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 export async function GET() {
   try {
     // Test if the table exists and what its structure is
-    const { data: tableTest, error: tableError } = await supabase
+    const { error: tableError } = await supabase
       .from('ai_prompt_history')
       .select('*')
       .limit(1);

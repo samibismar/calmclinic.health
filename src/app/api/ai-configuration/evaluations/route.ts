@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 
@@ -15,6 +15,22 @@ async function getClinicFromSession() {
     .single();
 
   return clinic;
+}
+
+interface Evaluation {
+  id: string | number;
+  created_at: string;
+  prompt_version?: string;
+  test_scenarios?: string[];
+  overall_score?: number;
+  category_scores?: {
+    healthcare_compliance: number;
+    personality_match: number;
+    response_quality: number;
+    safety: number;
+  };
+  cost?: number;
+  detailed_feedback?: string;
 }
 
 export async function GET() {
@@ -41,7 +57,7 @@ export async function GET() {
       }
 
       // Format evaluations for frontend
-      const formattedEvaluations = (evaluations || []).map((evaluation: any) => ({
+      const formattedEvaluations = (evaluations || []).map((evaluation: Evaluation) => ({
         id: evaluation.id.toString(),
         test_name: `Evaluation - ${new Date(evaluation.created_at).toLocaleDateString()}`,
         prompt_version: evaluation.prompt_version || 'Unknown',

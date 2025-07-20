@@ -1,5 +1,4 @@
 import { supabase } from '@/lib/supabase';
-import { AssembledSystemPrompt, PromptAssemblyConfig } from '@/types/ai-setup';
 
 // Tool definitions and instructions
 export function buildToolInstructions(): string {
@@ -240,13 +239,9 @@ ${fallbackGuidelines}`;
 }
 
 // Utility function to validate prompt assembly
-export function validatePromptAssembly(assembled: AssembledSystemPrompt): boolean {
+export function validatePromptAssembly(assembledPrompt: string): boolean {
   return !!(
-    assembled.fullPrompt &&
-    assembled.fullPrompt.length > 100 &&
-    assembled.components.basePrompt &&
-    assembled.components.toolInstructions &&
-    assembled.components.conversationRules &&
-    assembled.components.fallbackGuidelines
+    assembledPrompt &&
+    assembledPrompt.length > 100
   );
 }

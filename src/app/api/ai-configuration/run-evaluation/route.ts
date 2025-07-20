@@ -244,7 +244,7 @@ Return your evaluation in this exact JSON format:
           let evaluation;
           try {
             evaluation = JSON.parse(judgmentText);
-          } catch (parseError) {
+          } catch {
             // Fallback scoring if JSON parsing fails
             evaluation = {
               healthcare_compliance: 70,

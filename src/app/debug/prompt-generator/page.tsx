@@ -75,7 +75,6 @@ Create a {hasInterviewData} system prompt while maintaining medical professional
 
   const [generatedPrompt, setGeneratedPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [finalUserPrompt, setFinalUserPrompt] = useState('');
 
   const generateRandomInputs = () => {
     const randomTemplates = ['general', 'urgent-care', 'dental', 'mental-health'];
@@ -120,7 +119,7 @@ Create a {hasInterviewData} system prompt while maintaining medical professional
       };
 
       const templateDescription = templateDescriptions[template as keyof typeof templateDescriptions] || 'General healthcare practice';
-      const hasInterviewData = Object.values(responses).some((value: any) => value?.toString().trim().length > 0);
+      const hasInterviewData = Object.values(responses).some((value: unknown) => (value as string)?.trim().length > 0);
       
       let interviewSection = '';
       if (hasInterviewData) {
@@ -139,7 +138,7 @@ Create a {hasInterviewData} system prompt while maintaining medical professional
         .replace('{hasInterviewData}', hasInterviewData ? 'warm, authentic system prompt that reflects this clinic\'s unique personality' : 'professional system prompt that embodies the template approach');
 
       return finalPrompt;
-    } catch (error) {
+    } catch {
       return 'Error: Invalid JSON in clinic data or interview responses';
     }
   };
@@ -150,8 +149,7 @@ Create a {hasInterviewData} system prompt while maintaining medical professional
       const clinic = JSON.parse(clinicData);
       const responses = JSON.parse(interviewResponses);
       
-      const finalPrompt = buildFinalUserPrompt();
-      setFinalUserPrompt(finalPrompt);
+      buildFinalUserPrompt();
 
       const response = await fetch('/api/ai-configuration/generate-prompt', {
         method: 'POST',

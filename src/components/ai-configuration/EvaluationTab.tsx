@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CheckCircle, Clock, Play, BarChart3, AlertTriangle, Star, DollarSign } from "lucide-react";
+import { CheckCircle, Clock, Play, BarChart3, Star, DollarSign } from "lucide-react";
 import { toast } from "react-hot-toast";
 
 interface EvaluationResult {
@@ -36,14 +36,6 @@ interface AIConfiguration {
   languages: string[];
   last_updated: string;
   version: number;
-}
-
-interface PromptVersion {
-  version: number;
-  version_name: string;
-  created_at: string;
-  created_by: string;
-  is_current: boolean;
 }
 
 interface EvaluationTabProps {
@@ -234,7 +226,7 @@ export default function EvaluationTab({ clinicData, aiConfig, onConfigChange, on
         <div className="bg-blue-900/30 border border-blue-500/30 rounded-lg p-4 mb-6">
           <h3 className="text-sm font-medium text-blue-200 mb-3">🔍 How Evaluation Works</h3>
           <div className="space-y-2 text-xs text-blue-300">
-            <p>AI evaluation uses GPT-4 as an expert judge to score your prompt's performance across different scenarios.</p>
+            <p>AI evaluation uses GPT-4 as an expert judge to score your prompt&apos;s performance across different scenarios.</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
               <div className="space-y-1">
                 <p className="font-medium">Evaluation Process:</p>
