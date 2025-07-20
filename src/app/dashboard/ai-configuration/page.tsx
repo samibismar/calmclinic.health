@@ -10,7 +10,7 @@ import SystemPromptBuilder from "@/components/ai-configuration/SystemPromptBuild
 import PersonalitySettings from "@/components/ai-configuration/PersonalitySettings";
 import FallbackResponsesTab from "@/components/ai-configuration/FallbackResponsesTab";
 import VersionHistoryTab from "@/components/ai-configuration/VersionHistoryTab";
-import ABTestingTab from "@/components/ai-configuration/ABTestingTab";
+import EvaluationTab from "@/components/ai-configuration/EvaluationTab";
 
 interface ClinicData {
   id: number;
@@ -84,10 +84,10 @@ const sections = [
     description: 'Prompt evolution & rollback'
   },
   {
-    id: 'testing',
-    name: 'A/B Testing',
+    id: 'evaluation',
+    name: 'Evaluation',
     icon: FlaskConical,
-    description: 'Test prompt variations'
+    description: 'Test prompt performance'
   }
 ];
 
@@ -135,7 +135,8 @@ export default function AIConfigurationPage() {
 
   const handleConfigSaved = () => {
     setHasUnsavedChanges(false);
-    // Refresh the AI configuration data
+    // Refresh both clinic data and AI configuration data
+    fetchClinicData();
     fetchAIConfiguration();
   };
 
@@ -176,9 +177,9 @@ export default function AIConfigurationPage() {
             aiConfig={aiConfig}
           />
         );
-      case 'testing':
+      case 'evaluation':
         return (
-          <ABTestingTab 
+          <EvaluationTab 
             clinicData={clinicData} 
             aiConfig={aiConfig}
             onConfigChange={handleConfigChange}

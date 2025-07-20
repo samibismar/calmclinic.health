@@ -8,6 +8,8 @@ export interface InterviewResponses {
   escalationPreference: string;
   culturalApproach: string;
   formalityLevel: string;
+  patientComfortApproach?: string;
+  topicsToAvoid?: string;
 }
 
 export interface InterviewQuestion {

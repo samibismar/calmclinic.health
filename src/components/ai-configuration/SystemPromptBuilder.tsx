@@ -39,6 +39,8 @@ interface InterviewResponses {
   escalationPreference: string;
   culturalApproach: string;
   formalityLevel: string;
+  patientComfortApproach?: string;
+  topicsToAvoid?: string;
 }
 
 interface SystemPromptBuilderProps {
@@ -63,7 +65,9 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
     medicalDetailLevel: '',
     escalationPreference: '',
     culturalApproach: '',
-    formalityLevel: ''
+    formalityLevel: '',
+    patientComfortApproach: '',
+    topicsToAvoid: ''
   });
   const [showInterviewQuestions, setShowInterviewQuestions] = useState(false);
   const [isInterviewSaved, setIsInterviewSaved] = useState(false);
@@ -79,10 +83,12 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
 
     // Load interview responses from clinic data if available
     if (clinicData?.interview_responses) {
+      console.log('Loading saved interview responses:', clinicData.interview_responses);
       setInterviewResponses(clinicData.interview_responses);
       setIsInterviewSaved(true);
       setIsInterviewEditing(false);
     } else {
+      console.log('No saved interview responses found, starting fresh');
       setIsInterviewSaved(false);
       setIsInterviewEditing(true);
     }
@@ -181,9 +187,7 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          system_prompt: systemPrompt,
-          interview_responses: interviewResponses,
-          selected_template: selectedTemplate
+          system_prompt: systemPrompt
         })
       });
 
@@ -216,9 +220,7 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          system_prompt: systemPrompt,
-          interview_responses: interviewResponses,
-          selected_template: selectedTemplate
+          system_prompt: systemPrompt
         })
       });
 
@@ -298,7 +300,7 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
         toast.success('Interview responses saved!');
         setIsInterviewSaved(true);
         setIsInterviewEditing(false);
-        onConfigChange(); // Trigger parent to reload clinic data
+        onConfigSaved?.(); // Trigger parent to reload clinic data
       } else {
         toast.error('Failed to save interview responses');
       }
@@ -557,12 +559,12 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
 
                 <div>
                   <label className="block text-sm font-medium text-blue-100 mb-2">
-                    How does your clinic approach cultural sensitivity?
+                    How does your clinic help patients feel comfortable and understood?
                   </label>
                   <textarea
-                    value={interviewResponses.culturalApproach}
-                    onChange={(e) => setInterviewResponses(prev => ({ ...prev, culturalApproach: e.target.value }))}
-                    placeholder="e.g., We serve a diverse community and always respect cultural preferences and language needs..."
+                    value={interviewResponses.patientComfortApproach || ''}
+                    onChange={(e) => setInterviewResponses(prev => ({ ...prev, patientComfortApproach: e.target.value }))}
+                    placeholder="e.g., We greet every patient by name, explain each step, and check in about their concerns or anxieties..."
                     disabled={isInterviewSaved && !isInterviewEditing}
                     className={`w-full border rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-none ${
                       isInterviewSaved && !isInterviewEditing 
@@ -575,12 +577,12 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
 
                 <div>
                   <label className="block text-sm font-medium text-blue-100 mb-2">
-                    What level of formality does your clinic prefer?
+                    Are there any topics or types of information you want the AI to avoid discussing with patients, not just phrases but topics?
                   </label>
                   <textarea
-                    value={interviewResponses.formalityLevel}
-                    onChange={(e) => setInterviewResponses(prev => ({ ...prev, formalityLevel: e.target.value }))}
-                    placeholder="e.g., Professional but friendly - we use first names and keep conversations warm but respectful..."
+                    value={interviewResponses.topicsToAvoid || ''}
+                    onChange={(e) => setInterviewResponses(prev => ({ ...prev, topicsToAvoid: e.target.value }))}
+                    placeholder="e.g., We do not want the AI to discuss billing disputes, legal advice, or specific medication recommendations..."
                     disabled={isInterviewSaved && !isInterviewEditing}
                     className={`w-full border rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-none ${
                       isInterviewSaved && !isInterviewEditing 

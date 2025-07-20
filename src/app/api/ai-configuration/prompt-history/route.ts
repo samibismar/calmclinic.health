@@ -25,30 +25,32 @@ export async function GET() {
       return NextResponse.json({ error: 'Not logged in' }, { status: 401 });
     }
 
-    // Fetch prompt history with new schema
+    // Fetch prompt history with clean schema
     const { data: history, error: historyError } = await supabase
       .from('ai_prompt_history')
-      .select('*')
+      .select('id, clinic_id, prompt_text, version, version_name, is_current, created_at, created_by, generation_data')
       .eq('clinic_id', clinic.id)
       .order('version', { ascending: false })
-      .limit(50); // Increased limit for better history view
+      .limit(50);
 
     if (historyError) {
+      console.error('Error fetching prompt history:', historyError);
       return NextResponse.json({ 
         error: 'Failed to fetch prompt history', 
         details: historyError 
       }, { status: 500 });
     }
 
-    // Format the history data with new schema
+    // Format the history data for frontend
     const formattedHistory = (history || []).map(item => ({
       id: item.id,
       version: item.version,
-      version_name: item.version_name || `Version ${item.version}`,
+      version_name: item.version_name,
       prompt_text: item.prompt_text,
       created_at: item.created_at,
       created_by: item.created_by,
-      is_current: Boolean(item.is_current)
+      is_current: Boolean(item.is_current),
+      generation_data: item.generation_data
     }));
 
     return NextResponse.json({ 

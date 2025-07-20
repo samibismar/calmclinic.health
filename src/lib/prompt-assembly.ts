@@ -100,26 +100,25 @@ ESCALATION GUIDELINES:
 ${fallbackInstructions}`;
 }
 
-// Get the latest approved prompt for a clinic
+// Get the current active base prompt for a clinic from ai_prompt_history
 export async function getLatestClinicPrompt(clinicId: number): Promise<string | null> {
   try {
     const { data, error } = await supabase
       .from('ai_prompt_history')
-      .select('prompt_text, generation_data')
+      .select('prompt_text')
       .eq('clinic_id', clinicId)
-      .eq('is_active', true)
-      .order('created_at', { ascending: false })
-      .limit(1)
+      .eq('is_current', true)
       .single();
 
     if (error || !data) {
-      console.log('No active prompt found for clinic:', clinicId);
+      console.log('No current prompt found in ai_prompt_history for clinic:', clinicId);
       return null;
     }
 
+    console.log('Found current prompt for clinic', clinicId, '- length:', data.prompt_text.length);
     return data.prompt_text;
   } catch (error) {
-    console.error('Error fetching clinic prompt:', error);
+    console.error('Error fetching clinic prompt from ai_prompt_history:', error);
     return null;
   }
 }
@@ -203,15 +202,22 @@ export async function buildPersonalityGuidelines(clinicId: number): Promise<stri
 }
 
 // Main function to assemble the complete system prompt
-export async function assembleSystemPrompt(clinicId: number, clinicName?: string, specialty?: string): Promise<AssembledSystemPrompt> {
-  // Get the base prompt from the database
-  let basePrompt = await getLatestClinicPrompt(clinicId);
+export async function assembleSystemPrompt(clinicId: number, basePromptOverride?: string): Promise<string> {
+  // Use override prompt or get the base prompt from the database
+  let basePrompt = basePromptOverride || await getLatestClinicPrompt(clinicId);
   
   // Fallback to default if no custom prompt exists
   if (!basePrompt) {
+    // Get clinic info for default prompt
+    const { data: clinicData } = await supabase
+      .from('clinics')
+      .select('practice_name, specialty')
+      .eq('id', clinicId)
+      .single();
+    
     basePrompt = getDefaultPrompt(
-      clinicName || 'this clinic', 
-      specialty || 'healthcare'
+      clinicData?.practice_name || 'this clinic', 
+      clinicData?.specialty || 'healthcare'
     );
   }
 
@@ -222,23 +228,6 @@ export async function assembleSystemPrompt(clinicId: number, clinicName?: string
   const fallbackGuidelines = await buildFallbackGuidelines(clinicId);
 
   // Assemble the complete prompt
-  const components: PromptAssemblyConfig = {
-    basePrompt,
-    toolInstructions,
-    conversationRules,
-    clinicPersonality: {
-      communicationStyle: '',
-      anxietyHandling: '',
-      practiceUniqueness: '',
-      medicalDetailLevel: '',
-      escalationPreference: '',
-      culturalApproach: '',
-      formalityLevel: ''
-    }, // Now dynamically populated from live clinic data
-    fallbackGuidelines,
-    personalityGuidelines
-  };
-
   const fullPrompt = `${basePrompt}${personalityGuidelines}
 
 ${toolInstructions}
@@ -247,13 +236,7 @@ ${conversationRules}
 
 ${fallbackGuidelines}`;
 
-  return {
-    fullPrompt,
-    components,
-    version: '1.0',
-    clinicId,
-    generatedAt: new Date()
-  };
+  return fullPrompt;
 }
 
 // Utility function to validate prompt assembly

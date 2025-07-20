@@ -26,28 +26,42 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { system_prompt } = body;
+    const { version_id } = body;
 
-    if (!system_prompt?.trim()) {
-      return NextResponse.json({ error: 'System prompt is required' }, { status: 400 });
+    if (!version_id) {
+      return NextResponse.json({ error: 'Version ID is required' }, { status: 400 });
     }
 
-    // Update the clinic with new current prompt (without creating new version)
+    // First, unset all current versions for this clinic
+    await supabase
+      .from('ai_prompt_history')
+      .update({ is_current: false })
+      .eq('clinic_id', clinic.id)
+      .eq('is_current', true);
+
+    // Make the selected version current
     const { data: updateResult, error: updateError } = await supabase
-      .from('clinics')
-      .update({
-        ai_instructions: system_prompt.trim(),
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', clinic.id)
+      .from('ai_prompt_history')
+      .update({ is_current: true })
+      .eq('id', version_id)
+      .eq('clinic_id', clinic.id)
       .select('*');
 
-    if (updateError) {
+    if (updateError || !updateResult || updateResult.length === 0) {
       return NextResponse.json({ 
-        error: 'Failed to make prompt current', 
+        error: 'Failed to make prompt version current', 
         details: updateError 
       }, { status: 500 });
     }
+
+    // Update clinic version tracker
+    await supabase
+      .from('clinics')
+      .update({
+        ai_version: updateResult[0].version,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', clinic.id);
 
     // Log the configuration change
     try {
@@ -57,7 +71,8 @@ export async function POST(request: NextRequest) {
           clinic_id: clinic.id,
           change_type: 'system_prompt_made_current',
           change_data: {
-            prompt_text: system_prompt.trim(),
+            version_id: version_id,
+            version: updateResult[0].version,
             made_current_at: new Date().toISOString()
           },
           changed_by: 'user',
@@ -69,7 +84,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ 
       success: true, 
-      clinic: updateResult?.[0]
+      current_version: updateResult[0],
+      message: `Version ${updateResult[0].version} is now current`
     });
 
   } catch (error) {

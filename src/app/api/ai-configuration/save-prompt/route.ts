@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { system_prompt, interview_responses, selected_template } = body;
+    const { system_prompt } = body;
 
     if (!system_prompt?.trim()) {
       return NextResponse.json({ error: 'System prompt is required' }, { status: 400 });
@@ -45,9 +45,9 @@ export async function POST(request: NextRequest) {
       console.error('Error unsetting current versions:', error);
     }
 
-    // Save to prompt history with new schema
+    // Save to prompt history with clean schema
     try {
-      await supabase
+      const { data: historyResult, error: historyError } = await supabase
         .from('ai_prompt_history')
         .insert({
           clinic_id: clinic.id,
@@ -55,37 +55,43 @@ export async function POST(request: NextRequest) {
           version: newVersion,
           version_name: `Version ${newVersion}`,
           is_current: true,
-          created_at: new Date().toISOString(),
           created_by: 'manual-edit',
-          interview_responses: interview_responses || null,
-          selected_template: selected_template || null
-        });
+          generation_data: {
+            saved_method: 'save_and_make_current',
+            saved_at: new Date().toISOString()
+          }
+        })
+        .select();
+
+      if (historyError) {
+        console.error('Database error saving to prompt history:', historyError);
+        return NextResponse.json({ 
+          error: 'Failed to save to prompt history', 
+          details: historyError 
+        }, { status: 500 });
+      }
+
+      console.log('Successfully saved to ai_prompt_history:', historyResult);
     } catch (historyError) {
       console.error('Error saving to prompt history:', historyError);
-      // Continue anyway, we'll still update the main record
+      return NextResponse.json({ 
+        error: 'Failed to save to prompt history', 
+        details: historyError 
+      }, { status: 500 });
     }
 
-    // Update the clinic with new prompt and interview responses
-    const updateData: Record<string, unknown> = {
-      ai_instructions: system_prompt.trim(),
-      ai_version: newVersion,
-      updated_at: new Date().toISOString()
-    };
-
-    // Store interview responses in clinic if provided
-    if (interview_responses) {
-      updateData.interview_responses = interview_responses;
-    }
-
-    const { data: updateResult, error: updateError } = await supabase
+    // Update only the clinic version (ai_instructions removed - now comes from ai_prompt_history)
+    const { error: updateError } = await supabase
       .from('clinics')
-      .update(updateData)
-      .eq('id', clinic.id)
-      .select('*');
+      .update({
+        ai_version: newVersion,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', clinic.id);
 
     if (updateError) {
       return NextResponse.json({ 
-        error: 'Failed to save system prompt', 
+        error: 'Failed to update clinic version', 
         details: updateError 
       }, { status: 500 });
     }
@@ -111,8 +117,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ 
       success: true, 
-      clinic: updateResult?.[0],
-      version: newVersion
+      version: newVersion,
+      message: 'System prompt saved and made current'
     });
 
   } catch (error) {
