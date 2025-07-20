@@ -3,7 +3,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { HelpCircle, TrendingUp, LogOut } from "lucide-react";
+import { HelpCircle, TrendingUp, LogOut, UserCircle } from "lucide-react";
 
 interface DashboardHeaderProps {
   practiceName: string;
@@ -44,6 +44,15 @@ export default function DashboardHeader({ practiceName }: DashboardHeaderProps) 
             >
               <HelpCircle className="w-5 h-5" />
               <span className="text-sm font-medium">Support</span>
+            </a>
+
+            {/* Account */}
+            <a
+              href="/dashboard/account"
+              className="flex items-center space-x-2 text-blue-200 hover:text-white transition-colors"
+            >
+              <UserCircle className="w-5 h-5" />
+              <span className="text-sm font-medium">Account</span>
             </a>
 
             {/* Engage */}
