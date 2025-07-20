@@ -31,6 +31,8 @@ export async function GET() {
       tone: clinic.tone || 'professional',
       languages: clinic.languages || ['English'],
       custom_instructions: clinic.ai_instructions || '',
+      ai_always_include: clinic.ai_always_include || [],
+      ai_never_include: clinic.ai_never_include || [],
       fallback_responses: {
         uncertain: clinic.fallback_uncertain || "I'm not sure about that. Let me connect you with our staff who can help you better.",
         after_hours: clinic.fallback_after_hours || "We're currently closed. For urgent matters, please call our emergency line. Otherwise, I'm happy to help you schedule an appointment.",

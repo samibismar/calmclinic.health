@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 import OpenAI from 'openai';
+import { InterviewResponses } from '@/types/ai-setup';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -22,99 +23,12 @@ async function getClinicFromSession() {
   return clinic;
 }
 
-interface ContactInfo {
-  contact_type: string;
-  contact_value: string;
-}
+// Interfaces removed since we no longer fetch clinic intelligence data
+// All data access is now handled through real-time tools in the Response API
 
-interface HourInfo {
-  day_of_week: number;
-  open_time: string;
-  close_time: string;
-  is_closed: boolean;
-}
-
-interface ServiceInfo {
-  service_name: string;
-  description: string;
-  category: string;
-}
-
-interface InsuranceInfo {
-  plan_name: string;
-  accepted: boolean;
-  notes: string;
-}
-
-interface QuestionInfo {
-  id: number;
-  question_text: string;
-  is_active: boolean;
-  category?: string;
-}
-
-interface PolicyInfo {
-  id: number;
-  policy_type: string;
-  policy_description: string;
-  is_active: boolean;
-}
-
-interface ConditionInfo {
-  id: number;
-  condition_name: string;
-  description?: string;
-  is_active: boolean;
-}
-
-interface ProfileInfo {
-  id: number;
-  mission?: string;
-  values?: string;
-  approach?: string;
-  experience?: string;
-}
-
-async function fetchClinicIntelligenceData(clinicId: number) {
-  try {
-    const [
-      contactResponse, 
-      hoursResponse, 
-      servicesResponse, 
-      insuranceResponse,
-      questionsResponse,
-      policiesResponse,
-      conditionsResponse,
-      profileResponse,
-      additionalInfoResponse
-    ] = await Promise.all([
-      supabase.from('clinic_contact_info').select('*').eq('clinic_id', clinicId),
-      supabase.from('clinic_hours').select('*').eq('clinic_id', clinicId),
-      supabase.from('clinic_services').select('*').eq('clinic_id', clinicId),
-      supabase.from('clinic_insurance').select('*').eq('clinic_id', clinicId),
-      supabase.from('clinic_common_questions').select('*').eq('clinic_id', clinicId),
-      supabase.from('clinic_policies').select('*').eq('clinic_id', clinicId),
-      supabase.from('clinic_conditions').select('*').eq('clinic_id', clinicId),
-      supabase.from('clinic_profile').select('*').eq('clinic_id', clinicId),
-      supabase.from('clinic_additional_info').select('*').eq('clinic_id', clinicId)
-    ]);
-
-    return {
-      contacts: (contactResponse.data || []) as ContactInfo[],
-      hours: (hoursResponse.data || []) as HourInfo[],
-      services: (servicesResponse.data || []) as ServiceInfo[],
-      insurance: (insuranceResponse.data || []) as InsuranceInfo[],
-      questions: (questionsResponse.data || []) as QuestionInfo[],
-      policies: (policiesResponse.data || []) as PolicyInfo[],
-      conditions: (conditionsResponse.data || []) as ConditionInfo[],
-      profile: (profileResponse.data || []) as ProfileInfo[],
-      additionalInfo: additionalInfoResponse.data?.[0]?.additional_info || ''
-    };
-  } catch (error) {
-    console.error('Error fetching clinic intelligence data:', error);
-    return { contacts: [], hours: [], services: [], insurance: [], questions: [], policies: [], conditions: [], profile: [], additionalInfo: '' };
-  }
-}
+// Note: This function is kept for potential future use but is not currently used
+// since we now focus on personality-based prompt generation rather than clinic intelligence data
+// async function fetchClinicIntelligenceData(clinicId: number) { ... }
 
 export async function POST(request: NextRequest) {
   try {
@@ -125,7 +39,15 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { template = '', custom_instructions = '' } = body;
+    const { 
+      template = '', 
+      custom_instructions = '',
+      interviewResponses = null
+    }: {
+      template: string;
+      custom_instructions: string;
+      interviewResponses?: InterviewResponses | null;
+    } = body;
 
     // Define template descriptions that match the frontend
     const templateDescriptions = {
@@ -140,145 +62,96 @@ export async function POST(request: NextRequest) {
 
     const templateDescription = templateDescriptions[template as keyof typeof templateDescriptions] || 'General healthcare practice';
 
-    // Fetch comprehensive clinic data
-    const intelligenceData = await fetchClinicIntelligenceData(clinic.id);
+    // Always use both template and interview responses when available
+    const hasInterviewData = interviewResponses && Object.values(interviewResponses).some(response => response.trim().length > 0);
+    
+    let personalitySection = '';
+    if (hasInterviewData) {
+      personalitySection = `
+CLINIC PERSONALITY (from interview responses):
+Communication Style: "${interviewResponses.communicationStyle}"
+Anxiety Management: "${interviewResponses.anxietyHandling}"
+Practice Uniqueness: "${interviewResponses.practiceUniqueness}"
+Medical Detail Level: "${interviewResponses.medicalDetailLevel}"
+Escalation Preference: "${interviewResponses.escalationPreference}"
+Cultural Approach: "${interviewResponses.culturalApproach}"
+Formality Level: "${interviewResponses.formalityLevel}"
+`;
+    }
 
-    // Build contact information summary
-    const contacts = intelligenceData.contacts.reduce((acc: Record<string, string>, contact: ContactInfo) => {
-      acc[contact.contact_type] = contact.contact_value;
-      return acc;
-    }, {});
-
-    // Build hours summary
-    const hours = intelligenceData.hours.map((hour: HourInfo) => {
-      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      return {
-        day: days[hour.day_of_week],
-        open_time: hour.open_time,
-        close_time: hour.close_time,
-        is_closed: hour.is_closed
-      };
-    });
-
-    // Build services list
-    const services = intelligenceData.services.map((service: ServiceInfo) => ({
-      name: service.service_name,
-      description: service.description,
-      category: service.category
-    }));
-
-    // Build insurance list
-    const insurance = intelligenceData.insurance.map((ins: InsuranceInfo) => ({
-      plan_name: ins.plan_name,
-      accepted: ins.accepted,
-      notes: ins.notes
-    }));
-
-    // Build common questions list  
-    const questions = intelligenceData.questions
-      .filter((q: QuestionInfo) => q.is_active)
-      .map((q: QuestionInfo) => q.question_text);
-
-    // Build policies list
-    const policies = intelligenceData.policies
-      .filter((p: PolicyInfo) => p.is_active)
-      .map((p: PolicyInfo) => `${p.policy_type}: ${p.policy_description}`);
-
-    // Build conditions list
-    const conditions = intelligenceData.conditions
-      .filter((c: ConditionInfo) => c.is_active)
-      .map((c: ConditionInfo) => `${c.condition_name}${c.description ? ` - ${c.description}` : ''}`);
-
-    // Build profile information
-    const profile = intelligenceData.profile.length > 0 ? intelligenceData.profile[0] : null;
-
-    // Create comprehensive prompt for GPT
-    const userPrompt = `
-You are an expert in crafting system prompts for AI assistants in healthcare clinics. Create a comprehensive, intelligent system prompt for an AI assistant based on the detailed clinic information provided below.
+    const userPrompt = `You are an expert in crafting system prompts for AI assistants in healthcare clinics. Create a comprehensive system prompt that captures this clinic's approach and communication style.
 
 CLINIC INFORMATION:
 Practice Name: ${clinic.practice_name}
 Primary Doctor: ${clinic.doctor_name}
 Specialty: ${clinic.specialty}
-Primary Color: ${clinic.primary_color}
+${personalitySection}
+SELECTED TEMPLATE: ${templateDescription}
+ADDITIONAL INSTRUCTIONS: ${custom_instructions || 'None specified'}
 
-CONTACT INFORMATION:
-${Object.entries(contacts).map(([type, value]) => `${type}: ${value}`).join('\n')}
+CRITICAL REQUIREMENTS:
+This system prompt will be combined with dynamic tool instructions and real-time data access. Focus ONLY on:
+- Communication personality and conversational style
+- Patient interaction approach and tone
+- Practice philosophy and core values
+- Professional boundaries and ethical guidelines
+- When to escalate to human staff
+- Cultural sensitivity and inclusiveness
+- Conversation flow and patient experience
 
-OPERATING HOURS:
-${hours.map(h => `${h.day}: ${h.is_closed ? 'Closed' : `${h.open_time} - ${h.close_time}`}`).join('\n')}
+DO NOT include:
+- Specific clinic data (services, hours, insurance, contact info) - AI tools will provide this dynamically
+- Tool definitions or technical instructions - these are added separately
+- Outdated information that might change - tools fetch current data
 
-SERVICES OFFERED:
-${services.map(s => `• ${s.name}${s.description ? ` - ${s.description}` : ''}`).join('\n')}
+Create a ${hasInterviewData ? 'warm, authentic system prompt that reflects this clinic\'s unique personality' : 'professional system prompt that embodies the template approach'} while maintaining medical professionalism and safety standards.`;
 
-INSURANCE ACCEPTED:
-${insurance.filter(i => i.accepted).map(i => `• ${i.plan_name}${i.notes ? ` (${i.notes})` : ''}`).join('\n')}
+    let prompt: string;
 
-COMMON PATIENT QUESTIONS:
-${questions.length > 0 ? questions.map(q => `• ${q}`).join('\n') : 'None specified'}
+    try {
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4",
+        messages: [
+          {
+            role: "system",
+            content: "You are an expert AI prompt engineer specializing in healthcare clinic assistants. Create comprehensive, intelligent system prompts that leverage all available clinic data."
+          },
+          {
+            role: "user",
+            content: userPrompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 2000
+      });
 
-CLINIC POLICIES:
-${policies.length > 0 ? policies.map(p => `• ${p}`).join('\n') : 'None specified'}
+      prompt = completion.choices[0]?.message?.content?.trim() || '';
+    } catch (openaiError: any) {
+      console.warn('OpenAI API failed, using fallback prompt generation:', openaiError?.message);
+      
+      // Fallback prompt generation when OpenAI is unavailable
+      prompt = `You are a helpful AI assistant for ${clinic.practice_name}, a ${clinic.specialty} practice. 
 
-CONDITIONS TREATED:
-${conditions.length > 0 ? conditions.map(c => `• ${c}`).join('\n') : 'None specified'}
+${hasInterviewData ? `Your communication style reflects the clinic's personality:
+${personalitySection}` : ''}
 
-CLINIC PROFILE:
-${profile ? `
-Mission: ${profile.mission || 'Not specified'}
-Values: ${profile.values || 'Not specified'}
-Approach: ${profile.approach || 'Not specified'}
-Experience: ${profile.experience || 'Not specified'}
-` : 'No profile information available'}
+You help patients with:
+- General information about the practice
+- Scheduling appointments
+- Understanding procedures and services
+- Insurance and billing questions
+- Preparing for visits
 
-ADDITIONAL CLINIC INFORMATION:
-${intelligenceData.additionalInfo || 'None specified'}
+You maintain a ${hasInterviewData && interviewResponses.formalityLevel ? interviewResponses.formalityLevel.toLowerCase() : 'professional but friendly'} tone and ${hasInterviewData && interviewResponses.communicationStyle ? 'focus on ' + interviewResponses.communicationStyle.toLowerCase() : 'provide clear, helpful information'}.
 
-TEMPLATE APPROACH: ${templateDescription}
-ADDITIONAL INSTRUCTIONS: ${template !== 'custom' ? (custom_instructions || 'None specified') : 'Use the template description above as the primary guidance for tone and approach'}
+You always:
+- Provide accurate information using available tools
+- Escalate medical questions to healthcare providers
+- Maintain appropriate professional boundaries
+- Show empathy and understanding for patient concerns
 
-REQUIREMENTS:
-Create a system prompt that:
-1. Establishes the AI as a highly specialized assistant for this specific clinic
-2. Embodies the template approach described above throughout the entire prompt
-3. Optimizes the AI to answer practically any question related to this clinic using the provided data
-4. Leverages the AI's existing medical knowledge while specializing it for this clinic's specific approach
-5. Includes all relevant clinic information naturally woven throughout the prompt
-6. Sets appropriate boundaries (no medical advice, diagnoses, prescriptions)
-7. Provides clear guidance on when to escalate to human staff
-8. Maintains a tone and style that matches the template approach
-9. Incorporates the clinic's specialty and services in a way that aligns with the template
-10. Includes emergency and after-hours guidance
-11. Mentions accepted insurance and payment policies
-12. Provides appointment scheduling guidance
-13. Creates a specialized knowledge base that combines the AI's general medical knowledge with this clinic's specific information
-14. Enables the AI to provide detailed, clinic-specific answers about procedures, conditions, and treatments relevant to this practice
-
-SPECIALIZATION GOAL:
-The system prompt should transform the AI into a specialized assistant that can answer practically any clinic-related question by combining its existing medical knowledge with the comprehensive clinic data provided. The AI should be able to discuss medical topics (like dilation, procedures, conditions) while always relating them back to this specific clinic's approach, services, and policies.
-
-The prompt should be comprehensive but natural, avoiding bullet points or overly structured formatting. Write it as if speaking directly to the AI assistant about its role and responsibilities.
-
-Return only the system prompt text, ready to be used directly with the AI assistant.
-`;
-
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4",
-      messages: [
-        {
-          role: "system",
-          content: "You are an expert AI prompt engineer specializing in healthcare clinic assistants. Create comprehensive, intelligent system prompts that leverage all available clinic data."
-        },
-        {
-          role: "user",
-          content: userPrompt
-        }
-      ],
-      temperature: 0.7,
-      max_tokens: 2000
-    });
-
-    const prompt = completion.choices[0]?.message?.content?.trim();
+For emergencies, direct patients to call 911 or contact the clinic directly.`;
+    }
 
     if (!prompt) {
       return NextResponse.json({ 
@@ -295,11 +168,13 @@ Return only the system prompt text, ready to be used directly with the AI assist
           prompt_text: prompt,
           version: (clinic.ai_version || 1) + 1,
           created_at: new Date().toISOString(),
-          created_by: 'auto-generator',
+          created_by: 'personality-generator',
           generation_data: {
             template,
             custom_instructions,
-            intelligence_data_used: true
+            interview_responses: interviewResponses,
+            selected_template: template,
+            generation_method: hasInterviewData ? 'interview-enhanced' : 'template-based'
           }
         });
     } catch (historyError) {
@@ -309,16 +184,14 @@ Return only the system prompt text, ready to be used directly with the AI assist
 
     return NextResponse.json({ 
       prompt,
-      clinic_data_used: {
-        contacts: Object.keys(contacts).length,
-        hours: hours.length,
-        services: services.length,
-        insurance: insurance.length,
-        questions: questions.length,
-        policies: policies.length,
-        conditions: conditions.length,
-        profile: profile ? 1 : 0,
-        additionalInfo: intelligenceData.additionalInfo ? 1 : 0
+      generation_info: {
+        template: template,
+        has_interview_data: hasInterviewData,
+        generation_method: hasInterviewData ? 'interview-enhanced' : 'template-based',
+        clinic_info: {
+          practice_name: clinic.practice_name,
+          specialty: clinic.specialty
+        }
       }
     });
 

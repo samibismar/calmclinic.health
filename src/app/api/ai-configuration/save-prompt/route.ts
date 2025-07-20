@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { system_prompt } = body;
+    const { system_prompt, interview_responses, selected_template } = body;
 
     if (!system_prompt?.trim()) {
       return NextResponse.json({ error: 'System prompt is required' }, { status: 400 });
@@ -56,21 +56,30 @@ export async function POST(request: NextRequest) {
           version_name: `Version ${newVersion}`,
           is_current: true,
           created_at: new Date().toISOString(),
-          created_by: 'manual-edit'
+          created_by: 'manual-edit',
+          interview_responses: interview_responses || null,
+          selected_template: selected_template || null
         });
     } catch (historyError) {
       console.error('Error saving to prompt history:', historyError);
       // Continue anyway, we'll still update the main record
     }
 
-    // Update the clinic with new prompt
+    // Update the clinic with new prompt and interview responses
+    const updateData: Record<string, any> = {
+      ai_instructions: system_prompt.trim(),
+      ai_version: newVersion,
+      updated_at: new Date().toISOString()
+    };
+
+    // Store interview responses in clinic if provided
+    if (interview_responses) {
+      updateData.interview_responses = interview_responses;
+    }
+
     const { data: updateResult, error: updateError } = await supabase
       .from('clinics')
-      .update({
-        ai_instructions: system_prompt.trim(),
-        ai_version: newVersion,
-        updated_at: new Date().toISOString()
-      })
+      .update(updateData)
       .eq('id', clinic.id)
       .select('*');
 

@@ -12,6 +12,15 @@ interface ClinicData {
   specialty: string;
   primary_color: string;
   ai_instructions?: string;
+  interview_responses?: {
+    communicationStyle: string;
+    anxietyHandling: string;
+    practiceUniqueness: string;
+    medicalDetailLevel: string;
+    escalationPreference: string;
+    culturalApproach: string;
+    formalityLevel: string;
+  };
 }
 
 interface AIConfiguration {
@@ -20,6 +29,16 @@ interface AIConfiguration {
   languages: string[];
   last_updated: string;
   version: number;
+}
+
+interface InterviewResponses {
+  communicationStyle: string;
+  anxietyHandling: string;
+  practiceUniqueness: string;
+  medicalDetailLevel: string;
+  escalationPreference: string;
+  culturalApproach: string;
+  formalityLevel: string;
 }
 
 interface SystemPromptBuilderProps {
@@ -37,12 +56,35 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [customPrompt, setCustomPrompt] = useState('');
   const [isNewlyGenerated, setIsNewlyGenerated] = useState(false); // Track if prompt is newly generated
+  const [interviewResponses, setInterviewResponses] = useState<InterviewResponses>({
+    communicationStyle: '',
+    anxietyHandling: '',
+    practiceUniqueness: '',
+    medicalDetailLevel: '',
+    escalationPreference: '',
+    culturalApproach: '',
+    formalityLevel: ''
+  });
+  const [showInterviewQuestions, setShowInterviewQuestions] = useState(false);
+  const [isInterviewSaved, setIsInterviewSaved] = useState(false);
+  const [isInterviewSaving, setIsInterviewSaving] = useState(false);
+  const [isInterviewEditing, setIsInterviewEditing] = useState(false);
 
   useEffect(() => {
     if (aiConfig?.system_prompt) {
       setSystemPrompt(aiConfig.system_prompt);
     } else if (clinicData?.ai_instructions) {
       setSystemPrompt(clinicData.ai_instructions);
+    }
+
+    // Load interview responses from clinic data if available
+    if (clinicData?.interview_responses) {
+      setInterviewResponses(clinicData.interview_responses);
+      setIsInterviewSaved(true);
+      setIsInterviewEditing(false);
+    } else {
+      setIsInterviewSaved(false);
+      setIsInterviewEditing(true);
     }
   }, [aiConfig, clinicData]);
 
@@ -92,27 +134,20 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
 
     setIsGenerating(true);
     try {
-      // Fetch clinic intelligence data for comprehensive prompt generation
-      const [profileResponse, servicesResponse, insuranceResponse] = await Promise.all([
-        fetch('/api/clinic-intelligence/clinic-profile'),
-        fetch('/api/clinic-intelligence/services'),
-        fetch('/api/clinic-intelligence/insurance')
-      ]);
-
-      const profileData = profileResponse.ok ? await profileResponse.json() : {};
-      const servicesData = servicesResponse.ok ? await servicesResponse.json() : {};
-      const insuranceData = insuranceResponse.ok ? await insuranceResponse.json() : {};
-
+      // New approach: focus on personality and template, no clinic intelligence data
       const response = await fetch('/api/ai-configuration/generate-prompt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          clinic: clinicData,
-          profile: profileData,
-          services: servicesData,
-          insurance: insuranceData,
+          clinic: {
+            practice_name: clinicData.practice_name,
+            doctor_name: clinicData.doctor_name,
+            specialty: clinicData.specialty
+          },
           template: selectedTemplate,
-          custom_instructions: selectedTemplate === 'custom' ? customPrompt : ''
+          custom_instructions: selectedTemplate === 'custom' ? customPrompt : '',
+          interviewResponses: interviewResponses,
+          useInterviewData: true
         })
       });
 
@@ -122,7 +157,7 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
         setIsNewlyGenerated(true); // Mark as newly generated
         setShowPreview(false); // Show in EDIT mode for newly generated prompts
         onConfigChange();
-        toast.success('Intelligent prompt generated successfully!');
+        toast.success('Personalized prompt generated successfully!');
       } else {
         toast.error('Failed to generate prompt');
       }
@@ -146,7 +181,9 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          system_prompt: systemPrompt
+          system_prompt: systemPrompt,
+          interview_responses: interviewResponses,
+          selected_template: selectedTemplate
         })
       });
 
@@ -179,7 +216,9 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          system_prompt: systemPrompt
+          system_prompt: systemPrompt,
+          interview_responses: interviewResponses,
+          selected_template: selectedTemplate
         })
       });
 
@@ -244,6 +283,36 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
     }
   };
 
+  const handleSaveInterview = async () => {
+    setIsInterviewSaving(true);
+    try {
+      const response = await fetch('/api/ai-configuration/save-interview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          interview_responses: interviewResponses
+        })
+      });
+
+      if (response.ok) {
+        toast.success('Interview responses saved!');
+        setIsInterviewSaved(true);
+        setIsInterviewEditing(false);
+        onConfigChange(); // Trigger parent to reload clinic data
+      } else {
+        toast.error('Failed to save interview responses');
+      }
+    } catch (error) {
+      console.error('Error saving interview responses:', error);
+      toast.error('Failed to save interview responses');
+    } finally {
+      setIsInterviewSaving(false);
+    }
+  };
+
+  const handleEditInterview = () => {
+    setIsInterviewEditing(true);
+  };
 
   const handleExport = () => {
     const exportData = {
@@ -363,6 +432,194 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
               </div>
             </div>
           )}
+        </div>
+
+        {/* Interview Questions Section */}
+        <div className="mb-6">
+          <div className="bg-white/5 border border-white/20 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="font-medium text-white">🎯 Clinic Personality Questions</h3>
+                <p className="text-sm text-blue-200">
+                  Answer these questions to enhance the AI&apos;s understanding of your clinic
+                  {isInterviewSaved && <span className="text-green-400 ml-2">✓ Saved</span>}
+                </p>
+              </div>
+              <div className="flex items-center space-x-3">
+                {isInterviewSaved && !isInterviewEditing && (
+                  <button
+                    onClick={handleEditInterview}
+                    className="text-blue-300 hover:text-white text-sm font-medium transition-colors"
+                  >
+                    Edit
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowInterviewQuestions(!showInterviewQuestions)}
+                  className="text-blue-300 hover:text-white text-sm font-medium transition-colors"
+                >
+                  {showInterviewQuestions ? 'Hide Questions' : 'Show Questions'}
+                </button>
+              </div>
+            </div>
+            
+            {showInterviewQuestions && (
+              <div className="space-y-4 mt-4">
+                <div>
+                  <label className="block text-sm font-medium text-blue-100 mb-2">
+                    How would you describe your clinic&apos;s communication style with patients?
+                  </label>
+                  <textarea
+                    value={interviewResponses.communicationStyle}
+                    onChange={(e) => setInterviewResponses(prev => ({ ...prev, communicationStyle: e.target.value }))}
+                    placeholder="e.g., Warm and personal, focusing on making patients feel heard and comfortable..."
+                    disabled={isInterviewSaved && !isInterviewEditing}
+                    className={`w-full border rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-none ${
+                      isInterviewSaved && !isInterviewEditing 
+                        ? 'bg-gray-800 border-gray-600 cursor-not-allowed opacity-75' 
+                        : 'bg-white/10 border-white/20'
+                    }`}
+                    rows={2}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-blue-100 mb-2">
+                    How does your clinic handle patient anxiety or concerns?
+                  </label>
+                  <textarea
+                    value={interviewResponses.anxietyHandling}
+                    onChange={(e) => setInterviewResponses(prev => ({ ...prev, anxietyHandling: e.target.value }))}
+                    placeholder="e.g., We take extra time to explain procedures and always validate patient concerns..."
+                    disabled={isInterviewSaved && !isInterviewEditing}
+                    className={`w-full border rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-none ${
+                      isInterviewSaved && !isInterviewEditing 
+                        ? 'bg-gray-800 border-gray-600 cursor-not-allowed opacity-75' 
+                        : 'bg-white/10 border-white/20'
+                    }`}
+                    rows={2}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-blue-100 mb-2">
+                    What makes your practice unique or special?
+                  </label>
+                  <textarea
+                    value={interviewResponses.practiceUniqueness}
+                    onChange={(e) => setInterviewResponses(prev => ({ ...prev, practiceUniqueness: e.target.value }))}
+                    placeholder="e.g., We focus on holistic care and spend more time with each patient than typical practices..."
+                    disabled={isInterviewSaved && !isInterviewEditing}
+                    className={`w-full border rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-none ${
+                      isInterviewSaved && !isInterviewEditing 
+                        ? 'bg-gray-800 border-gray-600 cursor-not-allowed opacity-75' 
+                        : 'bg-white/10 border-white/20'
+                    }`}
+                    rows={2}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-blue-100 mb-2">
+                    How much medical detail do you prefer to share with patients?
+                  </label>
+                  <textarea
+                    value={interviewResponses.medicalDetailLevel}
+                    onChange={(e) => setInterviewResponses(prev => ({ ...prev, medicalDetailLevel: e.target.value }))}
+                    placeholder="e.g., We explain things in simple terms but provide detailed information when patients ask..."
+                    disabled={isInterviewSaved && !isInterviewEditing}
+                    className={`w-full border rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-none ${
+                      isInterviewSaved && !isInterviewEditing 
+                        ? 'bg-gray-800 border-gray-600 cursor-not-allowed opacity-75' 
+                        : 'bg-white/10 border-white/20'
+                    }`}
+                    rows={2}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-blue-100 mb-2">
+                    When should the AI escalate to human staff?
+                  </label>
+                  <textarea
+                    value={interviewResponses.escalationPreference}
+                    onChange={(e) => setInterviewResponses(prev => ({ ...prev, escalationPreference: e.target.value }))}
+                    placeholder="e.g., Any medical questions, complex scheduling issues, or when patients seem frustrated..."
+                    disabled={isInterviewSaved && !isInterviewEditing}
+                    className={`w-full border rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-none ${
+                      isInterviewSaved && !isInterviewEditing 
+                        ? 'bg-gray-800 border-gray-600 cursor-not-allowed opacity-75' 
+                        : 'bg-white/10 border-white/20'
+                    }`}
+                    rows={2}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-blue-100 mb-2">
+                    How does your clinic approach cultural sensitivity?
+                  </label>
+                  <textarea
+                    value={interviewResponses.culturalApproach}
+                    onChange={(e) => setInterviewResponses(prev => ({ ...prev, culturalApproach: e.target.value }))}
+                    placeholder="e.g., We serve a diverse community and always respect cultural preferences and language needs..."
+                    disabled={isInterviewSaved && !isInterviewEditing}
+                    className={`w-full border rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-none ${
+                      isInterviewSaved && !isInterviewEditing 
+                        ? 'bg-gray-800 border-gray-600 cursor-not-allowed opacity-75' 
+                        : 'bg-white/10 border-white/20'
+                    }`}
+                    rows={2}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-blue-100 mb-2">
+                    What level of formality does your clinic prefer?
+                  </label>
+                  <textarea
+                    value={interviewResponses.formalityLevel}
+                    onChange={(e) => setInterviewResponses(prev => ({ ...prev, formalityLevel: e.target.value }))}
+                    placeholder="e.g., Professional but friendly - we use first names and keep conversations warm but respectful..."
+                    disabled={isInterviewSaved && !isInterviewEditing}
+                    className={`w-full border rounded-lg px-4 py-3 text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-none ${
+                      isInterviewSaved && !isInterviewEditing 
+                        ? 'bg-gray-800 border-gray-600 cursor-not-allowed opacity-75' 
+                        : 'bg-white/10 border-white/20'
+                    }`}
+                    rows={2}
+                  />
+                </div>
+
+                <div className="text-xs text-blue-300 bg-blue-900/20 border border-blue-500/30 rounded-lg p-3">
+                  💡 <strong>Optional:</strong> These answers will help create a more personalized system prompt. You can skip any questions that don&apos;t apply to your practice.
+                </div>
+
+                {/* Save Interview Button */}
+                {(isInterviewEditing || !isInterviewSaved) && (
+                  <div className="flex justify-end mt-4">
+                    <button
+                      onClick={handleSaveInterview}
+                      disabled={isInterviewSaving}
+                      className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isInterviewSaving ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <span>Saving...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Save className="w-4 h-4" />
+                          <span>Save Interview Responses</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Auto-Generate Section */}

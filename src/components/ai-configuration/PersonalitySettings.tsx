@@ -9,6 +9,8 @@ interface AIConfiguration {
   tone: string;
   languages: string[];
   custom_instructions: string;
+  ai_always_include?: string[];
+  ai_never_include?: string[];
 }
 
 interface PersonalitySettingsProps {
@@ -40,19 +42,36 @@ export default function PersonalitySettings({ aiConfig, onConfigChange, onConfig
 
   useEffect(() => {
     if (aiConfig) {
-      const newTone = aiConfig.tone || 'professional';
+      const savedTone = aiConfig.tone || 'professional';
       const newLanguages = aiConfig.languages || ['English'];
+      const newAlwaysInclude = aiConfig.ai_always_include || [];
+      const newNeverInclude = aiConfig.ai_never_include || [];
       
-      setTone(newTone);
+      // Check if the saved tone is one of the predefined options
+      const predefinedTones = ['professional', 'friendly', 'calm', 'empathetic', 'efficient'];
+      const isCustomTone = !predefinedTones.includes(savedTone);
+      
+      if (isCustomTone) {
+        // If it's a custom tone, set tone to 'custom' and customTone to the actual value
+        setTone('custom');
+        setCustomTone(savedTone);
+      } else {
+        // If it's a predefined tone, set it normally
+        setTone(savedTone);
+        setCustomTone('');
+      }
+      
       setLanguages(newLanguages);
+      setAlwaysInclude(newAlwaysInclude);
+      setNeverInclude(newNeverInclude);
       
       // Set original state when aiConfig loads
       setOriginalState({
-        tone: newTone,
-        customTone: '',
+        tone: isCustomTone ? 'custom' : savedTone,
+        customTone: isCustomTone ? savedTone : '',
         languages: newLanguages,
-        alwaysInclude: [],
-        neverInclude: []
+        alwaysInclude: newAlwaysInclude,
+        neverInclude: newNeverInclude
       });
     }
   }, [aiConfig]);
@@ -76,10 +95,11 @@ export default function PersonalitySettings({ aiConfig, onConfigChange, onConfig
     
     setHasUnsavedChanges(hasChanges);
     
-    if (hasChanges) {
+    // Only call onConfigChange if there are unsaved changes
+    if (hasChanges && !isSaving) {
       onConfigChange();
     }
-  }, [tone, customTone, languages, alwaysInclude, neverInclude, originalState, onConfigChange]);
+  }, [tone, customTone, languages, alwaysInclude, neverInclude, originalState, onConfigChange, isSaving]);
 
   const toneOptions = [
     { id: 'professional', name: 'Professional', description: 'Formal, respectful, and clinical' },
@@ -168,16 +188,22 @@ export default function PersonalitySettings({ aiConfig, onConfigChange, onConfig
 
       if (response.ok) {
         toast.success('Personality settings saved successfully!');
+        
         // Update original state to current state after successful save
-        setOriginalState({
+        const newOriginalState = {
           tone,
           customTone,
-          languages,
-          alwaysInclude,
-          neverInclude
-        });
+          languages: [...languages],
+          alwaysInclude: [...alwaysInclude],
+          neverInclude: [...neverInclude]
+        };
+        setOriginalState(newOriginalState);
         setHasUnsavedChanges(false);
-        onConfigSaved?.(); // Call the saved callback to clear unsaved changes
+        
+        // Use setTimeout to ensure state updates complete before calling parent callback
+        setTimeout(() => {
+          onConfigSaved?.(); // Call the saved callback to clear unsaved changes
+        }, 100);
       } else {
         toast.error('Failed to save personality settings');
       }
@@ -217,6 +243,10 @@ export default function PersonalitySettings({ aiConfig, onConfigChange, onConfig
                   key={option.id}
                   onClick={() => {
                     setTone(option.id);
+                    // Clear custom tone when switching to a predefined tone
+                    if (option.id !== 'custom') {
+                      setCustomTone('');
+                    }
                   }}
                   className={`p-4 rounded-lg border text-left transition-all ${
                     tone === option.id

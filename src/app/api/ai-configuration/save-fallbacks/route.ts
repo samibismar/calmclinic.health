@@ -29,7 +29,9 @@ export async function POST(request: NextRequest) {
     const { 
       fallback_responses, 
       ab_testing_enabled, 
-      ab_test_percentage 
+      ab_test_percentage,
+      intelligent_mode,
+      fallback_triggers
     } = body;
 
     const updates: Record<string, string | boolean | number> = {};
@@ -54,6 +56,15 @@ export async function POST(request: NextRequest) {
 
     if (ab_test_percentage !== undefined) {
       updates.ab_test_percentage = ab_test_percentage;
+    }
+
+    // Update intelligent mode and triggers
+    if (intelligent_mode !== undefined) {
+      updates.ai_intelligent_mode = intelligent_mode;
+    }
+
+    if (fallback_triggers !== undefined) {
+      updates.ai_fallback_triggers = JSON.stringify(fallback_triggers);
     }
 
     updates.updated_at = new Date().toISOString();
@@ -82,7 +93,9 @@ export async function POST(request: NextRequest) {
           change_data: {
             fallback_responses,
             ab_testing_enabled,
-            ab_test_percentage
+            ab_test_percentage,
+            intelligent_mode,
+            fallback_triggers
           },
           changed_by: 'user',
           created_at: new Date().toISOString()

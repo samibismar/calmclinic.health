@@ -22,6 +22,17 @@ interface ClinicData {
   ai_instructions?: string;
   tone?: string;
   languages?: string[];
+  ai_always_include?: string[];
+  ai_never_include?: string[];
+  interview_responses?: {
+    communicationStyle: string;
+    anxietyHandling: string;
+    practiceUniqueness: string;
+    medicalDetailLevel: string;
+    escalationPreference: string;
+    culturalApproach: string;
+    formalityLevel: string;
+  };
   has_completed_setup: boolean;
 }
 
@@ -30,6 +41,8 @@ interface AIConfiguration {
   tone: string;
   languages: string[];
   custom_instructions: string;
+  ai_always_include?: string[];
+  ai_never_include?: string[];
   fallback_responses?: {
     uncertain: string;
     after_hours: string;

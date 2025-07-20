@@ -32,6 +32,12 @@ interface AIConfiguration {
     after_hours: string;
     emergency: string;
   };
+  intelligent_mode?: boolean;
+  fallback_triggers?: {
+    uncertain: string[];
+    after_hours: string[];
+    emergency: string[];
+  };
 }
 
 interface FallbackResponsesTabProps {
@@ -47,13 +53,27 @@ export default function FallbackResponsesTab({ aiConfig, onConfigChange, onConfi
     after_hours: "We're currently closed. For urgent matters, please call our emergency line at [phone]. Otherwise, I'm happy to help you schedule an appointment for when we reopen.",
     emergency: "This sounds like it might be urgent. Please call 911 for emergencies, or contact our clinic directly at [phone] for immediate medical concerns."
   });
+  
+  const [intelligentMode, setIntelligentMode] = useState(true);
+  const [fallbackTriggers, setFallbackTriggers] = useState({
+    uncertain: ['not sure', 'don\'t know', 'uncertain', 'unclear'],
+    after_hours: ['closed', 'hours', 'open', 'when'],
+    emergency: ['emergency', 'urgent', 'pain', 'bleeding', 'help']
+  });
+  
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   
   // Track original values to detect changes
   const [originalState, setOriginalState] = useState({
     uncertain: "I'm not sure about that. Let me connect you with our staff who can help you better.",
     after_hours: "We're currently closed. For urgent matters, please call our emergency line at [phone]. Otherwise, I'm happy to help you schedule an appointment for when we reopen.",
-    emergency: "This sounds like it might be urgent. Please call 911 for emergencies, or contact our clinic directly at [phone] for immediate medical concerns."
+    emergency: "This sounds like it might be urgent. Please call 911 for emergencies, or contact our clinic directly at [phone] for immediate medical concerns.",
+    intelligent_mode: true,
+    fallback_triggers: {
+      uncertain: ['not sure', 'don\'t know', 'uncertain', 'unclear'],
+      after_hours: ['closed', 'hours', 'open', 'when'],
+      emergency: ['emergency', 'urgent', 'pain', 'bleeding', 'help']
+    }
   });
   
   const [customFallbacks, setCustomFallbacks] = useState<FallbackResponse[]>([]);
@@ -76,7 +96,26 @@ export default function FallbackResponsesTab({ aiConfig, onConfigChange, onConfi
         emergency: aiConfig.fallback_responses.emergency || "This sounds like it might be urgent. Please call 911 for emergencies, or contact our clinic directly at [phone] for immediate medical concerns."
       };
       setFallbackResponses(newResponses);
-      setOriginalState(newResponses);
+      
+      // Load intelligent mode setting
+      if (aiConfig.intelligent_mode !== undefined) {
+        setIntelligentMode(aiConfig.intelligent_mode);
+      }
+      
+      // Load fallback triggers
+      if (aiConfig.fallback_triggers) {
+        setFallbackTriggers(aiConfig.fallback_triggers);
+      }
+      
+      setOriginalState({
+        ...newResponses,
+        intelligent_mode: aiConfig.intelligent_mode ?? true,
+        fallback_triggers: aiConfig.fallback_triggers || {
+          uncertain: ['not sure', 'don\'t know', 'uncertain', 'unclear'],
+          after_hours: ['closed', 'hours', 'open', 'when'],
+          emergency: ['emergency', 'urgent', 'pain', 'bleeding', 'help']
+        }
+      });
     }
     fetchCustomFallbacks();
   }, [aiConfig]);
@@ -86,14 +125,16 @@ export default function FallbackResponsesTab({ aiConfig, onConfigChange, onConfi
     const hasChanges = 
       fallbackResponses.uncertain !== originalState.uncertain ||
       fallbackResponses.after_hours !== originalState.after_hours ||
-      fallbackResponses.emergency !== originalState.emergency;
+      fallbackResponses.emergency !== originalState.emergency ||
+      intelligentMode !== originalState.intelligent_mode ||
+      JSON.stringify(fallbackTriggers) !== JSON.stringify(originalState.fallback_triggers);
     
     setHasUnsavedChanges(hasChanges);
     
     if (hasChanges) {
       onConfigChange();
     }
-  }, [fallbackResponses, originalState, onConfigChange]);
+  }, [fallbackResponses, intelligentMode, fallbackTriggers, originalState, onConfigChange]);
 
   const fetchCustomFallbacks = async () => {
     try {
@@ -119,14 +160,20 @@ export default function FallbackResponsesTab({ aiConfig, onConfigChange, onConfi
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          fallback_responses: fallbackResponses
+          fallback_responses: fallbackResponses,
+          intelligent_mode: intelligentMode,
+          fallback_triggers: fallbackTriggers
         })
       });
 
       if (response.ok) {
         toast.success('Fallback responses saved successfully!');
         // Update original state to current state after successful save
-        setOriginalState(fallbackResponses);
+        setOriginalState({
+          ...fallbackResponses,
+          intelligent_mode: intelligentMode,
+          fallback_triggers: fallbackTriggers
+        });
         setHasUnsavedChanges(false);
         onConfigSaved?.(); // Call the saved callback to clear unsaved changes
       } else {
@@ -260,6 +307,81 @@ export default function FallbackResponsesTab({ aiConfig, onConfigChange, onConfi
             <strong>How they work:</strong> When your AI detects specific triggers (uncertainty, after-hours, emergencies), 
             it can use these pre-written responses instead of generating its own. Think of them as &quot;safety nets&quot; for extra peace of mind.
           </p>
+        </div>
+
+        {/* Intelligent Detection Mode Toggle */}
+        <div className="bg-white/5 border border-white/20 rounded-lg p-4 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-sm font-medium text-white">🧠 Detection Method</h3>
+              <p className="text-xs text-blue-300">
+                Choose how the AI identifies when to use fallback responses
+              </p>
+            </div>
+            <div className="flex items-center space-x-3">
+              <span className={`text-xs ${!intelligentMode ? 'text-white' : 'text-blue-300'}`}>Keyword</span>
+              <button
+                onClick={() => setIntelligentMode(!intelligentMode)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                  intelligentMode ? 'bg-blue-600' : 'bg-gray-600'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    intelligentMode ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+              <span className={`text-xs ${intelligentMode ? 'text-white' : 'text-blue-300'}`}>Intelligent</span>
+            </div>
+          </div>
+          
+          {intelligentMode ? (
+            <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-3">
+              <div className="flex items-center space-x-2 mb-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <h4 className="text-xs font-medium text-green-200">Intelligent Context Detection</h4>
+              </div>
+              <p className="text-xs text-green-300 mb-2">
+                <strong>Smart detection:</strong> AI analyzes the full context and intent of messages, not just keywords.
+              </p>
+              <ul className="text-xs text-green-300 space-y-1">
+                <li>• &quot;How can you help me today?&quot; → Won&apos;t trigger emergency (contains &quot;help&quot; but not urgent)</li>
+                <li>• &quot;I&apos;m having chest pain, help!&quot; → Will trigger emergency (clear medical urgency)</li>
+                <li>• &quot;What are your hours?&quot; → Will trigger after-hours (clear intent about timing)</li>
+                <li>• &quot;I&apos;m not sure what&apos;s wrong&quot; → Will trigger uncertainty (expressing confusion)</li>
+              </ul>
+            </div>
+          ) : (
+            <div className="bg-orange-900/20 border border-orange-500/30 rounded-lg p-3">
+              <div className="flex items-center space-x-2 mb-2">
+                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                <h4 className="text-xs font-medium text-orange-200">Simple Keyword Matching</h4>
+              </div>
+              <p className="text-xs text-orange-300 mb-2">
+                <strong>Basic detection:</strong> Triggers when specific keywords are found in messages.
+              </p>
+              <div className="space-y-2 mt-3">
+                {Object.entries(fallbackTriggers).map(([type, keywords]) => (
+                  <div key={type}>
+                    <label className="block text-xs font-medium text-orange-200 mb-1 capitalize">
+                      {type.replace('_', ' ')} Keywords:
+                    </label>
+                    <input
+                      type="text"
+                      value={keywords.join(', ')}
+                      onChange={(e) => {
+                        const newKeywords = e.target.value.split(',').map(k => k.trim()).filter(k => k.length > 0);
+                        setFallbackTriggers(prev => ({ ...prev, [type]: newKeywords }));
+                      }}
+                      className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-xs placeholder-orange-300 focus:outline-none focus:ring-1 focus:ring-orange-400"
+                      placeholder="Enter keywords separated by commas"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Standard Fallback Responses */}

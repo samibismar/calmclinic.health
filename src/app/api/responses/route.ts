@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { createClient } from "@supabase/supabase-js";
+import { assembleSystemPrompt, validatePromptAssembly } from '@/lib/prompt-assembly';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -283,7 +284,7 @@ export async function POST(request: Request) {
     console.log('📝 Response API called');
     
     const body = await request.json();
-    const { messages, providerId, previousResponseId } = body;
+    const { messages, providerId } = body;
 
     let clinicId = null;
     if (providerId) {
@@ -318,19 +319,27 @@ export async function POST(request: Request) {
       { type: "web_search_preview" as const }
     ];
 
-    const systemPrompt = `You are an intelligent medical assistant with access to comprehensive clinic information.
+    // Get clinic info for prompt assembly
+    const { data: clinicInfo } = await supabase
+      .from('clinics')
+      .select('practice_name, specialty')
+      .eq('id', clinicId)
+      .single();
 
-AVAILABLE TOOLS:
-- get_clinic_services: Get services offered by the clinic
-- get_clinic_hours: Get clinic operating hours  
-- get_insurance_info: Get accepted insurance plans
-- get_contact_info: Get clinic contact information
-- get_appointment_policies: Get scheduling and cancellation policies
-- get_conditions_treated: Get medical conditions treated at the clinic
-- get_provider_info: Get healthcare provider details
-- web_search_preview: Search the internet for current medical information or clinic details
-
-Use these tools to provide accurate, up-to-date information to help patients prepare for their appointments and answer their questions about the clinic. ALWAYS prioritize using the clinic-specific tools first before using web search.`;
+    // Assemble the system prompt dynamically
+    console.log('🔧 Assembling system prompt for clinic:', clinicId);
+    const assembledPrompt = await assembleSystemPrompt(
+      clinicId, 
+      clinicInfo?.practice_name, 
+      clinicInfo?.specialty
+    );
+    
+    if (!validatePromptAssembly(assembledPrompt)) {
+      console.warn('⚠️ Prompt assembly validation failed, using fallback');
+    }
+    
+    const systemPrompt = assembledPrompt.fullPrompt;
+    console.log('✅ System prompt assembled successfully:', systemPrompt.length, 'characters');
 
     // Get the last user message for the Responses API
     const lastUserMessage = messages[messages.length - 1];
@@ -372,12 +381,12 @@ Use these tools to provide accurate, up-to-date information to help patients pre
           store: true, // Enable state management
         };
 
-        // Disable conversation continuity when using custom tools to avoid tool output conflicts
-        // Each request is independent until we implement proper tool output handling
-        if (previousResponseId && false) { // Disabled for custom tools
-          (responsesAPIParams as Record<string, unknown>).previous_response_id = previousResponseId;
-          console.log(`🔗 Continuing conversation from response: ${previousResponseId}`);
-        }
+        // TODO: Re-enable conversation continuity after tool output handling is stable
+        // Currently disabled to avoid conflicts with custom tool execution
+        // if (previousResponseId) {
+        //   (responsesAPIParams as Record<string, unknown>).previous_response_id = previousResponseId;
+        //   console.log(`🔗 Continuing conversation from response: ${previousResponseId}`);
+        // }
 
         console.log('📤 Sending to Responses API:', JSON.stringify(responsesAPIParams, null, 2));
         
@@ -477,7 +486,8 @@ Use these tools to provide accurate, up-to-date information to help patients pre
       }
     }
     
-    // Fallback to Chat Completions API
+    // Fallback to Chat Completions API (use same assembled prompt)
+    console.log('📞 Using Chat Completions fallback with assembled prompt');
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
