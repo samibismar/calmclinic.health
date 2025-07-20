@@ -126,9 +126,12 @@ Create a ${hasInterviewData ? 'warm, authentic system prompt that reflects this 
       });
 
       prompt = completion.choices[0]?.message?.content?.trim() || '';
-    } catch (openaiError: any) {
-      console.warn('OpenAI API failed, using fallback prompt generation:', openaiError?.message);
-      
+    } catch (openaiError: unknown) {
+      if (openaiError instanceof Error) {
+        console.warn('OpenAI API failed, using fallback prompt generation:', openaiError.message);
+      } else {
+        console.warn('OpenAI API failed, using fallback prompt generation:', openaiError);
+      }
       // Fallback prompt generation when OpenAI is unavailable
       prompt = `You are a helpful AI assistant for ${clinic.practice_name}, a ${clinic.specialty} practice. 
 

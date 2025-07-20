@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Update the clinic with new prompt and interview responses
-    const updateData: Record<string, any> = {
+    const updateData: Record<string, unknown> = {
       ai_instructions: system_prompt.trim(),
       ai_version: newVersion,
       updated_at: new Date().toISOString()

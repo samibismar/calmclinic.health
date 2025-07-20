@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Update the clinic's ai_version and interview responses but NOT the ai_instructions
-    const updateData: Record<string, any> = {
+    const updateData: Record<string, unknown> = {
       ai_version: newVersion,
       updated_at: new Date().toISOString()
     };
