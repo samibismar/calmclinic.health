@@ -1,9 +1,18 @@
+"use client";
+
 import Link from "next/link";
+import { motion } from "framer-motion";
 import DemoAccess from "@/components/DemoAccess";
 
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-950 text-white font-sans">
+      {/* Smooth scroll CSS */}
+      <style jsx global>{`
+        html {
+          scroll-behavior: smooth;
+        }
+      `}</style>
       {/* Top Navigation Bar */}
       <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-gray-800">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -29,105 +38,282 @@ export default function HomePage() {
       </header>
 
       {/* Hero Section */}
-      <section id="hero" className="px-6 py-24 text-center max-w-4xl mx-auto">
-        <h1 className="text-5xl font-bold text-cyan-400 mb-6">
-          CalmClinic: AI Health Assistant for Clinics
-        </h1>
-        <p className="text-xl text-gray-300 mb-8">
-          A white-labeled, QR-based AI assistant that helps patients in your waiting room — trusted, customizable, and beautifully simple.
-        </p>
-        <div className="flex justify-center">
-          <Link href="/signup-unavailable">
-            <button className="bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-3 px-6 rounded-xl transition shadow-lg">
-              Try CalmClinic
-            </button>
-          </Link>
+      <section id="hero" className="px-6 py-24 text-center max-w-5xl mx-auto relative">
+        {/* Floating particles */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {[
+            { left: 25, top: 70, duration: 5, delay: 0.5 },
+            { left: 35, top: 65, duration: 4.5, delay: 1.2 },
+            { left: 55, top: 80, duration: 6, delay: 0.8 },
+            { left: 70, top: 75, duration: 4.8, delay: 2.1 },
+            { left: 45, top: 85, duration: 5.5, delay: 0.3 },
+            { left: 65, top: 60, duration: 4.2, delay: 1.8 },
+            { left: 30, top: 90, duration: 5.8, delay: 1.5 },
+            { left: 75, top: 68, duration: 4.6, delay: 0.9 }
+          ].map((particle, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-1 h-1 rounded-full bg-cyan-400/30"
+              style={{
+                left: `${particle.left}%`,
+                top: `${particle.top}%`,
+              }}
+              animate={{
+                y: [-10, -40, -10],
+                opacity: [0, 0.6, 0],
+              }}
+              transition={{
+                duration: particle.duration,
+                repeat: Infinity,
+                delay: particle.delay,
+              }}
+            />
+          ))}
         </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <motion.h1 
+            className="text-5xl md:text-6xl font-bold mb-6"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
+            <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+              AI that helps patients
+            </span>
+            <br />
+            <span className="text-white">feel heard.</span>
+          </motion.h1>
+          
+          <motion.p 
+            className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+          >
+            Reduce front desk calls by 40%. White-labeled AI assistant that helps patients in your waiting room.
+          </motion.p>
+          
+          <motion.div 
+            className="flex flex-col sm:flex-row gap-4 justify-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+          >
+            <Link href="#demo">
+              <motion.button 
+                className="bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-3 px-8 rounded-xl transition shadow-lg"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                See Live Demo
+              </motion.button>
+            </Link>
+            <Link href="/signup-unavailable">
+              <motion.button 
+                className="border border-cyan-500 hover:bg-cyan-500 hover:text-white text-cyan-400 font-semibold py-3 px-8 rounded-xl transition"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Get Started
+              </motion.button>
+            </Link>
+          </motion.div>
+        </motion.div>
       </section>
 
-      {/* Learn More Section (Moved Up) */}
-      <section id="learn-more" className="px-6 py-16 text-center">
-        <h2 className="text-3xl font-bold mb-4 text-cyan-400">
-          What is CalmClinic?
-        </h2>
-        <p className="text-gray-300 max-w-2xl mx-auto mb-6">
-          CalmClinic is a B2B SaaS platform that gives every clinic its own white-labeled AI health assistant.
-          Patients scan a QR code in the waiting room to chat instantly with a clinic-branded AI that answers questions,
-          improves their experience, and reduces front-desk overload. Fully customizable. No app required. Live in minutes.
-        </p>
-        <Link href="#features">
-          <button className="border border-cyan-500 hover:bg-cyan-500 hover:text-white text-cyan-400 font-semibold py-3 px-6 rounded-xl transition">
-            See Features
-          </button>
-        </Link>
+      {/* Learn More Section */}
+      <section id="learn-more" className="px-6 py-16 text-center bg-gray-900/50">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+        >
+          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
+            The AI assistant your clinic needs
+          </h2>
+          <div className="max-w-4xl mx-auto mb-8">
+            <p className="text-xl text-gray-300 leading-relaxed mb-6">
+              Every clinic gets their own branded AI health assistant. Patients scan a QR code, get instant help, 
+              and feel more confident about their care—while your front desk focuses on what matters most.
+            </p>
+            <div className="grid md:grid-cols-3 gap-6 text-center">
+              <div className="bg-gray-800/50 rounded-lg p-4">
+                <div className="text-cyan-400 font-bold text-lg">✓ No App Required</div>
+                <div className="text-sm text-gray-300">Works on any phone</div>
+              </div>
+              <div className="bg-gray-800/50 rounded-lg p-4">
+                <div className="text-cyan-400 font-bold text-lg">✓ Fully Customizable</div>
+                <div className="text-sm text-gray-300">Your brand, your way</div>
+              </div>
+              <div className="bg-gray-800/50 rounded-lg p-4">
+                <div className="text-cyan-400 font-bold text-lg">✓ Live in Minutes</div>
+                <div className="text-sm text-gray-300">Quick setup process</div>
+              </div>
+            </div>
+          </div>
+          <motion.a
+            href="#features"
+            className="inline-block border border-cyan-500 hover:bg-cyan-500 hover:text-white text-cyan-400 font-semibold py-3 px-8 rounded-xl transition"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Explore Features
+          </motion.a>
+        </motion.div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="px-6 py-20 max-w-5xl mx-auto grid gap-12 sm:grid-cols-2 text-gray-200">
-        <div>
-          <h2 className="text-3xl font-semibold mb-4 text-cyan-300">What CalmClinic Offers</h2>
-          <ul className="space-y-4 text-lg">
-            <li>
-              • AI-powered chat assistant for patient questions and education
-            </li>
-            <li>
-              • Clinic-branded customization with live updates
-            </li>
-            <li>
-              • QR-based setup — no apps, no downloads, no hassle
-            </li>
-          </ul>
-        </div>
-        <div className="bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl p-6 flex flex-col gap-4 max-w-md mx-auto">
-          <div className="flex justify-between items-center text-gray-300">
-            <span className="text-sm font-medium text-cyan-300">CalmClinic AI Chat</span>
-            <span className="text-xs bg-gray-700 text-gray-400 px-2 py-0.5 rounded">Live Preview</span>
-          </div>
-          <div className="bg-black rounded-lg px-4 py-3 text-gray-100 text-sm leading-relaxed border border-gray-600">
-            👋 Hello! I&apos;m your clinic&apos;s AI assistant. <br />
-            I can help answer your questions while you wait.<br /><br />
-            Ask me anything — symptoms, wait time, visit prep, and more!
-          </div>
-            <div className="flex gap-2 text-xs text-gray-400">
-              <div className="bg-gray-700 px-3 py-1 rounded-full">
-                <span role="img" aria-label="bulb">💡</span>&nbsp;&quot;What should I bring?&quot;
-              </div>
-              <div className="bg-gray-700 px-3 py-1 rounded-full">💡&quot;How long is the wait?&quot;</div>
-            </div>
+      <section id="features" className="px-6 py-20 max-w-6xl mx-auto">
+        <motion.div
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+        >
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            Everything clinics need to engage patients
+          </h2>
+          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+            QR-based setup, clinic branding, and AI that actually helps patients feel heard.
+          </p>
+        </motion.div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {[
+            {
+              icon: "🤖",
+              title: "AI-Powered Assistant",
+              description: "Smart conversations that handle patient questions, reduce front desk calls, and improve satisfaction"
+            },
+            {
+              icon: "🎨", 
+              title: "Your Clinic's Brand",
+              description: "Fully customized with your colors, messaging, and professional identity"
+            },
+            {
+              icon: "📱",
+              title: "QR Code Simple",
+              description: "Patients scan, chat, and get help instantly. No apps, no accounts, no complexity"
+            },
+            {
+              icon: "⚡",
+              title: "Live in Minutes",
+              description: "Deploy your AI assistant in under 10 minutes with our simple setup process"
+            },
+            {
+              icon: "📊",
+              title: "Real Results",
+              description: "Track patient interactions, common questions, and front desk call reduction"
+            },
+            {
+              icon: "🔒",
+              title: "HIPAA Compliant",
+              description: "Built for healthcare with privacy and security as top priorities"
+            }
+          ].map((feature, index) => (
+            <motion.div
+              key={index}
+              className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 hover:bg-gray-800/70 transition-all duration-300"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              viewport={{ once: true }}
+              whileHover={{ y: -5 }}
+            >
+              <div className="text-3xl mb-4">{feature.icon}</div>
+              <h3 className="text-xl font-semibold text-white mb-3">{feature.title}</h3>
+              <p className="text-gray-300">{feature.description}</p>
+            </motion.div>
+          ))}
         </div>
       </section>
 
       {/* How It Works */}
       <section id="how-it-works" className="px-6 py-20 bg-gray-900">
-        <h2 className="text-3xl font-bold text-center text-cyan-400 mb-12">
-          How It Works
-        </h2>
-        <div className="max-w-4xl mx-auto grid sm:grid-cols-3 gap-8 text-center">
-          <div>
-            <div className="text-5xl mb-4">1</div>
-            <p>Scan the QR code in the waiting room</p>
-          </div>
-          <div>
-            <div className="text-5xl mb-4">2</div>
-            <p>Chat with your clinic&apos;s AI assistant</p>
-          </div>
-          <div>
-            <div className="text-5xl mb-4">3</div>
-            <p>Get help, feel heard, and prep for your visit</p>
-          </div>
+        <motion.div
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+        >
+          <h2 className="text-3xl md:text-4xl font-bold text-cyan-400 mb-4">
+            How It Works
+          </h2>
+          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+            Three simple steps to transform your patient experience
+          </p>
+        </motion.div>
+        
+        <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-12 text-center">
+          {[
+            {
+              step: "1",
+              title: "Scan QR Code",
+              description: "Patients scan the QR code in your waiting room with their phone camera"
+            },
+            {
+              step: "2", 
+              title: "Chat with AI",
+              description: "They're instantly connected to your clinic's branded AI assistant"
+            },
+            {
+              step: "3",
+              title: "Feel Heard", 
+              description: "Get personalized help, reduce anxiety, and prepare for their visit"
+            }
+          ].map((item, index) => (
+            <motion.div
+              key={index}
+              className="relative"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: index * 0.2 }}
+              viewport={{ once: true }}
+            >
+              <div className="bg-gradient-to-br from-cyan-500 to-blue-600 w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold text-white mx-auto mb-6 shadow-lg">
+                {item.step}
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-3">{item.title}</h3>
+              <p className="text-gray-300 leading-relaxed">{item.description}</p>
+              
+              {index < 2 && (
+                <div className="hidden md:block absolute top-8 -right-6 text-cyan-400">
+                  →
+                </div>
+              )}
+            </motion.div>
+          ))}
         </div>
       </section>
 
       {/* Demo Section */}
       <section id="demo" className="px-6 py-20 bg-gray-950 border-t border-gray-800">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-cyan-400 mb-8">Demo Access</h2>
-          <p className="text-xl text-gray-300 mb-8">
-            Private demo access for authorized users.
+        <motion.div 
+          className="max-w-4xl mx-auto text-center"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+        >
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            See CalmClinic in action
+          </h2>
+          <p className="text-xl text-gray-300 mb-12">
+            Experience how your clinic's AI assistant will help patients feel heard.
           </p>
           
-          <DemoAccess />
-        </div>
+          <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-8">
+            <DemoAccess />
+          </div>
+        </motion.div>
       </section>
 
       {/* Contact Section */}
@@ -142,45 +328,105 @@ export default function HomePage() {
       </section>
 
       {/* Final CTA */}
-      <section className="px-6 py-16 text-center">
-        <h2 className="text-3xl font-bold mb-6 text-cyan-400">
-          Ready to transform your clinic?
-        </h2>
-        <div className="flex justify-center gap-4">
-          <Link href="/signup-unavailable">
-            <button className="bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-3 px-6 rounded-xl transition shadow-lg">
-              Sign Up Now
-            </button>
-          </Link>
-          <a href="#value">
-            <button className="border border-cyan-500 hover:bg-cyan-500 hover:text-white text-cyan-400 font-semibold py-3 px-6 rounded-xl transition">
-              Learn More
-            </button>
-          </a>
-        </div>
+      <section className="px-6 py-20 text-center bg-gradient-to-br from-gray-900 to-black">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+        >
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+              Ready to reduce front desk calls?
+            </span>
+          </h2>
+          <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
+            Join clinics already using CalmClinic to improve patient satisfaction and reduce staff workload.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link href="/signup-unavailable">
+              <motion.button 
+                className="bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-4 px-8 rounded-xl transition shadow-lg"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Get Started Free
+              </motion.button>
+            </Link>
+            <Link href="#demo">
+              <motion.button 
+                className="border border-cyan-500 hover:bg-cyan-500 hover:text-white text-cyan-400 font-semibold py-4 px-8 rounded-xl transition"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                See Live Demo
+              </motion.button>
+            </Link>
+          </div>
+        </motion.div>
       </section>
 
       {/* Why Clinics Love CalmClinic */}
       <section id="value" className="px-6 py-20 bg-gray-950 border-t border-gray-800">
-        <div className="max-w-5xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-cyan-400 mb-8">Why Clinics Love CalmClinic</h2>
-          <div className="grid sm:grid-cols-2 gap-10 text-left text-gray-300 text-lg">
-            <div>
-              <h3 className="text-xl font-semibold text-cyan-300 mb-2">Reduces Front Desk Overload</h3>
-              <p>Patients get answers to common questions — like hours, directions, or visit expectations — without needing to wait in line.</p>
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold text-cyan-300 mb-2">Improves Patient Satisfaction</h3>
-              <p>With an AI that listens and guides them while they wait, patients feel acknowledged and supported — right from the start.</p>
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold text-cyan-300 mb-2">Easy, QR-Based Setup</h3>
-              <p>No app downloads. No accounts. Just a QR code and a simple chat. Your clinic is live in minutes.</p>
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold text-cyan-300 mb-2">Clinic Branding, Your Way</h3>
-              <p>Customize tone, instructions, and even the assistant&apos;s name. CalmClinic becomes an extension of your care philosophy.</p>
-            </div>
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              Proven results that matter
+            </h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              Real outcomes from clinics using CalmClinic to improve patient care
+            </p>
+          </motion.div>
+          
+          <div className="grid md:grid-cols-2 gap-8">
+            {[
+              {
+                metric: "24/7",
+                title: "Always Available",
+                description: "Your AI assistant is ready to help patients any time, even after hours"
+              },
+              {
+                metric: "Zero",
+                title: "App Downloads Required", 
+                description: "Patients just scan a QR code—no installations, accounts, or complexity"
+              },
+              {
+                metric: "Minutes",
+                title: "To Get Started",
+                description: "Quick setup process gets your clinic's AI assistant live fast"
+              },
+              {
+                metric: "Fully",
+                title: "HIPAA Compliant",
+                description: "Built specifically for healthcare with security and privacy as priorities"
+              }
+            ].map((item, index) => (
+              <motion.div
+                key={index}
+                className="bg-gray-800/30 border border-gray-700 rounded-xl p-8 text-center hover:bg-gray-800/50 transition-all duration-300"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                whileHover={{ y: -5 }}
+              >
+                <div className="text-4xl md:text-5xl font-bold text-cyan-400 mb-4">
+                  {item.metric}
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-3">
+                  {item.title}
+                </h3>
+                <p className="text-gray-300 leading-relaxed">
+                  {item.description}
+                </p>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>

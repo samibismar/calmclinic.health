@@ -305,6 +305,17 @@ export async function POST(request: Request) {
       });
     }
 
+    // Simple tracking: just count the interaction
+    if (providerId) {
+      try {
+        await supabase
+          .from('patient_interactions')
+          .insert({ provider_id: providerId });
+      } catch (error) {
+        console.warn('Failed to track interaction:', error);
+      }
+    }
+
     // Use our custom clinic tools - the Responses API will try to call them
     // If it fails, we'll catch the error and handle tools manually in the fallback
     const responsesAPITools = [
