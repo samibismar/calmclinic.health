@@ -153,7 +153,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
       }
 
       let index = 0;
-      const typingSpeed = 45; // ms per character - FASTER (humans read faster)
+      const typingSpeed = 25; // ms per character - FASTER (humans read faster)
       
       const typeMessage = () => {
         if (index < openingContent.length) {
@@ -405,7 +405,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
         
         let index = 0;
         const responseContent = data.message;
-        const typingSpeed = 25; // Much faster for responses
+        const typingSpeed = 12; // Much faster for responses
         
         const typeResponse = () => {
           if (index < responseContent.length) {
@@ -438,7 +438,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
   // Interactive onboarding experience
   if (loading || onboardingStage !== 'complete') {
     return (
-      <div className="bg-white flex flex-col h-full min-h-screen w-full">
+      <div className="bg-white h-screen flex flex-col w-full fixed inset-0">
         
         {/* Seamlessly integrated header */}
         <div className={`px-6 pt-4 pb-0 bg-white transition-all duration-2000 ease-out ${
@@ -602,7 +602,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
         </div>
         
         {/* Fixed bottom input area */}
-        <div className="px-6 py-4 bg-white border-t border-gray-100">
+        <div className="flex-shrink-0 px-6 py-4 bg-white border-t border-gray-100">
           <div className="flex gap-3 items-end">
             <input
               type="text"
@@ -628,7 +628,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
 
   return (
     <>
-      <div className={`bg-white flex flex-col h-full min-h-screen w-full transition-all duration-700 ${
+      <div className={`bg-white h-screen flex flex-col w-full fixed inset-0 transition-all duration-700 ${
         showInterface ? 'opacity-100' : 'opacity-0'
       }`}>
       {/* Seamlessly integrated header - static version */}
@@ -741,7 +741,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
       </div>
 
       {/* Chat Messages Area - seamlessly integrated with proper scrolling */}
-      <div className={`flex-1 overflow-y-auto px-6 pt-4 min-h-0 chat-scroll transition-all duration-600 delay-300 ${
+      <div className={`flex-1 overflow-y-auto px-6 pt-4 pb-4 min-h-0 chat-scroll transition-all duration-600 delay-300 ${
         showInterface ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-4'
       }`}>
         
@@ -820,7 +820,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
       </div>
 
       {/* Fixed Input Area - always visible */}
-      <div className={`px-6 py-4 bg-white border-t border-gray-100 transition-all duration-600 delay-400 ${
+      <div className={`flex-shrink-0 px-6 py-4 bg-white border-t border-gray-100 transition-all duration-600 delay-400 ${
         showInterface ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-4'
       }`}>
         <div className="flex gap-3 items-end">

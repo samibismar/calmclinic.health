@@ -95,7 +95,7 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
-            Reduce front desk calls by 40%. White-labeled AI assistant that helps patients in your waiting room.
+            White-labeled assistant that helps patients feel heard in your waiting room.
           </motion.p>
           
           <motion.div 

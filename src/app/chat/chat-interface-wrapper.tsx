@@ -133,14 +133,12 @@ export default function ChatInterfaceWrapper() {
 
   // Show chat interface
   return (
-    <main className="min-h-screen w-full bg-white">
-      <Suspense fallback={<div className="bg-white min-h-screen flex items-center justify-center"><div className="text-gray-600">Loading assistant...</div></div>}>
-        <ChatInterface 
-          clinic={clinic} 
-          providerId={selectedProvider}
-          providerInfo={providers.find(p => p.id === selectedProvider)}
-        />
-      </Suspense>
-    </main>
+    <Suspense fallback={<div className="bg-white h-screen flex items-center justify-center"><div className="text-gray-600">Loading assistant...</div></div>}>
+      <ChatInterface 
+        clinic={clinic} 
+        providerId={selectedProvider}
+        providerInfo={providers.find(p => p.id === selectedProvider)}
+      />
+    </Suspense>
   );
 }
