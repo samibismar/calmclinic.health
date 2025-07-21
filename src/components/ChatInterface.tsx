@@ -45,6 +45,8 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
   const [onboardingStage, setOnboardingStage] = useState<'loading' | 'intro' | 'typing' | 'awaiting_response' | 'complete'>('loading');
   const [typedMessage, setTypedMessage] = useState("");
   const [showInterface, setShowInterface] = useState(false);
+  const [typingMessageIndex, setTypingMessageIndex] = useState<number | null>(null);
+  const [typingContent, setTypingContent] = useState("");
   
   // Get language from URL parameters
   const searchParams = useSearchParams();
@@ -390,10 +392,37 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
           console.log('🔗 Stored conversation response ID:', data.response_id);
         }
 
+        // Add empty assistant message first
+        const newMessageIndex = updatedMessages.length;
         setMessages([...updatedMessages, {
           role: "assistant",
-          content: data.message,
+          content: "",
         }]);
+
+        // Start typing animation for response
+        setTypingMessageIndex(newMessageIndex);
+        setTypingContent("");
+        
+        let index = 0;
+        const responseContent = data.message;
+        const typingSpeed = 25; // Much faster for responses
+        
+        const typeResponse = () => {
+          if (index < responseContent.length) {
+            setTypingContent(responseContent.slice(0, index + 1));
+            index++;
+            setTimeout(typeResponse, typingSpeed);
+          } else {
+            // Typing complete - update the actual message
+            setMessages(prev => prev.map((msg, i) => 
+              i === newMessageIndex ? { ...msg, content: responseContent } : msg
+            ));
+            setTypingMessageIndex(null);
+            setTypingContent("");
+          }
+        };
+        
+        typeResponse();
       } catch (error) {
         console.error("Error:", error);
         setMessages([...updatedMessages, {
@@ -711,13 +740,13 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
         </div>
       </div>
 
-      {/* Chat Messages Area - seamlessly integrated */}
-      <div className={`flex-1 overflow-y-auto px-6 pt-4 pb-4 min-h-0 chat-scroll transition-all duration-600 delay-300 ${
+      {/* Chat Messages Area - seamlessly integrated with proper scrolling */}
+      <div className={`flex-1 overflow-y-auto px-6 pt-4 min-h-0 chat-scroll transition-all duration-600 delay-300 ${
         showInterface ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-4'
       }`}>
         
         {/* Messages */}
-        <div className="space-y-4">
+        <div className="space-y-4 pb-6">
           {messages.map((msg, index) => (
             <div 
               key={index}
@@ -731,7 +760,16 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
                 }`}
                 style={msg.role === 'user' ? { backgroundColor: doctorConfig.accentColor } : {}}
               >
-                <p className="text-sm leading-relaxed">{msg.content}</p>
+                <p className="text-sm leading-relaxed">
+                  {typingMessageIndex === index && msg.role === 'assistant' ? (
+                    <>
+                      {typingContent}
+                      <span className="animate-pulse ml-1 text-blue-600 font-bold">|</span>
+                    </>
+                  ) : (
+                    msg.content
+                  )}
+                </p>
               </div>
             </div>
           ))}
@@ -767,7 +805,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
           )}
           
           {/* AI Typing Indicator - Apple-style bouncing dots */}
-          {isAiTyping && (
+          {isAiTyping && typingMessageIndex === null && (
             <div className="flex justify-start">
               <div className="bg-gray-100 rounded-2xl rounded-bl-md px-4 py-3 shadow-sm">
                 <div className="flex items-center space-x-1">
