@@ -169,7 +169,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
       
       typeMessage();
     }
-  }, [onboardingStage, clinic, language, providerInfo]);
+  }, [onboardingStage, clinic, language, providerInfo, doctorConfig.specialty]);
 
   // Reset initialization when language changes to update opening message
   useEffect(() => {

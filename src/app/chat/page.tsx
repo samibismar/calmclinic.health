@@ -22,7 +22,7 @@ function LoadingFallback() {
 export default async function Page() {
   return (
     <Suspense fallback={<LoadingFallback />}>
-      <ChatInterfaceWrapper backgroundStyle="calm-gradient" />
+      <ChatInterfaceWrapper />
     </Suspense>
   );
 }

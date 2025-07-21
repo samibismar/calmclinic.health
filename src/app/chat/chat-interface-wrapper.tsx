@@ -4,7 +4,6 @@ import { useSearchParams } from 'next/navigation';
 import ChatInterface from '@/components/ChatInterface';
 import ProviderSelection from '@/components/ProviderSelection';
 import { Suspense, useState, useEffect } from 'react';
-import clsx from "clsx";
 
 interface Provider {
   id: number;
@@ -27,7 +26,7 @@ interface ClinicInfo {
   default_provider_id: number | null;
 }
 
-export default function ChatInterfaceWrapper({ backgroundStyle }: { backgroundStyle: string }) {
+export default function ChatInterfaceWrapper() {
   const searchParams = useSearchParams();
   const clinic = searchParams.get('c');
   const providerId = searchParams.get('p');
