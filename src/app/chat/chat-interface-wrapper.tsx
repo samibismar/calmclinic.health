@@ -134,23 +134,14 @@ export default function ChatInterfaceWrapper({ backgroundStyle }: { backgroundSt
 
   // Show chat interface
   return (
-    <main
-      className={clsx(
-        "min-h-screen text-white flex items-center justify-center",
-        backgroundStyle === "calm-gradient" && "bg-gradient-to-br from-[#0f172a] to-[#1e293b]",
-        backgroundStyle === "light" && "bg-white text-black",
-        backgroundStyle === "dark" && "bg-[#111827]"
-      )}
-    >
-      <div className="w-full max-w-md p-4">
-        <Suspense fallback={<div className="text-white text-center p-6">Loading assistant...</div>}>
-          <ChatInterface 
-            clinic={clinic} 
-            providerId={selectedProvider}
-            providerInfo={providers.find(p => p.id === selectedProvider)}
-          />
-        </Suspense>
-      </div>
+    <main className="min-h-screen w-full bg-white">
+      <Suspense fallback={<div className="bg-white min-h-screen flex items-center justify-center"><div className="text-gray-600">Loading assistant...</div></div>}>
+        <ChatInterface 
+          clinic={clinic} 
+          providerId={selectedProvider}
+          providerInfo={providers.find(p => p.id === selectedProvider)}
+        />
+      </Suspense>
     </main>
   );
 }

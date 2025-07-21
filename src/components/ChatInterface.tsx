@@ -408,7 +408,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
   // Interactive onboarding experience
   if (loading || onboardingStage !== 'complete') {
     return (
-      <div className="bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col h-full min-h-0 backdrop-blur-sm bg-white/95 max-h-[90vh]">
+      <div className="bg-white flex flex-col h-full min-h-screen w-full">
         
         {/* Seamlessly integrated header */}
         <div className={`px-6 pt-4 pb-0 bg-white transition-all duration-2000 ease-out ${
@@ -598,8 +598,8 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
 
   return (
     <>
-      <div className={`bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col h-full min-h-0 backdrop-blur-sm bg-white/95 max-h-[90vh] transition-all duration-700 ${
-        showInterface ? 'opacity-100 transform scale-100' : 'opacity-0 transform scale-95'
+      <div className={`bg-white flex flex-col h-full min-h-screen w-full transition-all duration-700 ${
+        showInterface ? 'opacity-100' : 'opacity-0'
       }`}>
       {/* Seamlessly integrated header - static version */}
       <div className={`px-6 pt-4 pb-0 bg-white transition-all duration-600 delay-100 ${
