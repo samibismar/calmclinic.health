@@ -169,7 +169,8 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
       
       typeMessage();
     }
-  }, [onboardingStage, clinic, language, providerInfo, doctorConfig.specialty]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onboardingStage, clinic, language, providerInfo]);
 
   // Reset initialization when language changes to update opening message
   useEffect(() => {
