@@ -158,7 +158,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
       }
 
       let index = 0;
-      const typingSpeed = 15; // ms per character - FASTER (humans read faster)
+      const typingSpeed = 28; // ms per character - FASTER (humans read faster)
       
       const typeMessage = () => {
         if (index < openingContent.length) {
@@ -434,7 +434,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
         
         let index = 0;
         const responseContent = data.message;
-        const typingSpeed = 10; // Much faster for responses
+        const typingSpeed = 15; // Much faster for responses
         
         const typeResponse = () => {
           if (index < responseContent.length) {
