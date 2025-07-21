@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, title, specialties, bio, experience, languages, avatar_url, is_default } = body;
+    const { name, title, specialties, bio, experience, languages, avatar_url, is_default, gender } = body;
 
     // Validate required fields
     if (!name || !title) {
@@ -101,7 +101,8 @@ export async function POST(request: NextRequest) {
         avatar_url,
         is_default: is_default || false,
         is_active: true,
-        display_order: nextDisplayOrder
+        display_order: nextDisplayOrder,
+        gender: gender || 'not_specified'
       })
       .select()
       .single();
@@ -128,7 +129,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { id, name, title, specialties, bio, experience, languages, avatar_url, is_default, is_active } = body;
+    const { id, name, title, specialties, bio, experience, languages, avatar_url, is_default, is_active, gender } = body;
 
     // Validate required fields
     if (!id || !name || !title) {
@@ -155,7 +156,8 @@ export async function PUT(request: NextRequest) {
         languages: languages || [],
         avatar_url,
         is_default: is_default || false,
-        is_active: is_active !== false
+        is_active: is_active !== false,
+        gender: gender || 'not_specified'
       })
       .eq('id', id)
       .eq('clinic_id', clinic.id)

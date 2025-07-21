@@ -16,6 +16,7 @@ interface Provider {
   is_active: boolean;
   is_default: boolean;
   display_order: number;
+  gender?: string; // Added gender to the interface
 }
 
 export default function ProvidersPage() {
@@ -144,6 +145,11 @@ export default function ProvidersPage() {
                         )}
                       </div>
                       <p className="text-blue-100 mb-1">{provider.title}</p>
+                      {provider.gender && provider.gender !== 'not_specified' && (
+                        <span className="inline-block bg-blue-200 text-blue-900 text-xs px-2 py-1 rounded-full font-medium mb-1 mr-2">
+                          {provider.gender.charAt(0).toUpperCase() + provider.gender.slice(1)}
+                        </span>
+                      )}
                       {provider.specialties.length > 0 && (
                         <div className="flex flex-wrap gap-1 mb-2">
                           {provider.specialties.map((specialty, index) => (

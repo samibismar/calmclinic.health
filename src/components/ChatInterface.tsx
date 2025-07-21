@@ -47,6 +47,9 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
   const [showInterface, setShowInterface] = useState(false);
   const [typingMessageIndex, setTypingMessageIndex] = useState<number | null>(null);
   const [typingContent, setTypingContent] = useState("");
+  const [newMessageAppearing, setNewMessageAppearing] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState<string>("");
+  const [showTransition, setShowTransition] = useState(true);
   
   // Get language from URL parameters
   const searchParams = useSearchParams();
@@ -120,9 +123,11 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
   // Interactive onboarding flow: progressive disclosure with typing animation
   useEffect(() => {
     if (clinic && !hasInitialized && !loading) {
-      // Start the engaging onboarding sequence - MUCH SLOWER
-      setTimeout(() => setOnboardingStage('intro'), 1500);
-      setTimeout(() => setOnboardingStage('typing'), 4000);
+      setTimeout(() => {
+        setShowTransition(false); // Hide overlay after 0.8s
+        setOnboardingStage('intro');
+      }, 300);
+      setTimeout(() => setOnboardingStage('typing'), 1200);
       setHasInitialized(true);
     }
   }, [clinic, loading, hasInitialized]);
@@ -153,7 +158,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
       }
 
       let index = 0;
-      const typingSpeed = 25; // ms per character - FASTER (humans read faster)
+      const typingSpeed = 15; // ms per character - FASTER (humans read faster)
       
       const typeMessage = () => {
         if (index < openingContent.length) {
@@ -337,12 +342,24 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
         setTimeout(() => setShowInterface(true), 200);
       }
       
-      // Add user message
+      // Add user message with animation
       const userMessage = { role: "user", content: message };
       const updatedMessages = [...messages, userMessage];
+      
+      // Trigger animation for new user message
+      setNewMessageAppearing(true);
+      setTimeout(() => setNewMessageAppearing(false), 400);
+      
       setMessages(updatedMessages);
       setMessage("");
       setIsAiTyping(true);
+
+      // Set loading message for Response API users BEFORE making the call
+      if (useResponseAPI) {
+        // We can't know if tools will be used yet, so show random message
+        const normalMessages = ["Thinking...", "Composing response..."];
+        setLoadingMessage(normalMessages[Math.floor(Math.random() * normalMessages.length)]);
+      }
 
       try {
         // Choose API endpoint based on feature flag
@@ -392,8 +409,20 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
           console.log('🔗 Stored conversation response ID:', data.response_id);
         }
 
-        // Add empty assistant message first
+        // Update loading message if tools were used and add delay for user to see it
+        if (useResponseAPI && data.tools_used && data.tools_used.length > 0) {
+          setLoadingMessage("Gathering information...");
+          // Add 1.2 second delay so user can see the "Gathering information..." message
+          await new Promise(resolve => setTimeout(resolve, 1200));
+        }
+
+        // Add empty assistant message first with animation
         const newMessageIndex = updatedMessages.length;
+        
+        // Trigger animation for new assistant message
+        setNewMessageAppearing(true);
+        setTimeout(() => setNewMessageAppearing(false), 400);
+        
         setMessages([...updatedMessages, {
           role: "assistant",
           content: "",
@@ -405,7 +434,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
         
         let index = 0;
         const responseContent = data.message;
-        const typingSpeed = 12; // Much faster for responses
+        const typingSpeed = 10; // Much faster for responses
         
         const typeResponse = () => {
           if (index < responseContent.length) {
@@ -419,6 +448,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
             ));
             setTypingMessageIndex(null);
             setTypingContent("");
+            setLoadingMessage("");
           }
         };
         
@@ -429,6 +459,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
           role: "assistant",
           content: t.errorMessage,
         }]);
+        setLoadingMessage("");
       } finally {
         setIsAiTyping(false);
       }
@@ -439,6 +470,17 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
   if (loading || onboardingStage !== 'complete') {
     return (
       <div className="bg-white min-h-screen flex flex-col w-full relative">
+        
+        {showTransition && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-blue-100/90 to-blue-200/90 backdrop-blur-md transition-opacity duration-700">
+    <div className="flex flex-col items-center">
+      {/* Replace with your logo or a soft animated pulse */}
+      <svg className="w-16 h-16 md:w-24 md:h-24 text-blue-400 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <circle cx="12" cy="12" r="10" strokeWidth="2" />
+      </svg>
+    </div>
+  </div>
+)}
         
         {/* Seamlessly integrated header */}
         <div className={`px-6 pt-4 pb-0 bg-white transition-all duration-2000 ease-out ${
@@ -508,27 +550,14 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
             {/* Loading state */}
             {onboardingStage === 'loading' && (
               <div className="flex justify-center">
-                <div className="bg-gray-100 rounded-2xl rounded-bl-md px-4 py-3 shadow-sm">
-                  <div className="flex items-center space-x-1">
-                    <div className="typing-dot w-2 h-2 bg-gray-500 rounded-full" style={{ animationDelay: '0ms' }}></div>
-                    <div className="typing-dot w-2 h-2 bg-gray-500 rounded-full" style={{ animationDelay: '200ms' }}></div>
-                    <div className="typing-dot w-2 h-2 bg-gray-500 rounded-full" style={{ animationDelay: '400ms' }}></div>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {/* Intro stage - assistant preparing - SLOWER with BETTER COLORS */}
-            {onboardingStage === 'intro' && (
-              <div className={`flex justify-start transition-all duration-1200 ease-out ${
-                onboardingStage === 'intro' ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
-              }`}>
-                <div className="bg-blue-50 border border-blue-100 rounded-2xl rounded-bl-md px-6 py-4 shadow-lg max-w-[85%]">
-                  <div className="flex items-center space-x-3">
-                    <div className="typing-dot w-3 h-3 bg-blue-600 rounded-full" style={{ animationDelay: '0ms' }}></div>
-                    <div className="typing-dot w-3 h-3 bg-blue-600 rounded-full" style={{ animationDelay: '300ms' }}></div>
-                    <div className="typing-dot w-3 h-3 bg-blue-600 rounded-full" style={{ animationDelay: '600ms' }}></div>
-                    <span className="text-sm text-gray-800 font-medium ml-3">Assistant is preparing...</span>
+                <div className="relative bg-blue-50 border border-blue-100 rounded-2xl px-8 py-8 shadow-lg max-w-[85%] w-full overflow-hidden">
+                  {/* Shimmer skeleton */}
+                  <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-blue-100 via-blue-50 to-blue-100 opacity-60 rounded-2xl" style={{zIndex:0}}></div>
+                  {/* Progress bar */}
+                  <div className="absolute left-0 bottom-0 h-1 bg-blue-300 rounded-b-2xl animate-progressBar w-1/2" style={{zIndex:1}}></div>
+                  <div className="relative flex flex-col items-center z-10">
+                    <svg className="w-8 h-8 text-blue-400 animate-bounce-slow mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10" strokeWidth="2" /></svg>
+                    <span className="text-base text-blue-900 font-semibold tracking-wide">Getting things ready for you...</span>
                   </div>
                 </div>
               </div>
@@ -747,11 +776,16 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
         
         {/* Messages */}
         <div className="space-y-4 pb-6">
-          {messages.map((msg, index) => (
-            <div 
-              key={index}
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
+          {messages.map((msg, index) => {
+            const isNewMessage = newMessageAppearing && index === messages.length - 1;
+            
+            return (
+              <div 
+                key={index}
+                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} ${
+                  isNewMessage ? 'message-combo' : ''
+                }`}
+              >
               <div 
                 className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-sm ${
                   msg.role === 'user' 
@@ -771,8 +805,9 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
                   )}
                 </p>
               </div>
-            </div>
-          ))}
+              </div>
+            );
+          })}
           
           {/* Show suggested prompts after opening message */}
           {messages.length === 1 && messages[0]?.role === 'assistant' && (
@@ -812,6 +847,9 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
                   <div className="typing-dot w-2 h-2 bg-gray-500 rounded-full" style={{ animationDelay: '0ms' }}></div>
                   <div className="typing-dot w-2 h-2 bg-gray-500 rounded-full" style={{ animationDelay: '200ms' }}></div>
                   <div className="typing-dot w-2 h-2 bg-gray-500 rounded-full" style={{ animationDelay: '400ms' }}></div>
+                  {useResponseAPI && loadingMessage && (
+                    <span className="text-xs text-gray-600 ml-3 font-medium">{loadingMessage}</span>
+                  )}
                 </div>
               </div>
             </div>

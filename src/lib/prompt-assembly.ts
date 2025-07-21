@@ -200,8 +200,39 @@ export async function buildPersonalityGuidelines(clinicId: number): Promise<stri
   return personalityInstructions.trim() ? `\nPERSONALITY & CONFIGURATION SETTINGS:${personalityInstructions}` : '';
 }
 
+// Get provider context for system prompt
+export async function getProviderContext(providerId: number): Promise<string> {
+  try {
+    const { data: provider, error } = await supabase
+      .from('providers')
+      .select('name, title, gender')
+      .eq('id', providerId)
+      .single();
+
+    if (error || !provider) {
+      return '';
+    }
+
+    let pronoun = 'they';
+    let possessive = 'their';
+    
+    if (provider.gender === 'male') {
+      pronoun = 'he';
+      possessive = 'his';
+    } else if (provider.gender === 'female') {
+      pronoun = 'she';
+      possessive = 'her';
+    }
+
+    return `\n\nPROVIDER CONTEXT:\nYou are speaking with a patient of ${provider.name}, ${possessive} ${provider.title}. When referring to the provider, use the correct pronouns: ${pronoun}/${possessive}. The patient has specifically chosen to speak with ${provider.name}.`;
+  } catch (error) {
+    console.error('Error fetching provider context:', error);
+    return '';
+  }
+}
+
 // Main function to assemble the complete system prompt
-export async function assembleSystemPrompt(clinicId: number, basePromptOverride?: string): Promise<string> {
+export async function assembleSystemPrompt(clinicId: number, basePromptOverride?: string, providerId?: number): Promise<string> {
   // Use override prompt or get the base prompt from the database
   let basePrompt = basePromptOverride || await getLatestClinicPrompt(clinicId);
   
@@ -225,10 +256,11 @@ export async function assembleSystemPrompt(clinicId: number, basePromptOverride?
   const conversationRules = buildConversationRules();
   const personalityGuidelines = await buildPersonalityGuidelines(clinicId);
   const fallbackGuidelines = await buildFallbackGuidelines(clinicId);
+  const providerContext = providerId ? await getProviderContext(providerId) : '';
 
   // Assemble the complete prompt
   const fullPrompt = `${basePrompt}
-${personalityGuidelines}
+${personalityGuidelines}${providerContext}
 
 ${toolInstructions}
 

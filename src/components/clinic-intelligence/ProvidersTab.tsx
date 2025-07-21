@@ -12,6 +12,7 @@ interface Provider {
   email?: string;
   phone?: string;
   is_active: boolean;
+  gender?: 'male' | 'female' | 'other' | 'not_specified';
 }
 
 export default function ProvidersTab() {

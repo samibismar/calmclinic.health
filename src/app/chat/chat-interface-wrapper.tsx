@@ -122,10 +122,12 @@ export default function ChatInterfaceWrapper() {
   // Show loading state
   if (isLoading) {
     return (
-      <main className="min-h-screen bg-gradient-to-br from-sky-400 to-emerald-400 flex items-center justify-center p-4">
-        <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading assistant...</p>
+      <main className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center p-4 transition-colors duration-500">
+        <div className="bg-white/80 rounded-2xl shadow-xl p-8 max-w-md w-full text-center border border-blue-100">
+          <div className="flex justify-center mb-6">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-400 border-t-transparent"></div>
+          </div>
+          <p className="text-blue-700 text-base font-medium tracking-wide">Loading assistant...</p>
         </div>
       </main>
     );

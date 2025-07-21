@@ -14,6 +14,7 @@ interface ProviderFormData {
   languages: string[];
   avatar_url: string;
   is_default: boolean;
+  gender: 'male' | 'female' | 'other' | 'not_specified';
 }
 
 const specialtyOptions = [
@@ -41,7 +42,8 @@ export default function AddProviderPage() {
     experience: '',
     languages: [],
     avatar_url: '',
-    is_default: false
+    is_default: false,
+    gender: 'not_specified'
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -159,6 +161,22 @@ export default function AddProviderPage() {
                   required
                 />
               </div>
+            </div>
+
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-blue-100 mb-2">
+                Gender
+              </label>
+              <select
+                value={formData.gender}
+                onChange={(e) => setFormData(prev => ({ ...prev, gender: e.target.value as 'male' | 'female' | 'other' | 'not_specified' }))}
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+              >
+                <option value="not_specified" className="bg-blue-900 text-white">Not Specified</option>
+                <option value="female" className="bg-blue-900 text-white">Female</option>
+                <option value="male" className="bg-blue-900 text-white">Male</option>
+                <option value="other" className="bg-blue-900 text-white">Other</option>
+              </select>
             </div>
 
             <div className="mt-6">

@@ -16,6 +16,7 @@ interface Provider {
   is_active: boolean;
   is_default: boolean;
   display_order: number;
+  gender?: 'male' | 'female' | 'other' | 'not_specified';
 }
 
 

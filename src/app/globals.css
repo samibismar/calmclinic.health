@@ -41,6 +41,162 @@ body {
   animation-fill-mode: both;
 }
 
+/* Enhanced Loading Animations for Test Page */
+
+/* Breathing Animation - Organic, calming */
+@keyframes breathe {
+  0%, 100% { 
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% { 
+    transform: scale(1.3);
+    opacity: 1;
+  }
+}
+
+.breathing-dot {
+  animation: breathe 3s infinite ease-in-out;
+  animation-fill-mode: both;
+}
+
+/* Progressive Wave - Shows progression */
+@keyframes pulseWave {
+  0%, 70%, 100% { 
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  35% { 
+    transform: scale(1.4);
+    opacity: 1;
+  }
+}
+
+.pulse-wave {
+  animation: pulseWave 1.8s infinite ease-in-out;
+  animation-fill-mode: both;
+}
+
+/* Gentle Pulse - Micro-confirmations */
+@keyframes gentlePulse {
+  0%, 80%, 100% { 
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  40% { 
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+.gentle-pulse {
+  animation: gentlePulse 2.5s infinite ease-in-out;
+  animation-fill-mode: both;
+}
+
+/* Skeleton Screen Animation */
+@keyframes skeletonShimmer {
+  0% { opacity: 0.6; }
+  50% { opacity: 0.8; }
+  100% { opacity: 0.6; }
+}
+
+.skeleton-line {
+  animation: skeletonShimmer 1.5s infinite ease-in-out;
+  animation-fill-mode: both;
+}
+
+/* Subtle Professional Animations for Test Page */
+
+/* Smooth Dots - Better easing and timing */
+@keyframes smoothBounce {
+  0%, 70%, 100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  35% {
+    transform: translateY(-8px);
+    opacity: 1;
+  }
+}
+
+.smooth-dot {
+  animation: smoothBounce 1.6s infinite ease-out;
+  animation-fill-mode: both;
+}
+
+/* Message Slide In - Subtle entrance animation */
+@keyframes slideInFromBottom {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-slide-in {
+  animation: slideInFromBottom 0.3s ease-out;
+}
+
+/* Message Fade In - Gentle opacity transition */
+@keyframes fadeInEffect {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.message-fade-in {
+  animation: fadeInEffect 0.4s ease-out;
+}
+
+/* Message Scale In - Subtle growing effect */
+@keyframes scaleInEffect {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.message-scale-in {
+  animation: scaleInEffect 0.3s ease-out;
+}
+
+/* Message Combo - Slide + Scale together */
+@keyframes slideScaleCombo {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.message-combo {
+  animation: slideScaleCombo 0.35s ease-out;
+}
+
+/* Typing Cursor - More realistic blinking */
+@keyframes typingCursorBlink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.typing-cursor {
+  animation: typingCursorBlink 1.2s infinite;
+}
+
 /* Chat scroll styling */
 .chat-scroll {
   scrollbar-width: thin;
