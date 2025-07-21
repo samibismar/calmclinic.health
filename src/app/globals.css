@@ -17,6 +17,13 @@ body {
   min-height: 100vh;
 }
 
+/* Mobile viewport fix for chat interface */
+@supports (-webkit-touch-callout: none) {
+  .h-screen {
+    height: -webkit-fill-available;
+  }
+}
+
 /* Apple-style typing indicator animation - 2025 UX - SLOWER */
 @keyframes typingBounce {
   0%, 60%, 100% {

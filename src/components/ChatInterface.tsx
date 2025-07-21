@@ -438,7 +438,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
   // Interactive onboarding experience
   if (loading || onboardingStage !== 'complete') {
     return (
-      <div className="bg-white h-screen flex flex-col w-full fixed inset-0">
+      <div className="bg-white min-h-screen flex flex-col w-full relative">
         
         {/* Seamlessly integrated header */}
         <div className={`px-6 pt-4 pb-0 bg-white transition-all duration-2000 ease-out ${
@@ -602,7 +602,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
         </div>
         
         {/* Fixed bottom input area */}
-        <div className="flex-shrink-0 px-6 py-4 bg-white border-t border-gray-100">
+        <div className="sticky bottom-0 flex-shrink-0 px-6 py-4 bg-white border-t border-gray-100">
           <div className="flex gap-3 items-end">
             <input
               type="text"
@@ -628,7 +628,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
 
   return (
     <>
-      <div className={`bg-white h-screen flex flex-col w-full fixed inset-0 transition-all duration-700 ${
+      <div className={`bg-white min-h-screen flex flex-col w-full relative transition-all duration-700 ${
         showInterface ? 'opacity-100' : 'opacity-0'
       }`}>
       {/* Seamlessly integrated header - static version */}
@@ -820,7 +820,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
       </div>
 
       {/* Fixed Input Area - always visible */}
-      <div className={`flex-shrink-0 px-6 py-4 bg-white border-t border-gray-100 transition-all duration-600 delay-400 ${
+      <div className={`sticky bottom-0 flex-shrink-0 px-6 py-4 bg-white border-t border-gray-100 transition-all duration-600 delay-400 ${
         showInterface ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-4'
       }`}>
         <div className="flex gap-3 items-end">
