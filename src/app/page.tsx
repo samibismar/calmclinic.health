@@ -307,7 +307,7 @@ export default function HomePage() {
             See CalmClinic in action
           </h2>
           <p className="text-xl text-gray-300 mb-12">
-            Experience how your clinic's AI assistant will help patients feel heard.
+            Experience how your clinic&apos;s AI assistant will help patients feel heard.
           </p>
           
           <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-8">

@@ -6,7 +6,6 @@ import {
   ArrowLeft,
   BarChart3,
   MessageSquare,
-  Users,
   Clock,
   TrendingUp,
   FileText,
@@ -87,7 +86,7 @@ export default function EngagePage() {
                 <h1 className="text-3xl font-bold text-white">Patient Engagement</h1>
               </div>
               <p className="text-blue-100">
-                Monitor and improve your AI assistant's impact on patient care
+                Monitor and improve your AI assistant&apos;s impact on patient care
               </p>
             </div>
           </div>
@@ -110,7 +109,7 @@ export default function EngagePage() {
                   <h2 className="text-2xl font-bold text-white mb-4">Patients are using your AI assistant!</h2>
                   <p className="text-blue-200 text-lg leading-relaxed mb-6">
                     Great news! Patients in your waiting room are actively chatting with your AI assistant. 
-                    This means they're getting instant help with their questions, reducing interruptions to your front desk staff.
+                    This means they&apos;re getting instant help with their questions, reducing interruptions to your front desk staff.
                   </p>
                 </div>
               ) : (
@@ -157,8 +156,8 @@ export default function EngagePage() {
             <div>
               <h3 className="text-lg font-semibold text-blue-200 mb-2">Patient Insights Coming Soon</h3>
               <p className="text-blue-300 text-sm leading-relaxed">
-                We're building detailed analytics to show you how your AI assistant is helping patients. 
-                You'll soon be able to see common questions, interaction patterns, and estimated time saved 
+                We&apos;re building detailed analytics to show you how your AI assistant is helping patients. 
+                You&apos;ll soon be able to see common questions, interaction patterns, and estimated time saved 
                 for your front desk staff. For now, focus on sharing your QR code and ensuring your clinic 
                 information is up-to-date.
               </p>
@@ -209,7 +208,7 @@ export default function EngagePage() {
             <div>
               <h4 className="font-medium text-blue-200 mb-2">Test Your Assistant</h4>
               <p className="text-sm text-blue-300">
-                Regularly test your AI assistant to make sure it's giving helpful and accurate responses to common patient questions.
+                Regularly test your AI assistant to make sure it&apos;s giving helpful and accurate responses to common patient questions.
               </p>
             </div>
             <div>
