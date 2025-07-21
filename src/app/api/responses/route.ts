@@ -327,6 +327,11 @@ export async function POST(request: Request) {
       console.warn('⚠️ Prompt assembly validation failed, using fallback');
     }
     console.log('✅ System prompt assembled successfully:', systemPrompt.length, 'characters');
+    
+    // 🎯 FULL SYSTEM PROMPT DISPLAY
+    console.log('\n🎯 ==================== FULL ASSEMBLED SYSTEM PROMPT ====================');
+    console.log(systemPrompt);
+    console.log('🎯 ====================================================================\n');
 
     // Get the last user message for the Responses API
     const lastUserMessage = messages[messages.length - 1];
@@ -475,6 +480,11 @@ export async function POST(request: Request) {
     
     // Fallback to Chat Completions API (use same assembled prompt)
     console.log('📞 Using Chat Completions fallback with assembled prompt');
+    
+    // 🎯 FULL SYSTEM PROMPT DISPLAY (FALLBACK)
+    console.log('\n🎯 ==================== FULL ASSEMBLED SYSTEM PROMPT (FALLBACK) ====================');
+    console.log(systemPrompt);
+    console.log('🎯 ====================================================================\n');
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [

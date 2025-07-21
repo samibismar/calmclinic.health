@@ -227,7 +227,8 @@ export async function assembleSystemPrompt(clinicId: number, basePromptOverride?
   const fallbackGuidelines = await buildFallbackGuidelines(clinicId);
 
   // Assemble the complete prompt
-  const fullPrompt = `${basePrompt}${personalityGuidelines}
+  const fullPrompt = `${basePrompt}
+${personalityGuidelines}
 
 ${toolInstructions}
 
