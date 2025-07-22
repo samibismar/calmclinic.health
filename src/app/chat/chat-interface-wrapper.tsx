@@ -122,7 +122,7 @@ export default function ChatInterfaceWrapper() {
         <main className="min-h-screen bg-gradient-to-br from-gray-200 to-gray-400 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center border border-gray-200">
             <div className="text-gray-700 text-lg font-semibold mb-2">Assistant Unavailable</div>
-            <p className="text-gray-500">This clinic's AI assistant is currently unavailable. Please contact the front desk for assistance.</p>
+            <p className="text-gray-500">This clinic&apos;s AI assistant is currently unavailable. Please contact the front desk for assistance.</p>
           </div>
         </main>
       );

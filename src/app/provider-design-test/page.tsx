@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { User, Users, ArrowRight, Clock, Star, Award } from "lucide-react";
+import { User, Users, ArrowRight, Star } from "lucide-react";
 
 const mockProviders = [
   {
@@ -34,7 +34,6 @@ const mockProviders = [
 ];
 
 export default function ProviderDesignTestPage() {
-  const [selectedProvider, setSelectedProvider] = useState<number | null>(null);
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -70,8 +69,8 @@ export default function ProviderDesignTestPage() {
                     </div>
                     
                     <div className="flex flex-wrap gap-1 mb-3">
-                      {provider.specialties.map((specialty, idx) => (
-                        <span key={idx} className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">
+                      {provider.specialties.map((specialty) => (
+                        <span key={specialty} className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">
                           {specialty}
                         </span>
                       ))}
@@ -129,8 +128,8 @@ export default function ProviderDesignTestPage() {
                       <p className="text-gray-600 font-medium mb-2">{provider.title}</p>
                       
                       <div className="flex flex-wrap gap-1 mb-3">
-                        {provider.specialties.map((specialty, idx) => (
-                          <span key={idx} className="bg-blue-50 text-blue-700 text-xs px-3 py-1 rounded-md border border-blue-200">
+                        {provider.specialties.map((specialty) => (
+                          <span key={specialty} className="bg-blue-50 text-blue-700 text-xs px-3 py-1 rounded-md border border-blue-200">
                             {specialty}
                           </span>
                         ))}
@@ -159,7 +158,7 @@ export default function ProviderDesignTestPage() {
             </div>
             
             <div className="max-w-2xl mx-auto space-y-1">
-              {mockProviders.map((provider, idx) => (
+              {mockProviders.map((provider) => (
                 <button
                   key={provider.id}
                   className="w-full text-left p-4 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0"
@@ -180,7 +179,7 @@ export default function ProviderDesignTestPage() {
             
             <div className="text-center mt-8">
               <button className="text-gray-500 text-sm hover:text-gray-700 transition-colors">
-                I'm not sure who to choose
+                I&apos;m not sure who to choose
               </button>
             </div>
           </div>
