@@ -116,6 +116,9 @@ export default function ProviderManagement() {
                       )}
                     </div>
                     <p className="text-sm text-blue-100">{provider.title}</p>
+                    {provider.gender && provider.gender !== 'not_specified' && (
+                      <p className="text-xs text-blue-200 capitalize">{provider.gender}</p>
+                    )}
                     {provider.specialties.length > 0 && (
                       <p className="text-xs text-blue-300 mt-1">
                         {provider.specialties.slice(0, 2).join(', ')}

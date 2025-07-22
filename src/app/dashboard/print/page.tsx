@@ -9,8 +9,6 @@ function PrintPageContent() {
   const qrCodeRef = useRef<HTMLDivElement>(null);
 
   // Get parameters from URL
-  const doctorName = searchParams.get('doctor') || 'Dr. Sam';
-  const specialty = searchParams.get('specialty') || 'General Practice';
   const chatUrl = searchParams.get('url') || 'https://calmclinic.health/chat?c=default';
   const primaryColor = searchParams.get('color') || '#007bff';
 
@@ -114,20 +112,10 @@ function PrintPageContent() {
           </button>
         </div>
 
-        {/* Header with doctor info */}
-        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-          <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>
-            {doctorName}
-          </div>
-          <div style={{ fontSize: '16px', color: '#666', marginBottom: '20px' }}>
-            {specialty}
-          </div>
-        </div>
-
         {/* Main QR Code Section */}
         <div style={{ textAlign: 'center', margin: '20px 0' }}>
           <div style={{ fontSize: '20px', fontWeight: 'bold', margin: '0 0 15px 0', color: '#333' }}>
-            Scan this QR code to chat with our AI assistant
+            Scan this QR code to chat with our assistant
           </div>
           <div style={{ fontSize: '14px', color: '#666', marginBottom: '30px', lineHeight: 1.4 }}>
             Get help with your questions while you wait for your appointment
@@ -202,8 +190,7 @@ function PrintPageContent() {
           fontSize: '10px',
           color: '#888'
         }}>
-          <p><strong>Note:</strong> This AI assistant is for educational purposes only and does not replace professional medical advice.</p>
-          <p>Generated on {new Date().toLocaleDateString()}</p>
+          <p><strong>Note:</strong> This assistant does not replace professional medical advice.</p>
         </div>
       </div>
     </>

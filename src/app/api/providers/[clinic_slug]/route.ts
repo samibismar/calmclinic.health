@@ -16,7 +16,7 @@ export async function GET(
     // First, get the clinic information
     const { data: clinic, error: clinicError } = await supabase
       .from("clinics")
-      .select("id, practice_name, supports_multi_provider, default_provider_id")
+      .select("id, practice_name, supports_multi_provider, default_provider_id, is_paid, subscription_status, current_period_end, trial_ends_at")
       .eq("slug", clinic_slug)
       .single();
 
@@ -30,7 +30,7 @@ export async function GET(
     // Get all active providers for this clinic
     const { data: providers, error: providersError } = await supabase
       .from("providers")
-      .select("*")
+      .select("id, name, title, specialties, bio, experience, languages, avatar_url, is_active, is_default, display_order, gender")
       .eq("clinic_id", clinic.id)
       .eq("is_active", true)
       .order("display_order", { ascending: true })
@@ -98,7 +98,11 @@ export async function GET(
         id: clinic.id,
         name: clinic.practice_name,
         supports_multi_provider: clinic.supports_multi_provider,
-        default_provider_id: clinic.default_provider_id
+        default_provider_id: clinic.default_provider_id,
+        is_paid: clinic.is_paid,
+        subscription_status: clinic.subscription_status,
+        current_period_end: clinic.current_period_end,
+        trial_ends_at: clinic.trial_ends_at
       },
       providers: sortedProviders
     });

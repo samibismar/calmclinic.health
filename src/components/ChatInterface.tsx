@@ -56,8 +56,8 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
   const langParam = searchParams.get('lang');
   const [language, setLanguage] = useState(langParam === 'es' ? 'es' : 'en');
   
-  // Feature flag for Response API (enable with ?responses=true)
-  const useResponseAPI = searchParams.get('responses') === 'true';
+  // Feature flag for Response API (default enabled, disable with ?responses=false)
+  const useResponseAPI = searchParams.get('responses') !== 'false';
   
   useEffect(() => {
     async function fetchClinic() {
@@ -140,7 +140,9 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
       
       // Get specialty for contextualized messaging
       const specialty = doctorConfig.specialty || 'medical';
-      const isEyeCare = specialty.toLowerCase().includes('ophthalmology') || specialty.toLowerCase().includes('eye');
+      const isEyeCare = specialty.toLowerCase().includes('ophthalmology') || 
+                       specialty.toLowerCase().includes('optometry') || 
+                       specialty.toLowerCase().includes('eye');
       
       let openingContent;
       if (language === 'es') {
@@ -187,7 +189,9 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
       
       // Get specialty for contextualized messaging
       const specialty = doctorConfig.specialty || 'medical';
-      const isEyeCare = specialty.toLowerCase().includes('ophthalmology') || specialty.toLowerCase().includes('eye');
+      const isEyeCare = specialty.toLowerCase().includes('ophthalmology') || 
+                       specialty.toLowerCase().includes('optometry') || 
+                       specialty.toLowerCase().includes('eye');
       
       let openingContent;
       if (language === 'es') {
@@ -720,7 +724,9 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
                   
                   // Get specialty for contextualized messaging
                   const specialty = doctorConfig.specialty || 'medical';
-                  const isEyeCare = specialty.toLowerCase().includes('ophthalmology') || specialty.toLowerCase().includes('eye');
+                  const isEyeCare = specialty.toLowerCase().includes('ophthalmology') || 
+                       specialty.toLowerCase().includes('optometry') || 
+                       specialty.toLowerCase().includes('eye');
                   
                   let openingContent;
                   if (language === 'es') {

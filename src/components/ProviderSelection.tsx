@@ -67,35 +67,26 @@ export default function ProviderSelection({
     const provider = providers[0];
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 max-w-lg w-full">
-          <div className="text-center mb-8">
-            <div className="w-18 h-18 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-              <Stethoscope className="w-9 h-9 text-white" />
+        <div className="bg-white rounded-2xl shadow-lg p-6 max-w-sm w-full">
+          <div className="text-center mb-6">
+            <div className="w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Stethoscope className="w-7 h-7 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-3">Welcome to {clinicName}</h1>
-            <p className="text-gray-600 text-base leading-relaxed">You&apos;ll be chatting with our provider:</p>
+            <h1 className="text-xl font-bold text-gray-800 mb-2">Welcome to {clinicName}</h1>
+            <p className="text-gray-600 text-sm">You&apos;ll be chatting with:</p>
           </div>
 
-          <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-2xl p-6 mb-8 shadow-sm">
-            <div className="flex items-start space-x-4">
-              <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-md">
-                <User className="w-7 h-7 text-white" />
+          <div className="bg-blue-50 rounded-xl p-4 mb-6">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <User className="w-5 h-5 text-white" />
               </div>
-              <div className="flex-1">
-                <h3 className="font-bold text-gray-900 text-lg mb-1">{provider.name}</h3>
-                <p className="text-sm font-medium text-gray-700 mb-2">{provider.title}</p>
+              <div>
+                <h3 className="font-semibold text-gray-800 text-sm">{provider.name}</h3>
+                <p className="text-xs text-gray-600">{provider.title}</p>
                 {provider.specialties.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-2">
-                    {provider.specialties.slice(0, 3).map((specialty, idx) => (
-                      <span key={idx} className="bg-blue-200 text-blue-800 text-xs px-2 py-1 rounded-md font-medium">
-                        {specialty}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                {provider.bio && (
-                  <p className="text-sm text-gray-600 leading-relaxed">
-                    {provider.bio}
+                  <p className="text-xs text-blue-600 mt-1">
+                    {provider.specialties.join(", ")}
                   </p>
                 )}
               </div>
@@ -104,10 +95,10 @@ export default function ProviderSelection({
 
           <button
             onClick={() => handleProviderClick(provider.id)}
-            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-4 px-8 rounded-xl font-bold hover:from-blue-600 hover:to-blue-700 transition-all duration-300 flex items-center justify-center space-x-3 text-base shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            className="w-full bg-blue-500 text-white py-3 px-6 rounded-xl font-medium hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center space-x-2 text-sm"
           >
-            <span>Start Your Consultation</span>
-            <ArrowRight className="w-5 h-5" />
+            <span>Start Chat</span>
+            <ArrowRight className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -116,96 +107,82 @@ export default function ProviderSelection({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 sm:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <Users className="w-8 h-8 text-white" />
+      <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
+        <div className="text-center mb-6">
+          <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
+            <Users className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">Welcome to {clinicName}</h1>
-          <p className="text-gray-600 text-base leading-relaxed max-w-md mx-auto">
-            Choose your preferred provider to begin your personalized consultation
-          </p>
+          <h1 className="text-lg sm:text-xl font-bold text-gray-800 mb-2">Welcome to {clinicName}</h1>
+          <p className="text-gray-600 text-sm">Which provider would you like to chat with today?</p>
         </div>
 
-        <div className="space-y-4 mb-8">
+        <div className="space-y-3 mb-6">
           {providers.map((provider) => (
             <button
               key={provider.id}
               onClick={() => handleProviderClick(provider.id)}
-              className={`group w-full text-left p-5 rounded-2xl border-2 transition-all duration-300 hover:shadow-lg transform hover:-translate-y-0.5 ${
+              className={`w-full text-left p-3 rounded-xl border-2 transition-all duration-200 hover:shadow-md ${
                 selectedProvider === provider.id
-                  ? "border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100 shadow-lg scale-[1.02]"
-                  : "border-gray-200 hover:border-blue-300 bg-white hover:bg-gray-50"
+                  ? "border-blue-500 bg-blue-50 shadow-md"
+                  : "border-gray-200 hover:border-blue-300"
               }`}
             >
-              <div className="flex items-start space-x-4">
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
-                  selectedProvider === provider.id
-                    ? "bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg"
-                    : "bg-gradient-to-br from-blue-400 to-blue-500 group-hover:shadow-md"
-                }`}>
-                  <User className="w-7 h-7 text-white" />
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                  <User className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <h3 className="font-bold text-gray-900 text-lg leading-tight">{provider.name}</h3>
+                  <div className="flex items-center space-x-2 mb-1">
+                    <h3 className="font-semibold text-gray-800 text-sm truncate">{provider.name}</h3>
+                    {provider.is_default && (
+                      <span className="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full whitespace-nowrap">
+                        Primary
+                      </span>
+                    )}
                   </div>
-                  <p className="text-sm font-medium text-gray-700 mb-2">{provider.title}</p>
+                  <p className="text-xs text-gray-600 truncate">{provider.title}</p>
                   {provider.specialties.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mb-2">
-                      {provider.specialties.slice(0, 3).map((specialty, idx) => (
-                        <span key={idx} className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-md font-medium">
-                          {specialty}
-                        </span>
-                      ))}
-                      {provider.specialties.length > 3 && (
-                        <span className="text-xs text-gray-500 px-1">+{provider.specialties.length - 3} more</span>
-                      )}
-                    </div>
+                    <p className="text-xs text-blue-600 mt-1 truncate">
+                      {provider.specialties.join(", ")}
+                    </p>
                   )}
                   {provider.bio && (
-                    <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">
+                    <p className="text-xs text-gray-500 mt-1 line-clamp-2">
                       {provider.bio}
                     </p>
                   )}
                 </div>
-                <ArrowRight className={`w-5 h-5 flex-shrink-0 transition-all duration-300 ${
-                  selectedProvider === provider.id
-                    ? "text-blue-500 transform translate-x-1"
-                    : "text-gray-400 group-hover:text-blue-400 group-hover:transform group-hover:translate-x-1"
-                }`} />
+                <ArrowRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
               </div>
             </button>
           ))}
         </div>
 
         {/* Skip/General Options */}
-        <div className="border-t border-gray-200 pt-6">
-          <p className="text-center text-sm font-medium text-gray-700 mb-4">Or choose a general option:</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="border-t border-gray-200 pt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button
               onClick={handleSkipClick}
-              className="group flex items-center justify-center space-x-3 py-3 px-4 rounded-xl border-2 border-gray-300 text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all duration-300 transform hover:-translate-y-0.5"
+              className="flex items-center justify-center space-x-2 py-2.5 px-3 rounded-xl border-2 border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50 transition-all duration-200"
             >
-              <Clock className="w-5 h-5 group-hover:text-blue-600" />
-              <span className="text-sm font-medium">Any available provider</span>
+              <Clock className="w-4 h-4" />
+              <span className="text-sm">Any available provider</span>
             </button>
             <button
               onClick={handleSkipClick}
-              className="group flex items-center justify-center space-x-3 py-3 px-4 rounded-xl border-2 border-gray-300 text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all duration-300 transform hover:-translate-y-0.5"
+              className="flex items-center justify-center space-x-2 py-2.5 px-3 rounded-xl border-2 border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50 transition-all duration-200"
             >
-              <Users className="w-5 h-5 group-hover:text-blue-600" />
-              <span className="text-sm font-medium">I&apos;m not sure</span>
+              <Users className="w-4 h-4" />
+              <span className="text-sm">I&apos;m not sure</span>
             </button>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="mt-6 text-center">
-          <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <p className="font-medium">Your conversation will be personalized for your chosen provider</p>
-          </div>
+        <div className="mt-4 text-center">
+          <p className="text-xs text-gray-500">
+            Your conversation will be personalized based on your provider selection
+          </p>
         </div>
       </div>
     </div>

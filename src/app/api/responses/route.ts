@@ -331,8 +331,8 @@ export async function POST(request: Request) {
     ];
 
     // Assemble the system prompt dynamically
-    console.log('🔧 Assembling system prompt for clinic:', clinicId);
-    const systemPrompt = await assembleSystemPrompt(clinicId);
+    console.log('🔧 Assembling system prompt for clinic:', clinicId, 'provider:', providerId);
+    const systemPrompt = await assembleSystemPrompt(clinicId, undefined, providerId);
     
     if (!validatePromptAssembly(systemPrompt)) {
       console.warn('⚠️ Prompt assembly validation failed, using fallback');

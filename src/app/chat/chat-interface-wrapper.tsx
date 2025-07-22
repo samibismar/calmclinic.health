@@ -17,6 +17,7 @@ interface Provider {
   is_active: boolean;
   is_default: boolean;
   is_legacy?: boolean;
+  gender?: 'male' | 'female' | 'other' | 'not_specified';
 }
 
 interface ClinicInfo {
@@ -24,6 +25,10 @@ interface ClinicInfo {
   name: string;
   supports_multi_provider: boolean;
   default_provider_id: number | null;
+  is_paid: boolean;
+  subscription_status?: string;
+  current_period_end?: string;
+  trial_ends_at?: string;
 }
 
 export default function ChatInterfaceWrapper() {
@@ -104,6 +109,24 @@ export default function ChatInterfaceWrapper() {
         </div>
       </main>
     );
+  }
+
+  // Robust access control: allow if paid and active, or in valid trial
+  if (clinicInfo) {
+    const now = new Date();
+    const isActive = clinicInfo.subscription_status === 'active' &&
+      (!clinicInfo.current_period_end || new Date(clinicInfo.current_period_end) > now);
+    const isTrial = clinicInfo.trial_ends_at && new Date(clinicInfo.trial_ends_at) > now;
+    if (!isActive && !isTrial) {
+      return (
+        <main className="min-h-screen bg-gradient-to-br from-gray-200 to-gray-400 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center border border-gray-200">
+            <div className="text-gray-700 text-lg font-semibold mb-2">Assistant Unavailable</div>
+            <p className="text-gray-500">This clinic's AI assistant is currently unavailable. Please contact the front desk for assistance.</p>
+          </div>
+        </main>
+      );
+    }
   }
 
   // Show provider selection if we have multiple providers and no provider is selected

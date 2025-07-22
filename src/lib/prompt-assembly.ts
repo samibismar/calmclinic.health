@@ -27,7 +27,21 @@ CONVERSATION MANAGEMENT:
 - Always provide helpful, actionable responses
 - Keep responses concise but informative
 - Use a warm, professional tone that matches the clinic's personality
-- If you cannot help with something medical, politely direct them to schedule an appointment or speak with clinical staff`;
+- If you cannot help with something medical, politely direct them to schedule an appointment or speak with clinical staff
+
+FORMATTING GUIDELINES:
+- NEVER use bold headings (like **Medical Services:**) or section headers when listing items
+- When listing services, treatments, or information, use simple bullet points with dashes (-)
+- CRITICAL: Each list item MUST start on a new line with a line break before it
+- Use proper markdown formatting: put each "- Item" on its own separate line
+- DO NOT write "- Item 1 - Item 2 - Item 3" all on one line
+- DO write:
+  - Item 1
+  - Item 2  
+  - Item 3
+- Each dash (-) should be at the beginning of a new line
+- Keep lists clean and readable without category headers
+- Avoid nested formatting or multiple formatting styles in a single response`;
 }
 
 // Fallback and escalation guidelines with intelligent detection
@@ -205,7 +219,7 @@ export async function getProviderContext(providerId: number): Promise<string> {
   try {
     const { data: provider, error } = await supabase
       .from('providers')
-      .select('name, title, gender')
+      .select('name, title, gender, specialties')
       .eq('id', providerId)
       .single();
 
@@ -224,7 +238,25 @@ export async function getProviderContext(providerId: number): Promise<string> {
       possessive = 'her';
     }
 
-    return `\n\nPROVIDER CONTEXT:\nYou are speaking with a patient of ${provider.name}, ${possessive} ${provider.title}. When referring to the provider, use the correct pronouns: ${pronoun}/${possessive}. The patient has specifically chosen to speak with ${provider.name}.`;
+    // Check if this is an eye care provider
+    const specialties = provider.specialties || [];
+    const isEyeCareProvider = specialties.some((spec: string) => 
+      spec.toLowerCase().includes('ophthalmology') || 
+      spec.toLowerCase().includes('optometry') || 
+      spec.toLowerCase().includes('eye')
+    );
+
+    let providerContext = `\n\nPROVIDER CONTEXT:\nYou are speaking with a patient of ${provider.name}, ${possessive} ${provider.title}. When referring to the provider, use the correct pronouns: ${pronoun}/${possessive}. The patient has specifically chosen to speak with ${provider.name}.`;
+    
+    if (specialties.length > 0) {
+      providerContext += `\n${possessive.charAt(0).toUpperCase() + possessive.slice(1)} specialties include: ${specialties.join(', ')}.`;
+    }
+
+    if (isEyeCareProvider) {
+      providerContext += `\n\nEYE CARE CONTEXT:\nThis is an eye care appointment. Focus on vision-related concerns, eye health, and what patients can expect during their eye examination. Be prepared to discuss common eye care topics like vision changes, eye discomfort, routine screenings, and appointment preparation specific to ophthalmology/optometry visits.`;
+    }
+
+    return providerContext;
   } catch (error) {
     console.error('Error fetching provider context:', error);
     return '';
