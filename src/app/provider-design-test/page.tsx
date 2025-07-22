@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { User, Users, ArrowRight, Star } from "lucide-react";
 
 const mockProviders = [
