@@ -45,11 +45,12 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Fetch common questions for this clinic
+    // Fetch common questions for this clinic (only active ones)
     const { data: questions, error: questionsError } = await supabase
       .from('clinic_common_questions')
       .select('*')
       .eq('clinic_id', clinic.id)
+      .eq('is_active', true) // Only fetch active questions
       .order('usage_count', { ascending: false });
 
     if (questionsError) {
@@ -172,45 +173,3 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-export async function DELETE(request: NextRequest) {
-  try {
-    const clinic = await getClinicFromSession();
-    
-    if (!clinic) {
-      return NextResponse.json({ error: 'Not logged in' }, { status: 401 });
-    }
-
-    const url = new URL(request.url);
-    const id = url.searchParams.get('id');
-
-    if (!id) {
-      return NextResponse.json({ error: 'Question ID is required' }, { status: 400 });
-    }
-
-    // Soft delete by setting is_active to false
-    const { error: deleteError } = await supabase
-      .from('clinic_common_questions')
-      .update({
-        is_active: false,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id)
-      .eq('clinic_id', clinic.id); // Ensure they can only delete their own questions
-
-    if (deleteError) {
-      return NextResponse.json({ 
-        error: 'Failed to delete common question', 
-        details: deleteError 
-      }, { status: 500 });
-    }
-
-    return NextResponse.json({ success: true });
-
-  } catch (error) {
-    console.error('Error deleting common question:', error);
-    return NextResponse.json({ 
-      error: 'Failed to delete common question',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
-  }
-}

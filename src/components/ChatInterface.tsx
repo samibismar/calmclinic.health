@@ -620,18 +620,6 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
                   })}
                 </div>
                 
-                
-                {/* Feedback link */}
-                <div className="mt-6 text-center">
-                  <a
-                    href="https://forms.gle/aGKvuwzUwrH7HuEy8"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block text-sm font-medium text-blue-700 hover:text-blue-900 hover:underline"
-                  >
-                    💬 Help us improve → Leave feedback
-                  </a>
-                </div>
               </div>
             )}
             
@@ -767,6 +755,18 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
               </div>
             )}
             
+            {/* Feedback Button */}
+            <a
+              href="https://forms.gle/aGKvuwzUwrH7HuEy8"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 text-xs font-medium"
+              title="Help us improve"
+            >
+              <span>💬</span>
+              <span>Feedback</span>
+            </a>
+            
             {/* Language Toggle */}
             <button
               onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
@@ -831,16 +831,6 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
                     {prompt}
                   </button>
                 ))}
-              </div>
-              <div className="mt-4 text-center">
-                <a
-                  href="https://forms.gle/aGKvuwzUwrH7HuEy8"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block text-xs font-medium text-blue-600 hover:underline"
-                >
-                  💬 Help us improve → Leave feedback
-                </a>
               </div>
             </div>
           )}

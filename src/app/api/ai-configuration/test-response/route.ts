@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
-import OpenAI from 'openai';
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 async function getClinicFromSession() {
   const cookieStore = await cookies();
@@ -31,55 +26,44 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { message, isPreview = true } = body;
+    const { message, providerId, isPreview = true } = body;
 
     if (!message?.trim()) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
     }
 
-    // Build system prompt from clinic configuration
-    const systemPrompt = clinic.ai_instructions || `
-You are an AI assistant for ${clinic.practice_name}, a ${clinic.specialty} practice led by ${clinic.doctor_name}.
+    // Use the modern responses API endpoint instead of direct OpenAI
+    const apiUrl = new URL('/api/responses', request.url);
+    const requestBody = {
+      messages: [{ role: "user", content: message }],
+      doctorName: clinic.doctor_name,
+      specialty: clinic.specialty,
+      language: 'en',
+      aiInstructions: null, // Let it use the assembled prompt
+      providerId: providerId || null,
+      providerSpecialties: [],
+      providerTitle: 'Doctor',
+      clinicName: clinic.slug
+    };
 
-Your role is to:
-- Help patients with appointment scheduling and general questions
-- Provide information about the clinic's services and policies
-- Offer guidance on preparation for visits
-- Be professional, helpful, and compassionate
-
-Important guidelines:
-- Never provide medical diagnoses or prescription advice
-- Always recommend consulting with ${clinic.doctor_name} for medical concerns
-- Be clear that you're an AI assistant, not a medical professional
-- If unsure about something, direct patients to contact the clinic directly
-
-Clinic Information:
-- Practice: ${clinic.practice_name}
-- Doctor: ${clinic.doctor_name}
-- Specialty: ${clinic.specialty}
-- Contact: ${clinic.phone || 'Please call our main number'}
-`;
-
-    // Generate response using OpenAI
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4",
-      messages: [
-        {
-          role: "system",
-          content: systemPrompt
-        },
-        {
-          role: "user",
-          content: message
-        }
-      ],
-      temperature: 0.7,
-      max_tokens: 500
+    const response = await fetch(apiUrl.toString(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
     });
 
-    const response = completion.choices[0]?.message?.content?.trim();
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return NextResponse.json({ 
+        error: 'Failed to generate response',
+        details: errorData 
+      }, { status: 500 });
+    }
 
-    if (!response) {
+    const data = await response.json();
+    const aiResponse = data.message;
+
+    if (!aiResponse) {
       return NextResponse.json({ 
         error: 'Failed to generate response' 
       }, { status: 500 });
@@ -93,7 +77,7 @@ Clinic Information:
           .insert({
             clinic_id: clinic.id,
             message: message,
-            response: response,
+            response: aiResponse,
             is_test: true,
             created_at: new Date().toISOString()
           });
@@ -104,12 +88,13 @@ Clinic Information:
     }
 
     return NextResponse.json({ 
-      response,
+      response: aiResponse,
       clinic: {
         practice_name: clinic.practice_name,
         doctor_name: clinic.doctor_name,
         specialty: clinic.specialty
-      }
+      },
+      tools_used: data.tools_used || []
     });
 
   } catch (error) {

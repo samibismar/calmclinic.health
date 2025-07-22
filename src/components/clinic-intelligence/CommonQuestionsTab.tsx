@@ -77,16 +77,31 @@ export default function CommonQuestionsTab() {
   const handleDeleteQuestion = async (id: number) => {
     if (!confirm('Are you sure you want to delete this question?')) return;
 
+    console.log('🗑️ Frontend: Attempting to delete question ID:', id);
+
     try {
-      const response = await fetch(`/api/clinic-intelligence/common-questions/${id}`, {
+      const url = `/api/clinic-intelligence/common-questions/${id}`;
+      console.log('📡 Frontend: Making DELETE request to:', url);
+      
+      const response = await fetch(url, {
         method: 'DELETE'
       });
 
+      console.log('📨 Frontend: Response status:', response.status);
+
       if (response.ok) {
+        const result = await response.json();
+        console.log('✅ Frontend: Delete successful, response:', result);
         await fetchCommonQuestions();
+        console.log('🔄 Frontend: Refetched questions after deletion');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('❌ Frontend: Failed to delete question:', errorData);
+        alert(`Failed to delete question: ${errorData.error || 'Unknown error'}`);
       }
     } catch (error) {
-      console.error('Error deleting question:', error);
+      console.error('❌ Frontend: Error deleting question:', error);
+      alert('Failed to delete question. Please try again.');
     }
   };
 
