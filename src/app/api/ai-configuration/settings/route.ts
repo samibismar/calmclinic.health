@@ -25,12 +25,33 @@ export async function GET() {
       return NextResponse.json({ error: 'Not logged in' }, { status: 401 });
     }
 
+    // Get the current prompt from ai_prompt_history
+    const { data: currentPrompt } = await supabase
+      .from('ai_prompt_history')
+      .select('prompt_text, version, created_at')
+      .eq('clinic_id', clinic.id)
+      .eq('is_current', true)
+      .single();
+
+    let systemPrompt = '';
+    let version = clinic.ai_version || 1;
+    let lastUpdated = clinic.updated_at || clinic.created_at;
+
+    if (currentPrompt) {
+      systemPrompt = currentPrompt.prompt_text;
+      version = currentPrompt.version;
+      lastUpdated = currentPrompt.created_at;
+    } else {
+      // Fallback to clinic.ai_instructions if no current prompt in history
+      systemPrompt = clinic.ai_instructions || '';
+    }
+
     // Build AI configuration from clinic data
     const config = {
-      system_prompt: clinic.ai_instructions || '',
+      system_prompt: systemPrompt,
       tone: clinic.tone || 'professional',
       languages: clinic.languages || ['English'],
-      custom_instructions: clinic.ai_instructions || '',
+      custom_instructions: systemPrompt,
       ai_always_include: clinic.ai_always_include || [],
       ai_never_include: clinic.ai_never_include || [],
       fallback_responses: {
@@ -38,8 +59,8 @@ export async function GET() {
         after_hours: clinic.fallback_after_hours || "We're currently closed. For urgent matters, please call our emergency line. Otherwise, I'm happy to help you schedule an appointment.",
         emergency: clinic.fallback_emergency || "This sounds like it might be urgent. Please call 911 for emergencies, or contact our clinic directly for immediate medical concerns."
       },
-      last_updated: clinic.updated_at || clinic.created_at,
-      version: clinic.ai_version || 1
+      last_updated: lastUpdated,
+      version: version
     };
 
     return NextResponse.json({ config });

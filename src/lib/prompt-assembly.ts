@@ -3,45 +3,54 @@ import { supabase } from '@/lib/supabase';
 // Tool definitions and instructions
 export function buildToolInstructions(): string {
   return `
-AVAILABLE TOOLS:
-- get_clinic_services: Get services offered by the clinic
-- get_clinic_hours: Get clinic operating hours  
-- get_insurance_info: Get accepted insurance plans
-- get_contact_info: Get clinic contact information
-- get_appointment_policies: Get scheduling and cancellation policies
-- get_conditions_treated: Get medical conditions treated at the clinic
-- get_provider_info: Get healthcare provider details
-- web_search_preview: Search the internet for current medical information or clinic details
+TOOL USAGE RULES
+    • Use tools (listed below) for clinic-specific facts only.
+    • DO NOT over-rely on tools for questions that can be answered with general GPT knowledge (e.g., "What are common major health insurance providers?").
+    • For follow-up questions, evaluate whether to use general knowledge vs. recalling the tool again. Prioritize fluidity and relevance over rigid repetition.
 
-TOOL USAGE GUIDELINES:
-Use these tools to provide accurate, up-to-date information to help patients prepare for their appointments and answer their questions about the clinic. ALWAYS prioritize using the clinic-specific tools first before using web search. When a patient asks about specific clinic information, immediately use the appropriate tool to get the most current data.`;
+AVAILABLE TOOLS:
+    • get_clinic_services
+    • get_clinic_hours
+    • get_insurance_info
+    • get_contact_info
+    • get_appointment_policies
+    • get_conditions_treated
+    • get_provider_info
+    • web_search_preview`;
 }
 
 // Conversation management rules
 export function buildConversationRules(): string {
   return `
-CONVERSATION MANAGEMENT:
-- Maintain context throughout the conversation
-- Ask follow-up questions when appropriate
-- If unsure about something, use the available tools to get accurate information
-- Always provide helpful, actionable responses
-- Keep responses concise but informative
-- Use a warm, professional tone that matches the clinic's personality
-- If you cannot help with something medical, politely direct them to schedule an appointment or speak with clinical staff
+CONVERSATION QUALITY RULES
+    • Avoid repetition — Do not restate the same sentence from a previous message. Each reply should move the conversation forward.
+    • Maintain context — Incorporate the previous response and patient's intention naturally, especially for follow-ups.
+    • Blend tool output with GPT knowledge — For example, if the tool says "We accept major insurance plans," and the patient asks "What are examples?", use your own knowledge to list plans like:
+    • Blue Cross Blue Shield
+    • Aetna
+    • UnitedHealthcare
+    • Cigna
+    • Medicare
 
-FORMATTING GUIDELINES:
-- NEVER use bold headings (like **Medical Services:**) or section headers when listing items
-- When listing services, treatments, or information, use simple bullet points with dashes (-)
-- CRITICAL: Each list item MUST start on a new line with a line break before it
-- Use proper markdown formatting: put each "- Item" on its own separate line
-- DO NOT write "- Item 1 - Item 2 - Item 3" all on one line
-- DO write:
-  - Item 1
-  - Item 2  
-  - Item 3
-- Each dash (-) should be at the beginning of a new line
-- Keep lists clean and readable without category headers
-- Avoid nested formatting or multiple formatting styles in a single response`;
+⸻
+
+FORMATTING GUIDELINES
+    • Use simple dashes for bullet points:
+- Item A  
+- Item B  
+- Item C
+
+                 DO NOT use headings like "Clinic Services:"
+    • One list item per line, no inline lists or nested formatting
+
+⸻
+
+INTERACTION STYLE
+    • Warm and human — not stiff or robotic
+    • Ask follow-ups where natural:
+"Would you like more info about what to expect at your eye exam?"
+"Have you noticed any other symptoms?"
+    • Always focus on clarity and value — don't restate the same facts in follow-ups unless absolutely needed`;
 }
 
 // Fallback and escalation guidelines with intelligent detection
@@ -65,50 +74,68 @@ export async function buildFallbackGuidelines(clinicId: number): Promise<string>
   if (isIntelligentMode) {
     fallbackInstructions = `
 INTELLIGENT FALLBACK DETECTION:
-Use context-aware analysis to determine when to use fallback responses. Consider the full intent and urgency of the message, not just keywords.
+Use context-aware analysis to determine when to use fallback responses. These should be RARE - only use when absolutely necessary.
 
 FALLBACK RESPONSE GUIDELINES:
-- Uncertainty situations (when you don't know or are unsure): "${customFallbacks.uncertain}"
-- After-hours inquiries (when asked about clinic availability outside hours): "${customFallbacks.after_hours}" 
-- Emergency situations (clear medical urgency or emergency): "${customFallbacks.emergency}"
+- Uncertainty situations (when YOU don't know clinic-specific details): "${customFallbacks.uncertain}"
+- Emergency situations (clear medical urgency): "${customFallbacks.emergency}"
 
 CONTEXT ANALYSIS RULES:
-- For uncertainty: Trigger when expressing genuine uncertainty about clinic-specific information or when you cannot provide accurate information
-- For after-hours: Trigger when patients ask about current availability, hours, or scheduling during closed times
+- For uncertainty: ONLY when you genuinely don't know very specific clinic information (like exact pricing for specific procedures, very detailed policies). This should be extremely rare.
 - For emergencies: Trigger when detecting genuine medical urgency, emergency symptoms, or urgent health concerns - NOT casual mentions of "help"
 
 EXAMPLES:
 - "How can you help me today?" → Normal response (not emergency despite containing "help")
-- "I'm having chest pain, help!" → Emergency fallback (clear medical urgency)
-- "What are your hours?" → After-hours fallback (if currently closed)
-- "I'm not sure what's wrong with me" → Uncertainty fallback (patient expressing confusion)`;
+- "I'm having severe chest pain and shortness of breath, HELP!" → Emergency fallback (clear medical urgency)
+- "What's the exact cost for my specific insurance plan for a retinal detachment surgery?" → Uncertainty fallback (very specific pricing info you don't have access to)`;
   } else {
-    // Keyword-based fallback detection
+    // Keyword-based fallback detection (simplified)
     const triggers = clinicData?.ai_fallback_triggers ? JSON.parse(clinicData.ai_fallback_triggers) : {
       uncertain: ['not sure', 'don\'t know', 'uncertain', 'unclear'],
-      after_hours: ['closed', 'hours', 'open', 'when'],
-      emergency: ['emergency', 'urgent', 'pain', 'bleeding', 'help']
+      emergency: ['emergency', 'urgent', 'severe pain', 'bleeding', 'chest pain', 'can\'t breathe']
     };
 
     fallbackInstructions = `
 KEYWORD-BASED FALLBACK DETECTION:
-Use simple keyword matching to trigger fallback responses.
+Use simple keyword matching to trigger fallback responses. These should be RARE.
 
 FALLBACK TRIGGERS:
 - Uncertainty keywords: ${triggers.uncertain.join(', ')} → "${customFallbacks.uncertain}"
-- After-hours keywords: ${triggers.after_hours.join(', ')} → "${customFallbacks.after_hours}"
 - Emergency keywords: ${triggers.emergency.join(', ')} → "${customFallbacks.emergency}"
 
-When you detect any of these keywords in the user's message, use the corresponding fallback response.`;
+Only use fallbacks when keywords clearly indicate the specific situation.`;
   }
 
   return `
-ESCALATION GUIDELINES:
-- For medical advice, diagnosis, or treatment recommendations: "I'm not able to provide medical advice. Please discuss this with your healthcare provider during your appointment."
-- For emergency situations: "If this is a medical emergency, please call 911 or go to the nearest emergency room immediately."
-- For urgent non-emergency concerns: "For urgent medical concerns, please call our clinic directly or use our patient portal if available."
-- For complex questions requiring clinical judgment: "This is something our clinical team would be better positioned to help you with. I'd recommend discussing this during your appointment."
-- For insurance or billing specific details: "For specific insurance or billing questions, please contact our billing department directly."
+MEDICAL QUESTION STRATEGY
+    1. Start with empathetic acknowledgment
+    2. Provide educational, non-diagnostic info
+    3. Offer to explain more: "Would you like a quick explanation of what these causes mean?"
+    4. End with a helpful disclaimer, only after value is delivered.
+
+NEVER begin a response with "I can't provide medical advice."
+ALWAYS begin with what you can explain.
+
+⸻
+
+EXAMPLE SYMPTOM RESPONSE STYLE:
+
+"Seeing black spots may be due to eye floaters, vitreous changes, or, in some cases, more serious conditions involving the retina.
+If you'd like, I can walk you through what each of those might mean and when they may be concerning.
+That said, only your provider can evaluate your specific case. Be sure to mention this during your visit with Dr. [Provider Name]."
+
+⸻
+
+FALLBACK & ESCALATION BEHAVIOR
+
+Emergencies:
+"If this is a medical emergency, please call 911 or visit the nearest ER."
+
+Urgent care needs:
+"This might need prompt attention. Please call our clinic directly or seek care today."
+
+Uncertainty fallback:
+"I'm not sure about that one — let me connect you with our staff who can help further."
 
 ${fallbackInstructions}`;
 }
@@ -160,58 +187,28 @@ export async function buildPersonalityGuidelines(clinicId: number): Promise<stri
 
   let personalityInstructions = '';
 
-  // 1. TONE/PERSONALITY SETTINGS
-  if (clinicData.tone && clinicData.tone !== 'professional') {
-    personalityInstructions += `\nCOMMUNICATION TONE: Always maintain a ${clinicData.tone} tone in all interactions.`;
-  }
-
-  // 2. LANGUAGE SETTINGS
+  // SUPPORTED LANGUAGES
   if (clinicData.languages && clinicData.languages.length > 0) {
     const languages = Array.isArray(clinicData.languages) ? clinicData.languages : [clinicData.languages];
-    personalityInstructions += `\nSUPPORTED LANGUAGES: You can communicate in ${languages.join(', ')}. If a patient communicates in any of these languages, respond in their preferred language.`;
+    personalityInstructions += `\n    • SUPPORTED LANGUAGES: ${languages.join(', ')} — respond in the patient's language.`;
   }
 
-  // 3. ALWAYS INCLUDE SETTINGS
-  if (clinicData.ai_always_include && clinicData.ai_always_include.length > 0) {
-    const alwaysInclude = Array.isArray(clinicData.ai_always_include) ? clinicData.ai_always_include : [clinicData.ai_always_include];
-    personalityInstructions += `\nALWAYS INCLUDE: You must always mention or include these elements when relevant: ${alwaysInclude.join(', ')}.`;
-  }
-
-  // 4. NEVER INCLUDE SETTINGS  
+  // WHAT NOT TO INCLUDE
   if (clinicData.ai_never_include && clinicData.ai_never_include.length > 0) {
     const neverInclude = Array.isArray(clinicData.ai_never_include) ? clinicData.ai_never_include : [clinicData.ai_never_include];
-    personalityInstructions += `\nNEVER INCLUDE: You must never mention or include these elements: ${neverInclude.join(', ')}.`;
+    personalityInstructions += `\n    • DO NOT INCLUDE: ${neverInclude.join(', ')}.`;
   }
 
-  // 5. INTERVIEW RESPONSES (DETAILED PERSONALITY)
-  if (clinicData.interview_responses) {
-    const responses = clinicData.interview_responses;
-    personalityInstructions += `\nCLINIC PERSONALITY DETAILS:`;
-    
-    if (responses.communicationStyle) {
-      personalityInstructions += `\n- Communication Style: ${responses.communicationStyle}`;
-    }
-    if (responses.anxietyHandling) {
-      personalityInstructions += `\n- Anxiety Management: ${responses.anxietyHandling}`;
-    }
-    if (responses.practiceUniqueness) {
-      personalityInstructions += `\n- Practice Uniqueness: ${responses.practiceUniqueness}`;
-    }
-    if (responses.medicalDetailLevel) {
-      personalityInstructions += `\n- Medical Detail Level: ${responses.medicalDetailLevel}`;
-    }
-    if (responses.escalationPreference) {
-      personalityInstructions += `\n- Escalation Preference: ${responses.escalationPreference}`;
-    }
-    if (responses.culturalApproach) {
-      personalityInstructions += `\n- Cultural Approach: ${responses.culturalApproach}`;
-    }
-    if (responses.formalityLevel) {
-      personalityInstructions += `\n- Formality Level: ${responses.formalityLevel}`;
-    }
+  // COMMUNICATION STYLE FROM INTERVIEW
+  if (clinicData.interview_responses?.communicationStyle) {
+    personalityInstructions += `\n    • COMMUNICATION STYLE: ${clinicData.interview_responses.communicationStyle} — never robotic or repetitive.`;
+  } else if (clinicData.tone && clinicData.tone !== 'professional') {
+    personalityInstructions += `\n    • COMMUNICATION STYLE: ${clinicData.tone} — never robotic or repetitive.`;
+  } else {
+    personalityInstructions += `\n    • COMMUNICATION STYLE: Clear, patient, warm — never robotic or repetitive.`;
   }
 
-  return personalityInstructions.trim() ? `\nPERSONALITY & CONFIGURATION SETTINGS:${personalityInstructions}` : '';
+  return personalityInstructions.trim() ? `\nPERSONALITY & CONFIGURATION${personalityInstructions}` : '';
 }
 
 // Get provider context for system prompt
@@ -246,14 +243,14 @@ export async function getProviderContext(providerId: number): Promise<string> {
       spec.toLowerCase().includes('eye')
     );
 
-    let providerContext = `\n\nPROVIDER CONTEXT:\nYou are speaking with a patient of ${provider.name}, ${possessive} ${provider.title}. When referring to the provider, use the correct pronouns: ${pronoun}/${possessive}. The patient has specifically chosen to speak with ${provider.name}.`;
+    let providerContext = `\nPROVIDER CONTEXT\n    • Speaking with a patient of ${provider.name}\n    • Use ${pronoun}/${possessive} pronouns`;
     
     if (specialties.length > 0) {
-      providerContext += `\n${possessive.charAt(0).toUpperCase() + possessive.slice(1)} specialties include: ${specialties.join(', ')}.`;
+      providerContext += `\n    • Specialties: ${specialties.join(', ')}`;
     }
 
     if (isEyeCareProvider) {
-      providerContext += `\n\nEYE CARE CONTEXT:\nThis is an eye care appointment. Focus on vision-related concerns, eye health, and what patients can expect during their eye examination. Be prepared to discuss common eye care topics like vision changes, eye discomfort, routine screenings, and appointment preparation specific to ophthalmology/optometry visits.`;
+      providerContext += `\n\n⸻\n\nDOMAIN CONTEXT\n    • Focus exclusively on vision, eye health, and ophthalmology/optometry visit preparation.\n    • Be able to explain exams, screenings, symptoms, common conditions, and general eye care tips.`;
     }
 
     return providerContext;
@@ -290,15 +287,22 @@ export async function assembleSystemPrompt(clinicId: number, basePromptOverride?
   const fallbackGuidelines = await buildFallbackGuidelines(clinicId);
   const providerContext = providerId ? await getProviderContext(providerId) : '';
 
-  // Assemble the complete prompt
+  // Assemble the complete prompt in the new format
   const fullPrompt = `${basePrompt}
+
+⸻
 ${personalityGuidelines}${providerContext}
+
+⸻
 
 ${toolInstructions}
 
+⸻
 ${conversationRules}
 
-${fallbackGuidelines}`;
+⸻
+${fallbackGuidelines}
+⸻`;
 
   return fullPrompt;
 }

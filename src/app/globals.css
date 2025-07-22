@@ -227,3 +227,52 @@ body {
 .delay-800 { animation-delay: 800ms; }
 .delay-1000 { animation-delay: 1000ms; }
 .delay-1200 { animation-delay: 1200ms; }
+
+/* Markdown content styles for chat messages */
+.markdown-content {
+  /* Ensure proper line height and spacing */
+  line-height: 1.5;
+}
+
+.markdown-content ul {
+  /* Override default list styling */
+  margin: 0.5rem 0;
+  padding-left: 0;
+}
+
+.markdown-content ul li {
+  /* Ensure bullet points are properly spaced and aligned */
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0.25rem;
+  line-height: 1.4;
+}
+
+.markdown-content ul li:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-content ol li {
+  /* Numbered lists styling */
+  margin-bottom: 0.25rem;
+  line-height: 1.4;
+}
+
+.markdown-content p {
+  /* Paragraph spacing */
+  margin-bottom: 0.5rem;
+}
+
+.markdown-content p:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-content strong {
+  /* Bold text styling */
+  font-weight: 600;
+}
+
+.markdown-content em {
+  /* Italic text styling */
+  font-style: italic;
+}

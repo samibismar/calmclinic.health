@@ -73,12 +73,16 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
   const [isInterviewSaved, setIsInterviewSaved] = useState(false);
   const [isInterviewSaving, setIsInterviewSaving] = useState(false);
   const [isInterviewEditing, setIsInterviewEditing] = useState(false);
+  const [originalPrompt, setOriginalPrompt] = useState(''); // Track original prompt for comparison
+  const [showComparison, setShowComparison] = useState(false); // Toggle comparison view
 
   useEffect(() => {
     if (aiConfig?.system_prompt) {
       setSystemPrompt(aiConfig.system_prompt);
+      setOriginalPrompt(aiConfig.system_prompt); // Store original for comparison
     } else if (clinicData?.ai_instructions) {
       setSystemPrompt(clinicData.ai_instructions);
+      setOriginalPrompt(clinicData.ai_instructions); // Store original for comparison
     }
 
     // Load interview responses from clinic data if available
@@ -162,6 +166,7 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
         setSystemPrompt(data.prompt);
         setIsNewlyGenerated(true); // Mark as newly generated
         setShowPreview(false); // Show in EDIT mode for newly generated prompts
+        setShowComparison(true); // Enable comparison view
         onConfigChange();
         toast.success('Personalized prompt generated successfully!');
       } else {
@@ -195,6 +200,8 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
         toast.success('System prompt saved and made current!');
         setIsNewlyGenerated(false); // No longer newly generated
         setShowPreview(true); // Return to preview mode
+        setShowComparison(false); // Hide comparison view
+        setOriginalPrompt(systemPrompt); // Update original prompt to the saved one
         onConfigSaved?.(); // Call the saved callback to clear unsaved changes
       } else {
         toast.error('Failed to save system prompt');
@@ -228,6 +235,8 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
         toast.success('System prompt saved to history!');
         setIsNewlyGenerated(false); // No longer newly generated
         setShowPreview(true); // Return to preview mode
+        // Note: Don't update originalPrompt or hide comparison for history save
+        // because this doesn't make the prompt current
         onConfigSaved?.(); // Call the saved callback to clear unsaved changes
       } else {
         toast.error('Failed to save to history');
@@ -259,7 +268,9 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
       if (response.ok) {
         toast.success('Changes saved successfully!');
         setShowPreview(true); // Return to preview mode
-        onConfigChange();
+        setShowComparison(false); // Hide comparison view
+        setOriginalPrompt(systemPrompt); // Update original prompt to the saved one
+        onConfigSaved?.(); // Call the saved callback to clear unsaved changes
       } else {
         toast.error('Failed to save changes');
       }
@@ -664,6 +675,18 @@ export default function SystemPromptBuilder({ clinicData, aiConfig, onConfigChan
               <Eye className="w-4 h-4" />
               <span>{showPreview ? 'Edit' : 'Preview'}</span>
             </button>
+            {originalPrompt && systemPrompt !== originalPrompt && (
+              <button
+                onClick={() => setShowComparison(!showComparison)}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors text-sm ${
+                  showComparison 
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                    : 'bg-white/10 hover:bg-white/20 text-white'
+                }`}
+              >
+                <span>{showComparison ? 'Hide' : 'Compare'}</span>
+              </button>
+            )}
             <button
               onClick={handleExport}
               className="flex items-center space-x-2 bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-lg transition-colors text-sm"
@@ -784,6 +807,73 @@ Never provide:
           </div>
         )}
       </div>
+
+      {/* Comparison View - Show when there's a newly generated prompt */}
+      {showComparison && originalPrompt && systemPrompt !== originalPrompt && (
+        <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-white">Compare Prompts</h3>
+            <button
+              onClick={() => setShowComparison(false)}
+              className="text-blue-200 hover:text-white text-sm transition-colors"
+            >
+              Hide Comparison
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Current/Original Prompt */}
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <h4 className="font-medium text-white">Current Prompt</h4>
+                <span className="text-xs text-blue-200 bg-blue-500/20 px-2 py-1 rounded">
+                  {originalPrompt.length} characters
+                </span>
+              </div>
+              <div className="bg-white/5 border border-blue-500/30 rounded-lg p-4 max-h-64 overflow-y-auto">
+                <div className="whitespace-pre-wrap text-sm text-blue-100 leading-relaxed">
+                  {originalPrompt || 'No current prompt'}
+                </div>
+              </div>
+            </div>
+
+            {/* New Generated Prompt */}
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <h4 className="font-medium text-white">Generated Prompt</h4>
+                <span className="text-xs text-green-200 bg-green-500/20 px-2 py-1 rounded">
+                  {systemPrompt.length} characters
+                </span>
+              </div>
+              <div className="bg-white/5 border border-green-500/30 rounded-lg p-4 max-h-64 overflow-y-auto">
+                <div className="whitespace-pre-wrap text-sm text-green-100 leading-relaxed">
+                  {systemPrompt || 'No generated prompt'}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 flex items-center justify-between text-sm text-blue-200">
+            <div className="flex items-center space-x-4">
+              <span>Length difference: {systemPrompt.length - originalPrompt.length > 0 ? '+' : ''}{systemPrompt.length - originalPrompt.length} characters</span>
+              <span>Word count: {systemPrompt.trim().split(/\s+/).filter(w => w.length > 0).length} words</span>
+            </div>
+            <button
+              onClick={() => {
+                setSystemPrompt(originalPrompt);
+                setShowComparison(false);
+                setIsNewlyGenerated(false);
+                toast.success('Reverted to original prompt');
+              }}
+              className="text-blue-300 hover:text-white transition-colors underline"
+            >
+              Revert to Current
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Guidelines & Tips */}
       <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6">

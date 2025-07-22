@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase, type Clinic } from "@/lib/supabase";
 import Image from "next/image";
+import MessageContent from "./MessageContent";
 
 // Add the clinic prop type that your wrapper expects
 type ChatInterfaceProps = {
@@ -573,10 +574,12 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
                 onboardingStage === 'typing' ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
               }`}>
                 <div className="bg-blue-50 border border-blue-200 rounded-2xl rounded-bl-md px-6 py-4 shadow-lg max-w-[85%]">
-                  <p className="text-base leading-relaxed text-gray-900 font-medium">
-                    {typedMessage}
-                    <span className="animate-pulse ml-1 text-blue-600 font-bold">|</span>
-                  </p>
+                  <MessageContent 
+                    content={typedMessage}
+                    isTyping={true}
+                    typingContent={typedMessage}
+                    className="text-base leading-relaxed text-gray-900 font-medium"
+                  />
                 </div>
               </div>
             )}
@@ -587,9 +590,10 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
                 {/* Show the completed message */}
                 <div className={`flex justify-start transition-all duration-800 ease-out opacity-100`}>
                   <div className="bg-blue-50 border border-blue-200 rounded-2xl rounded-bl-md px-6 py-4 shadow-lg max-w-[85%]">
-                    <p className="text-base leading-relaxed text-gray-900 font-medium">
-                      {messages[0]?.content}
-                    </p>
+                    <MessageContent 
+                      content={messages[0]?.content || ""}
+                      className="text-base leading-relaxed text-gray-900 font-medium"
+                    />
                   </div>
                 </div>
                 
@@ -800,16 +804,12 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
                 }`}
                 style={msg.role === 'user' ? { backgroundColor: doctorConfig.accentColor } : {}}
               >
-                <p className="text-sm leading-relaxed">
-                  {typingMessageIndex === index && msg.role === 'assistant' ? (
-                    <>
-                      {typingContent}
-                      <span className="animate-pulse ml-1 text-blue-600 font-bold">|</span>
-                    </>
-                  ) : (
-                    msg.content
-                  )}
-                </p>
+                <MessageContent 
+                  content={msg.content}
+                  isTyping={typingMessageIndex === index && msg.role === 'assistant'}
+                  typingContent={typingContent}
+                  className="text-sm leading-relaxed"
+                />
               </div>
               </div>
             );
