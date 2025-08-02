@@ -41,8 +41,11 @@ export default function InsuranceTab() {
     try {
       const response = await fetch('/api/clinic-intelligence/insurance');
       const data = await response.json();
+      
       if (response.ok) {
         setInsurancePlans(data.plans || []);
+      } else {
+        console.error('Insurance API error:', data);
       }
     } catch (error) {
       console.error('Error fetching insurance plans:', error);

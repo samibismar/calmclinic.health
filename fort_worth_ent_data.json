@@ -1,0 +1,200 @@
+{
+  "clinic_name": "Fort Worth ENT & Sinus",
+  "extraction_timestamp": "2025-07-29T01:05:33.500004",
+  "confidence_levels": {
+    "contact_info": 0.9,
+    "hours_info": 0.7,
+    "provider_info": 0.8,
+    "services_info": 0.85,
+    "insurance_info": 0.7,
+    "patient_experience": 0.75
+  },
+  "identified_gaps": [],
+  "data": {
+    "contact_info": {
+      "phone_numbers": {
+        "main": "817-332-8848",
+        "secondary": "817-335-2670"
+      },
+      "address": {
+        "street": "5751 Edwards Ranch Road",
+        "city": "Fort Worth",
+        "state": "TX",
+        "zip_code": "76109",
+        "full_address": "5751 Edwards Ranch Road, Fort Worth, TX 76109"
+      },
+      "email": null,
+      "website": "https://fortworthent.net",
+      "social_media": {
+        "facebook": "https://www.facebook.com/FortWorthENT/",
+        "linkedin": "https://www.linkedin.com/company/fort-worth-ent-p.a./about/"
+      }
+    },
+    "hours_info": {
+      "regular_hours": {
+        "monday": "8:00 AM - 5:00 PM",
+        "tuesday": "8:00 AM - 5:00 PM",
+        "wednesday": "8:00 AM - 5:00 PM",
+        "thursday": "8:00 AM - 5:00 PM",
+        "friday": "8:00 AM - 5:00 PM",
+        "saturday": "Closed",
+        "sunday": "Closed"
+      },
+      "holiday_hours": null,
+      "appointment_policies": {
+        "scheduling_method": "Call 817-332-8848",
+        "online_scheduling": "Available via patient portal",
+        "cancellation_policy": "24 hours advance notice required"
+      },
+      "emergency_hours": null
+    },
+    "provider_info": [
+      {
+        "name": "Dr. J. Bradley McIntyre, MD",
+        "title": "Otolaryngologist",
+        "specialties": [
+          "Sinus Surgery",
+          "Sleep Apnea",
+          "Thyroid Surgery",
+          "Head And Neck",
+          "Hearing Loss",
+          "Balloon Sinuplasty"
+        ],
+        "education": null,
+        "experience": null,
+        "languages": null
+      },
+      {
+        "name": "Dr. Jeremy P. Watkins, MD",
+        "title": "Otolaryngologist",
+        "specialties": [
+          "Sinus Surgery",
+          "Sleep Apnea",
+          "Thyroid Surgery",
+          "Head And Neck",
+          "Hearing Loss",
+          "Balloon Sinuplasty"
+        ],
+        "education": null,
+        "experience": null,
+        "languages": null
+      },
+      {
+        "name": "Dr. Sean M. Callahan, MD",
+        "title": "Otolaryngologist",
+        "specialties": [
+          "Sinus Surgery",
+          "Pediatric Ent",
+          "Sleep Apnea",
+          "Thyroid Surgery",
+          "Head And Neck",
+          "Hearing Loss",
+          "Balloon Sinuplasty"
+        ],
+        "education": null,
+        "experience": null,
+        "languages": null
+      }
+    ],
+    "services_info": {
+      "medical_services": [
+        "Sleep Study",
+        "Laryngoscopy",
+        "Nasal Endoscopy",
+        "Allergy Testing"
+      ],
+      "surgical_services": [
+        "Stapedectomy",
+        "Rhinoplasty",
+        "Vivaer",
+        "Thyroidectomy",
+        "Parotidectomy",
+        "Septoplasty",
+        "Balloon Sinuplasty",
+        "Ear Tubes",
+        "Mastoidectomy",
+        "Adenoidectomy",
+        "Tonsillectomy",
+        "Turbinate Reduction"
+      ],
+      "diagnostic_services": [
+        "In-office CT Scans",
+        "Allergy Testing",
+        "Audiometry",
+        "Tympanometry",
+        "Nasal Endoscopy",
+        "Laryngoscopy"
+      ],
+      "optical_services": [],
+      "specialty_programs": [
+        "Fort Worth Sinus Center",
+        "Fort Worth Thyroid Center",
+        "Pediatric ENT",
+        "Sleep Apnea Treatment",
+        "Voice Center",
+        "Allergy and Immunotherapy Center"
+      ],
+      "conditions_treated": [
+        "Voice Disorders",
+        "Hearing Loss",
+        "Ear Infections",
+        "Sleep Apnea",
+        "Vertigo",
+        "Deviated Septum",
+        "Nasal Polyps",
+        "Tinnitus",
+        "Allergies",
+        "Sinusitis",
+        "Thyroid"
+      ]
+    },
+    "insurance_info": {
+      "accepted_plans": [
+        "Most major health insurance plans",
+        "Medicare",
+        "Medicaid",
+        "Aetna",
+        "Blue Cross Blue Shield",
+        "Cigna",
+        "UnitedHealthcare"
+      ],
+      "payment_policies": {
+        "copays_due_at_service": true,
+        "deductibles_due_at_service": true,
+        "payment_methods": "Cash, check, credit cards accepted",
+        "payment_plans": "Available upon request"
+      },
+      "special_notes": [
+        "Insurance verification recommended prior to appointment",
+        "Specialist referral may be required by insurance",
+        "Coverage varies by procedure and insurance plan"
+      ]
+    },
+    "patient_experience": {
+      "walk_in_policy": "Appointments required",
+      "wait_time_expectations": null,
+      "what_to_bring": [
+        "Photo identification",
+        "Insurance cards",
+        "List of current medications",
+        "Referral from primary care physician (if required)",
+        "Previous medical records related to ENT issues"
+      ],
+      "facility_policies": [
+        "Arrive 15 minutes early for appointments",
+        "Complete patient forms before visit",
+        "Children must be accompanied by parent/guardian",
+        "New patients should arrive 30 minutes early",
+        "Patient forms available online"
+      ],
+      "accessibility": "ADA compliant facility",
+      "patient_portal": true,
+      "communication_preferences": [
+        "Phone calls for urgent matters",
+        "Patient portal for routine communication"
+      ]
+    }
+  },
+  "overall_confidence": 0.7833333333333333,
+  "data_completeness": 0.8666666666666667
+}

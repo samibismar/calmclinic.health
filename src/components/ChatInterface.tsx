@@ -51,6 +51,8 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
   const [newMessageAppearing, setNewMessageAppearing] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState<string>("");
   const [showTransition, setShowTransition] = useState(true);
+  const [fallbackProvider, setFallbackProvider] = useState<any>(null);
+  
   
   // Get language from URL parameters
   const searchParams = useSearchParams();
@@ -59,6 +61,44 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
   
   // Feature flag for Response API (default enabled, disable with ?responses=false)
   const useResponseAPI = searchParams.get('responses') !== 'false';
+  
+  // Function to fetch fallback provider when provider info is missing
+  const fetchFallbackProvider = async (clinicId: number) => {
+    try {
+      // First try to get the default provider
+      let { data: defaultProvider, error } = await supabase
+        .from('providers')
+        .select('*')
+        .eq('clinic_id', clinicId)
+        .eq('is_default', true)
+        .eq('is_active', true)
+        .single();
+
+      if (error || !defaultProvider) {
+        // If no default provider, get the first active provider
+        const { data: providers, error: providersError } = await supabase
+          .from('providers')
+          .select('*')
+          .eq('clinic_id', clinicId)
+          .eq('is_active', true)
+          .order('display_order', { ascending: true })
+          .limit(1);
+
+        if (!providersError && providers && providers.length > 0) {
+          defaultProvider = providers[0];
+        }
+      }
+
+      if (defaultProvider) {
+        setFallbackProvider(defaultProvider);
+        console.log('✅ Found fallback provider:', defaultProvider.name);
+      } else {
+        console.log('⚠️ No active providers found for clinic:', clinicId);
+      }
+    } catch (error) {
+      console.error('Error fetching fallback provider:', error);
+    }
+  };
   
   useEffect(() => {
     async function fetchClinic() {
@@ -86,7 +126,13 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
           }
           
           if (error) throw error;
-          if (data) setClinic(data);
+          if (data) {
+            setClinic(data);
+            // If no provider info is available, fetch fallback provider
+            if (!providerInfo && !data.doctor_name) {
+              await fetchFallbackProvider(data.id);
+            }
+          }
         } catch (error) {
           console.error('Error fetching clinic:', error);
         }
@@ -95,7 +141,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
     }
     
     fetchClinic();
-  }, [clinicSlug]);
+  }, [clinicSlug, providerInfo]);
 
   // Fetch common questions from database
   useEffect(() => {
@@ -137,7 +183,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
   useEffect(() => {
     if (onboardingStage === 'typing' && clinic) {
       const doctorName = providerInfo?.name || clinic?.doctor_name;
-      const formattedDoctorName = formatProviderName(doctorName || 'Assistant');
+      const formattedDoctorName = formatProviderName(doctorName || 'Doctor');
       
       // Get specialty for contextualized messaging
       const specialty = doctorConfig.specialty || 'medical';
@@ -186,7 +232,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
   useEffect(() => {
     if (hasInitialized && clinic) {
       const doctorName = providerInfo?.name || clinic?.doctor_name;
-      const formattedDoctorName = formatProviderName(doctorName || 'Assistant');
+      const formattedDoctorName = formatProviderName(doctorName || 'Doctor');
       
       // Get specialty for contextualized messaging
       const specialty = doctorConfig.specialty || 'medical';
@@ -243,7 +289,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
   
   // Helper function to format provider name properly
   const formatProviderName = (name: string) => {
-    if (!name) return 'Dr. Assistant';
+    if (!name) return 'Doctor'; // Generic fallback instead of hardcoded "Dr. Assistant"
     
     // Check if name already starts with Dr.
     if (name.toLowerCase().startsWith('dr.') || name.toLowerCase().startsWith('doctor')) {
@@ -256,7 +302,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
 
   // Helper function to format welcome message properly
   const formatWelcomeMessage = (name: string) => {
-    if (!name) return `${t.welcomePrefix} Assistant${t.welcomeSuffix}`;
+    if (!name) return `${t.welcomePrefix} Doctor${t.welcomeSuffix}`;
     
     // Check if name already starts with Dr.
     if (name.toLowerCase().startsWith('dr.') || name.toLowerCase().startsWith('doctor')) {
@@ -271,20 +317,23 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
     return `${t.welcomePrefix} ${name}${t.welcomeSuffix}`;
   };
 
-  // Use provider data if available, otherwise fallback to clinic data
+  // Use provider data if available, otherwise fallback to clinic data or database provider
+  const effectiveProvider = providerInfo || fallbackProvider;
+  const providerName = effectiveProvider?.name || clinic?.doctor_name;
+  
   const doctorConfig = {
-    name: providerInfo?.name || clinic?.doctor_name || 'Dr. Assistant',
-    title: formatProviderName(providerInfo?.name || clinic?.doctor_name || 'Assistant'),
-    welcomeMessage: clinic?.welcome_message || formatWelcomeMessage(providerInfo?.name || clinic?.doctor_name || 'Assistant'),
+    name: providerName || 'Doctor', // Use generic "Doctor" instead of "Dr. Assistant"
+    title: formatProviderName(providerName || 'Doctor'),
+    welcomeMessage: clinic?.welcome_message || formatWelcomeMessage(providerName || 'Doctor'),
     accentColor: clinic?.primary_color || '#5BBAD5',
     logoUrl: clinic?.logo_url || null,
-    specialty: (providerInfo?.specialties && providerInfo.specialties.length > 0) 
-      ? providerInfo.specialties[0] 
+    specialty: (effectiveProvider?.specialties && effectiveProvider.specialties.length > 0) 
+      ? effectiveProvider.specialties[0] 
       : clinic?.specialty || 'General Practice',
-    allSpecialties: providerInfo?.specialties || (clinic?.specialty ? [clinic.specialty] : ['General Practice']),
-    bio: providerInfo?.bio || null,
-    experience: providerInfo?.experience || null,
-    providerTitle: providerInfo?.title || 'Doctor'
+    allSpecialties: effectiveProvider?.specialties || (clinic?.specialty ? [clinic.specialty] : ['General Practice']),
+    bio: effectiveProvider?.bio || null,
+    experience: effectiveProvider?.experience || null,
+    providerTitle: effectiveProvider?.title || 'Doctor'
   };
 
 
@@ -712,7 +761,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
                 onClick={() => {
                   // Reset to just the opening message
                   const doctorName = providerInfo?.name || clinic?.doctor_name;
-                  const formattedDoctorName = formatProviderName(doctorName || 'Assistant');
+                  const formattedDoctorName = formatProviderName(doctorName || 'Doctor');
                   
                   // Get specialty for contextualized messaging
                   const specialty = doctorConfig.specialty || 'medical';

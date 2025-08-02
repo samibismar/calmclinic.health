@@ -37,7 +37,7 @@ export default function StaticChatInterface({ clinicConfig }: StaticChatInterfac
   
   // Helper function to format welcome message properly
   const formatWelcomeMessage = (name: string) => {
-    if (!name) return `${t.welcomePrefix} Assistant${t.welcomeSuffix}`;
+    if (!name) return `${t.welcomePrefix} Doctor${t.welcomeSuffix}`;
     
     // Check if name already starts with Dr.
     if (name.toLowerCase().startsWith('dr.') || name.toLowerCase().startsWith('doctor')) {

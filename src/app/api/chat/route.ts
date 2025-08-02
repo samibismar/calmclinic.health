@@ -13,6 +13,70 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+// Helper function to resolve provider name from database
+async function resolveProviderName(providerId: number | null, clinicId: number | null, doctorName: string | null): Promise<string> {
+  // If we have a provider ID, fetch the provider name
+  if (providerId) {
+    try {
+      const { data: provider, error } = await supabase
+        .from('providers')
+        .select('name')
+        .eq('id', providerId)
+        .eq('is_active', true)
+        .single();
+
+      if (!error && provider?.name) {
+        return provider.name;
+      }
+    } catch (error) {
+      console.error('Error fetching provider by ID:', error);
+    }
+  }
+
+  // If we have doctorName from the request, use it
+  if (doctorName) {
+    return doctorName;
+  }
+
+  // If we have a clinic ID, try to find a default provider or first active provider
+  if (clinicId) {
+    try {
+      // Try to get the default provider first
+      let { data: provider, error } = await supabase
+        .from('providers')
+        .select('name')
+        .eq('clinic_id', clinicId)
+        .eq('is_default', true)
+        .eq('is_active', true)
+        .single();
+
+      if (error || !provider) {
+        // If no default provider, get the first active provider
+        const { data: providers, error: providersError } = await supabase
+          .from('providers')
+          .select('name')
+          .eq('clinic_id', clinicId)
+          .eq('is_active', true)
+          .order('display_order', { ascending: true })
+          .limit(1);
+
+        if (!providersError && providers && providers.length > 0) {
+          provider = providers[0];
+        }
+      }
+
+      if (provider?.name) {
+        return provider.name;
+      }
+    } catch (error) {
+      console.error('Error fetching fallback provider:', error);
+    }
+  }
+
+  // Final fallback - use generic "Doctor" instead of "Dr. Assistant"
+  return 'Doctor';
+}
+
 // Function to generate comprehensive system prompt
 async function generateComprehensivePrompt({
   language,
@@ -343,6 +407,7 @@ export async function POST(request: Request) {
     let systemPrompt = null;
     let clinicData = null;
     let clinicConfig = null;
+    let clinicId = null;
     
     if (providerId) {
       try {
@@ -354,11 +419,12 @@ export async function POST(request: Request) {
           .single();
 
         if (provider) {
+          clinicId = provider.clinic_id;
           // First try to get the current system prompt from AI configuration
           const { data: currentPrompt } = await supabase
             .from('ai_prompt_history')
             .select('prompt_text')
-            .eq('clinic_id', provider.clinic_id)
+            .eq('clinic_id', clinicId)
             .eq('is_current', true)
             .single();
 
@@ -366,7 +432,7 @@ export async function POST(request: Request) {
           const { data: clinic } = await supabase
             .from('clinics')
             .select('id, tone, languages, fallback_uncertain, fallback_after_hours, fallback_emergency, ai_always_include, ai_never_include')
-            .eq('id', provider.clinic_id)
+            .eq('id', clinicId)
             .single();
 
           // Store clinic config for later use
@@ -388,7 +454,7 @@ export async function POST(request: Request) {
             const { data } = await supabase
               .from('clinic_data')
               .select('*')
-              .eq('clinic_id', provider.clinic_id)
+              .eq('clinic_id', clinicId)
               .single();
             
             clinicData = data;
@@ -402,7 +468,7 @@ export async function POST(request: Request) {
     // If no AI-generated prompt found, use legacy system
     if (!systemPrompt) {
       const nameIntro = patientName ? `The patient's name is ${patientName}. ` : '';
-      const providerName = doctorName || 'Dr. Assistant';
+      const providerName = await resolveProviderName(providerId, clinicId, doctorName);
       const providerSpecialtiesText = providerSpecialties && providerSpecialties.length > 0 
         ? providerSpecialties.join(', ') 
         : specialty || 'General Practice';

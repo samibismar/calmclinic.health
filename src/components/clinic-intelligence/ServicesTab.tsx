@@ -33,7 +33,8 @@ interface Condition {
 }
 
 
-const serviceCategories = [
+// Available service categories - will be filtered based on actual clinic data
+const allServiceCategories = [
   { id: 'medical', name: 'Medical Services', icon: Stethoscope, color: 'bg-blue-500' },
   { id: 'surgical', name: 'Surgical Services', icon: Scissors, color: 'bg-red-500' },
   { id: 'diagnostic', name: 'Diagnostic Services', icon: Search, color: 'bg-green-500' },
@@ -48,6 +49,7 @@ export default function ServicesTab() {
   const [editingService, setEditingService] = useState<ClinicService | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [availableCategories, setAvailableCategories] = useState<typeof allServiceCategories>([]);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -62,12 +64,21 @@ export default function ServicesTab() {
     fetchConditions();
   }, []);
 
+  // Update available categories based on services that exist
+  const updateAvailableCategories = (servicesList: ClinicService[]) => {
+    const usedCategories = new Set(servicesList.map(service => service.service_category));
+    const categories = allServiceCategories.filter(category => usedCategories.has(category.id));
+    setAvailableCategories(categories);
+  };
+
   const fetchServices = async () => {
     try {
       const response = await fetch('/api/clinic-intelligence/services');
       const data = await response.json();
       if (response.ok) {
-        setServices(data.services || []);
+        const servicesList = data.services || [];
+        setServices(servicesList);
+        updateAvailableCategories(servicesList);
       }
     } catch (error) {
       console.error('Error fetching services:', error);
@@ -103,7 +114,7 @@ export default function ServicesTab() {
       });
 
       if (response.ok) {
-        await fetchServices();
+        await fetchServices(); // This will also update available categories
         setEditingService(null);
         setShowAddForm(false);
         resetForm();
@@ -197,7 +208,7 @@ export default function ServicesTab() {
           >
             All Services
           </button>
-          {serviceCategories.map((category) => (
+          {availableCategories.map((category) => (
             <button
               key={category.id}
               onClick={() => setSelectedCategory(category.id)}
@@ -214,7 +225,7 @@ export default function ServicesTab() {
 
         {/* Services by Category */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {serviceCategories.map((category) => {
+          {availableCategories.map((category) => {
             const categoryServices = getServicesByCategory(category.id);
             const IconComponent = category.icon;
             
@@ -322,7 +333,7 @@ export default function ServicesTab() {
                   onChange={(e) => setFormData(prev => ({ ...prev, service_category: e.target.value }))}
                   className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                 >
-                  {serviceCategories.map((category) => (
+                  {allServiceCategories.map((category) => (
                     <option key={category.id} value={category.id} className="bg-blue-900 text-white">
                       {category.name}
                     </option>

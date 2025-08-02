@@ -45,7 +45,28 @@ export async function GET() {
       return NextResponse.json({ error: 'Failed to fetch insurance plans' }, { status: 500 });
     }
 
-    return NextResponse.json({ plans: plans || [] });
+    // Map database plan types to UI plan types
+    const mappedPlans = (plans || []).map(plan => {
+      let mappedPlanType = plan.plan_type;
+      
+      // Handle legacy plan type mapping
+      if (plan.plan_type === 'commercial') {
+        mappedPlanType = 'major';
+      } else if (plan.plan_type === 'government') {
+        if (plan.plan_name === 'Medicare') {
+          mappedPlanType = 'medicare';
+        } else if (plan.plan_name === 'Medicaid') {
+          mappedPlanType = 'medicaid';
+        }
+      }
+      
+      return {
+        ...plan,
+        plan_type: mappedPlanType
+      };
+    });
+
+    return NextResponse.json({ plans: mappedPlans });
   } catch (error) {
     console.error('Error in GET /api/clinic-intelligence/insurance:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

@@ -7,9 +7,9 @@ export interface Database {
         Row: {
           id: number;
           slug: string;
-          clinic_name: string;
+          practice_name: string;
           logo_url: string | null;
-          brand_color: string | null;
+          primary_color: string | null;
           tone: string;
           languages: string[];
           prompt_instructions: string;
@@ -19,6 +19,12 @@ export interface Database {
           has_completed_setup: boolean;
           created_at: string;
           updated_at: string;
+          website_url: string | null;
+          rag_confidence_threshold: number;
+          rag_cache_ttl_hours: number;
+          enable_web_search: boolean;
+          max_web_pages_per_query: number;
+          last_url_discovery: string | null;
         };
         Insert: Partial<Database["public"]["Tables"]["clinics"]["Row"]>;
         Update: Partial<Database["public"]["Tables"]["clinics"]["Row"]>;
