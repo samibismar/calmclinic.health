@@ -1,27 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { HybridRAGService } from '@/lib/hybrid-rag-service';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-const ragService = new HybridRAGService();
 
 interface TestStep {
   step: string;
   status: 'pending' | 'running' | 'success' | 'error';
-  details: any;
+  details: Record<string, unknown>;
   timestamp: string;
   duration?: number;
 }
 
 export async function POST(request: NextRequest) {
   const steps: TestStep[] = [];
-  let startTime = Date.now();
+  const startTime = Date.now();
   
-  const addStep = (step: string, status: 'pending' | 'running' | 'success' | 'error', details: any, duration?: number) => {
+  const addStep = (step: string, status: 'pending' | 'running' | 'success' | 'error', details: Record<string, unknown>, duration?: number) => {
     steps.push({
       step,
       status,

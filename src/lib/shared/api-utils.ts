@@ -25,7 +25,7 @@ export const createErrorResponse = (
 
 // Input validation helper
 export const validateRequiredParams = (
-  params: Record<string, any>, 
+  params: Record<string, unknown>, 
   required: string[]
 ): string | null => {
   for (const param of required) {
@@ -56,7 +56,7 @@ export const parseNumericParam = (
 };
 
 // Standard success response helper
-export const createSuccessResponse = (data: any): NextResponse => {
+export const createSuccessResponse = (data: Record<string, unknown>): NextResponse => {
   return NextResponse.json({
     ...data,
     success: true,

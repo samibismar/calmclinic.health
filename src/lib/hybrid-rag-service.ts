@@ -47,6 +47,33 @@ export interface ClinicConfig {
   websiteUrl?: string;
 }
 
+export interface RAGDecision {
+  source: string;
+  contentFound: boolean;
+  bestMatchUrl: string;
+  bestMatchTitle: string;
+  bestMatchSummary: string;
+  confidenceScore: number;
+  recommendedUrls: string[];
+}
+
+export interface RAGAnalytics {
+  total_queries: number;
+  avg_confidence: number;
+  cache_hit_rate: number;
+  web_search_rate: number;
+  avg_response_time_ms: number;
+  [key: string]: unknown;
+}
+
+export interface IndexHealth {
+  accessible_urls: number;
+  total_urls: number;
+  last_discovery: string;
+  health_score: number;
+  [key: string]: unknown;
+}
+
 export class HybridRAGService {
   private urlDiscovery: URLDiscoveryService;
   private intelligentFetch: IntelligentFetchService;
@@ -291,7 +318,7 @@ export class HybridRAGService {
         websiteUrl: clinic?.website_url
       };
 
-    } catch (error) {
+    } catch {
       console.warn(`Failed to fetch clinic config for ${clinicId}, using defaults`);
       return {
         confidenceThreshold: 0.6,
@@ -368,7 +395,7 @@ Respond with just the category name.`
     query: string,
     queryEmbedding: number[],
     confidenceThreshold: number
-  ): Promise<any> {
+  ): Promise<RAGDecision> {
     try {
       const { data, error } = await supabase.rpc('hybrid_rag_query', {
         clinic_id: clinicId,
@@ -488,7 +515,7 @@ Please provide a comprehensive answer based on this information.`
   /**
    * Generate fallback answer when no good content is available
    */
-  private async generateFallbackAnswer(query: string, intent: string = 'general'): Promise<string> {
+  private async generateFallbackAnswer(_query: string, intent: string = 'general'): Promise<string> {
     const fallbackResponses: Record<string, string> = {
       hours: "I'd be happy to help with information about office hours. For the most current hours and scheduling information, please call the clinic directly or check their website.",
       location: "For directions, parking information, and clinic location details, please check the clinic's website or call them directly for the most accurate information.",
@@ -542,7 +569,7 @@ Please provide a comprehensive answer based on this information.`
   /**
    * Get RAG analytics for a clinic
    */
-  async getAnalytics(clinicId: number, daysBack: number = 30): Promise<any> {
+  async getAnalytics(clinicId: number, daysBack: number = 30): Promise<RAGAnalytics> {
     try {
       const { data, error } = await supabase.rpc('get_rag_analytics', {
         clinic_id: clinicId,
@@ -572,7 +599,7 @@ Please provide a comprehensive answer based on this information.`
   /**
    * Check URL index health for a clinic
    */
-  async checkIndexHealth(clinicId: number): Promise<any> {
+  async checkIndexHealth(clinicId: number): Promise<IndexHealth> {
     try {
       const { data, error } = await supabase.rpc('check_url_index_health', {
         clinic_id: clinicId

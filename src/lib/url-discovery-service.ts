@@ -38,6 +38,13 @@ export interface CrawlResult {
   crawlDuration: number;
 }
 
+interface URLClassification {
+  url: string;
+  page_type: string;
+  confidence: number;
+  reasoning: string;
+}
+
 export class URLDiscoveryService {
   private readonly maxConcurrentRequests = 5;
   private readonly requestDelay = 1000; // 1 second delay between requests
@@ -55,7 +62,7 @@ export class URLDiscoveryService {
     const startTime = Date.now();
     const discoveredUrls: URLMetadata[] = [];
     const errors: string[] = [];
-    const visitedUrls = new Set<string>();
+    // const visitedUrls = new Set<string>(); // Unused for now
 
     console.log(`🔍 Starting URL discovery for clinic ${clinicId} on ${domain}`);
 
@@ -130,12 +137,17 @@ export class URLDiscoveryService {
       try {
         console.log(`🔍 Checking sitemap: ${sitemapUrl}`);
         
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+        
         const response = await fetch(sitemapUrl, {
-          timeout: this.timeout,
+          signal: controller.signal,
           headers: {
             'User-Agent': 'CalmClinic-Bot/1.0 (Healthcare Assistant)',
           }
         });
+        
+        clearTimeout(timeoutId);
 
         if (!response.ok) continue;
 
@@ -216,12 +228,17 @@ export class URLDiscoveryService {
         try {
           await new Promise(resolve => setTimeout(resolve, this.requestDelay));
           
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+          
           const response = await fetch(url, {
-            timeout: this.timeout,
+            signal: controller.signal,
             headers: {
               'User-Agent': 'CalmClinic-Bot/1.0 (Healthcare Assistant)',
             }
           });
+          
+          clearTimeout(timeoutId);
 
           const metadata: URLMetadata = {
             url,
@@ -278,7 +295,7 @@ export class URLDiscoveryService {
                       queue.push({url: linkUrl, depth: depth + 1});
                       internalLinksFound++;
                     }
-                  } catch (e) {
+                  } catch {
                     // Invalid URL, skip
                   }
                 }
@@ -374,9 +391,9 @@ Return a JSON object with a "classifications" array containing the results:
           response_format: { type: "json_object" }
         });
 
-        let classifications: any[] = [];
+        let classifications: URLClassification[] = [];
         try {
-          let content = response.choices[0].message.content;
+          const content = response.choices[0].message.content;
           if (content) {
             const parsed = JSON.parse(content);
             classifications = parsed.classifications || parsed; // Handle both formats
@@ -562,12 +579,17 @@ Return a JSON object with a "classifications" array containing the results:
         try {
           await new Promise(resolve => setTimeout(resolve, this.requestDelay));
           
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+          
           const response = await fetch(url, {
-            timeout: this.timeout,
+            signal: controller.signal,
             headers: {
               'User-Agent': 'CalmClinic-Bot/1.0 (Healthcare Assistant)',
             }
           });
+          
+          clearTimeout(timeoutId);
 
           const metadata: URLMetadata = {
             url,

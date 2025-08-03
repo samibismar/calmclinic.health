@@ -179,18 +179,18 @@ export async function POST(request: NextRequest) {
 /**
  * Calculate derived metrics from raw analytics
  */
-function calculateDerivedMetrics(analytics: any, indexHealth: any) {
-  const cacheHitRate = analytics.cache_hit_rate || 0;
-  const webSearchRate = analytics.web_search_rate || 0;
-  const avgConfidence = analytics.avg_confidence || 0;
-  const totalQueries = analytics.total_queries || 0;
+function calculateDerivedMetrics(analytics: { cache_hit_rate?: number; web_search_rate?: number; avg_confidence?: number; total_queries?: number; [key: string]: unknown }, indexHealth: { accessible_urls?: number; [key: string]: unknown }) {
+  const cacheHitRate = (analytics.cache_hit_rate as number) || 0;
+  const webSearchRate = (analytics.web_search_rate as number) || 0;
+  const avgConfidence = (analytics.avg_confidence as number) || 0;
+  const totalQueries = (analytics.total_queries as number) || 0;
 
   // Performance scoring (0-100)
   const performanceScore = Math.round(
     (cacheHitRate * 30) + // 30% weight for cache efficiency
     (avgConfidence * 40) + // 40% weight for answer confidence
     ((1 - webSearchRate) * 20) + // 20% weight for not needing web search
-    (Math.min(indexHealth?.accessible_urls / 20, 1) * 10) // 10% weight for URL coverage
+    (Math.min((indexHealth?.accessible_urls as number) / 20 || 0, 1) * 10) // 10% weight for URL coverage
   );
 
   // Health status
@@ -208,7 +208,7 @@ function calculateDerivedMetrics(analytics: any, indexHealth: any) {
     query_velocity: Math.round(queryVelocity * 10) / 10,
     cache_efficiency: cacheHitRate,
     web_dependency: webSearchRate,
-    content_coverage: indexHealth?.accessible_urls || 0
+    content_coverage: (indexHealth?.accessible_urls as number) || 0
   };
 }
 
@@ -235,7 +235,7 @@ async function getPerformanceTrends(clinicId: number, daysBack: number) {
     }
 
     // Group by day and calculate daily averages
-    const dailyGroups: { [key: string]: any[] } = {};
+    const dailyGroups: { [key: string]: Array<Record<string, unknown>> } = {};
     
     dailyStats.forEach(stat => {
       const day = stat.created_at.split('T')[0]; // Get YYYY-MM-DD
@@ -246,8 +246,8 @@ async function getPerformanceTrends(clinicId: number, daysBack: number) {
     });
 
     const trends = Object.entries(dailyGroups).map(([day, stats]) => {
-      const avgConfidence = stats.reduce((sum, s) => sum + (s.rag_confidence || 0), 0) / stats.length;
-      const avgResponseTime = stats.reduce((sum, s) => sum + (s.total_response_time_ms || 0), 0) / stats.length;
+      const avgConfidence = stats.reduce((sum, s) => sum + ((s as { rag_confidence?: number }).rag_confidence || 0), 0) / stats.length;
+      const avgResponseTime = stats.reduce((sum, s) => sum + ((s as { total_response_time_ms?: number }).total_response_time_ms || 0), 0) / stats.length;
       const cacheHitRate = stats.filter(s => s.cache_hit).length / stats.length;
       const queryCount = stats.length;
 
@@ -281,7 +281,7 @@ async function getPerformanceTrends(clinicId: number, daysBack: number) {
 /**
  * Calculate aggregate metrics across multiple clinics
  */
-function calculateAggregateMetrics(clinicData: any[]) {
+function calculateAggregateMetrics(clinicData: Array<{ status: string; analytics?: { total_queries?: number; performance_score?: number; cache_hit_rate?: number; avg_response_time_ms?: number; health_status?: string; [key: string]: unknown }; [key: string]: unknown }>) {
   const successfulClinics = clinicData.filter(c => c.status === 'success');
   
   if (successfulClinics.length === 0) {
@@ -296,15 +296,18 @@ function calculateAggregateMetrics(clinicData: any[]) {
     };
   }
 
-  const totalQueries = successfulClinics.reduce((sum, c) => sum + (c.analytics.total_queries || 0), 0);
-  const avgPerformanceScore = successfulClinics.reduce((sum, c) => sum + (c.analytics.performance_score || 0), 0) / successfulClinics.length;
-  const avgCacheHitRate = successfulClinics.reduce((sum, c) => sum + (c.analytics.cache_hit_rate || 0), 0) / successfulClinics.length;
-  const avgResponseTime = successfulClinics.reduce((sum, c) => sum + (c.analytics.avg_response_time_ms || 0), 0) / successfulClinics.length;
+  const totalQueries = successfulClinics.reduce((sum, c) => sum + ((c.analytics?.total_queries as number) || 0), 0);
+  const avgPerformanceScore = successfulClinics.reduce((sum, c) => sum + ((c.analytics?.performance_score as number) || 0), 0) / successfulClinics.length;
+  const avgCacheHitRate = successfulClinics.reduce((sum, c) => sum + ((c.analytics?.cache_hit_rate as number) || 0), 0) / successfulClinics.length;
+  const avgResponseTime = successfulClinics.reduce((sum, c) => sum + ((c.analytics?.avg_response_time_ms as number) || 0), 0) / successfulClinics.length;
 
   // Health distribution
   const healthDistribution = successfulClinics.reduce((dist, c) => {
-    const status = c.analytics.health_status || 'needs_attention';
-    dist[status] = (dist[status] || 0) + 1;
+    const status = (c.analytics?.health_status as string) || 'needs_attention';
+    const validStatuses = ['excellent', 'good', 'needs_attention', 'poor'] as const;
+    if (validStatuses.includes(status as typeof validStatuses[number])) {
+      dist[status as keyof typeof dist] = (dist[status as keyof typeof dist] || 0) + 1;
+    }
     return dist;
   }, { excellent: 0, good: 0, needs_attention: 0, poor: 0 });
 

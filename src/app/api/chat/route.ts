@@ -42,7 +42,7 @@ async function resolveProviderName(providerId: number | null, clinicId: number |
   if (clinicId) {
     try {
       // Try to get the default provider first
-      let { data: provider, error } = await supabase
+      const { data: providerData, error } = await supabase
         .from('providers')
         .select('name')
         .eq('clinic_id', clinicId)
@@ -50,6 +50,7 @@ async function resolveProviderName(providerId: number | null, clinicId: number |
         .eq('is_active', true)
         .single();
 
+      let provider = providerData;
       if (error || !provider) {
         // If no default provider, get the first active provider
         const { data: providers, error: providersError } = await supabase

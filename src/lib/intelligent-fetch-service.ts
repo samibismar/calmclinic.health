@@ -44,6 +44,17 @@ export interface FetchResult {
   errors: string[];
 }
 
+interface DatabaseURLMatch {
+  url: string;
+  title?: string;
+  description?: string;
+  page_type?: string;
+  similarity: number;
+  crawl_depth?: number;
+  is_accessible: boolean;
+  word_count?: number;
+}
+
 export class IntelligentFetchService {
   private readonly maxConcurrentFetches = 3;
   private readonly fetchTimeout = 15000; // 15 seconds
@@ -176,9 +187,9 @@ export class IntelligentFetchService {
 
       // Convert to URLMatch format
       const matches: URLMatch[] = urlMatches
-        .filter((match: any) => match.is_accessible) // Only accessible URLs
+        .filter((match: DatabaseURLMatch) => match.is_accessible) // Only accessible URLs
         .slice(0, maxResults) // Limit results
-        .map((match: any) => ({
+        .map((match: DatabaseURLMatch) => ({
           url: match.url,
           title: match.title || '',
           description: match.description || '',
@@ -213,7 +224,6 @@ export class IntelligentFetchService {
   ): Promise<URLMatch[]> {
     try {
       const keywords = query.toLowerCase().split(/\s+/);
-      const keywordPattern = keywords.join('|');
 
       const { data: urlMatches, error } = await supabase
         .from('clinic_url_index')
@@ -301,14 +311,19 @@ export class IntelligentFetchService {
         try {
           console.log(`🌐 Fetching: ${urlMatch.url}`);
           
-          // Fetch the page content
+          // Fetch the page content with timeout
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), this.fetchTimeout);
+          
           const response = await fetch(urlMatch.url, {
-            timeout: this.fetchTimeout,
+            signal: controller.signal,
             headers: {
               'User-Agent': 'CalmClinic-Bot/1.0 (Healthcare Assistant)',
               'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             }
           });
+          
+          clearTimeout(timeoutId);
 
           if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);

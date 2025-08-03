@@ -5,9 +5,16 @@ import { useState, useEffect } from 'react';
 interface TestStep {
   step: string;
   status: 'pending' | 'running' | 'success' | 'error';
-  details: any;
+  details: Record<string, unknown>;
   timestamp: string;
   duration?: number;
+}
+
+interface ClinicData {
+  id: number;
+  clinic_name: string;
+  website_url?: string;
+  [key: string]: unknown;
 }
 
 interface RAGTestResult {
@@ -31,7 +38,7 @@ export default function HybridRAGTestPage() {
   const [isRunning, setIsRunning] = useState(false);
   const [selectedClinicId, setSelectedClinicId] = useState<string>('');
   const [testQuery, setTestQuery] = useState('What are your office hours?');
-  const [availableClinics, setAvailableClinics] = useState<any[]>([]);
+  const [availableClinics, setAvailableClinics] = useState<ClinicData[]>([]);
 
   useEffect(() => {
     loadClinics();
@@ -120,7 +127,7 @@ export default function HybridRAGTestPage() {
             >
               {availableClinics.map(clinic => (
                 <option key={clinic.id} value={clinic.id}>
-                  {clinic.practice_name} (ID: {clinic.id})
+                  {(clinic as { practice_name?: string }).practice_name || clinic.clinic_name || 'Unknown'} (ID: {clinic.id})
                 </option>
               ))}
             </select>
@@ -207,7 +214,7 @@ export default function HybridRAGTestPage() {
           <div className="border p-4 rounded">
             <h3 className="font-bold mb-2">Final Answer</h3>
             <div className="bg-blue-50 p-3 rounded">
-              <div className="text-sm text-blue-600 mb-2">Query: "{testResult.query}"</div>
+              <div className="text-sm text-blue-600 mb-2">Query: &quot;{testResult.query}&quot;</div>
               <div>{testResult.finalAnswer}</div>
             </div>
           </div>

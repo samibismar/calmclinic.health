@@ -28,8 +28,22 @@ type ChatInterfaceProps = {
 interface CommonQuestion {
   id: number;
   question_text: string;
+  is_active?: boolean;
+}
+
+interface FallbackProvider {
+  id: number;
+  name: string;
+  title?: string;
+  specialties?: string[];
+  bio?: string;
+  experience?: string;
+  languages?: string[];
+  avatar_url?: string;
   is_active: boolean;
+  is_default: boolean;
   category?: string;
+  [key: string]: unknown;
 }
 
 export default function ChatInterface({ clinic: clinicSlug, providerId, providerInfo }: ChatInterfaceProps) {
@@ -51,7 +65,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
   const [newMessageAppearing, setNewMessageAppearing] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState<string>("");
   const [showTransition, setShowTransition] = useState(true);
-  const [fallbackProvider, setFallbackProvider] = useState<any>(null);
+  const [fallbackProvider, setFallbackProvider] = useState<FallbackProvider | null>(null);
   
   
   // Get language from URL parameters
@@ -66,7 +80,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
   const fetchFallbackProvider = async (clinicId: number) => {
     try {
       // First try to get the default provider
-      let { data: defaultProvider, error } = await supabase
+      const { data: defaultProviderData, error } = await supabase
         .from('providers')
         .select('*')
         .eq('clinic_id', clinicId)
@@ -74,6 +88,8 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
         .eq('is_active', true)
         .single();
 
+      let defaultProvider = defaultProviderData;
+      
       if (error || !defaultProvider) {
         // If no default provider, get the first active provider
         const { data: providers, error: providersError } = await supabase

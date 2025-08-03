@@ -49,7 +49,7 @@ export default function ClinicSetupPage() {
       } else {
         setStatus(prev => ({ ...prev, [clinicId]: 'Update failed' }));
       }
-    } catch (error) {
+    } catch {
       setStatus(prev => ({ ...prev, [clinicId]: 'Error' }));
     }
   };
@@ -74,7 +74,7 @@ export default function ClinicSetupPage() {
       } else {
         setStatus(prev => ({ ...prev, [clinicId]: `Crawl failed: ${result.error || 'Unknown error'}` }));
       }
-    } catch (error) {
+    } catch {
       setStatus(prev => ({ ...prev, [clinicId]: 'Crawl error' }));
     }
   };

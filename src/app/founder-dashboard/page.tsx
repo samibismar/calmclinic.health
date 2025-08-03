@@ -73,7 +73,7 @@ export default function FounderDashboard() {
     if (isAuthenticated) {
       loadDashboardData();
     }
-  }, [selectedTimeframe, isAuthenticated]);
+  }, [selectedTimeframe, isAuthenticated, loadDashboardData]);
 
   if (!isAuthenticated) {
     return (
@@ -211,7 +211,7 @@ export default function FounderDashboard() {
                       <div key={query.id} className="p-3 bg-gray-50 rounded-lg border-l-4 border-blue-500">
                         <div className="flex justify-between items-start mb-2">
                           <div className="font-medium text-gray-900 flex-1 mr-4">
-                            "{query.query_text}"
+                            &quot;{query.query_text}&quot;
                           </div>
                           <div className="text-xs text-gray-500 whitespace-nowrap">
                             {new Date(query.created_at).toLocaleString()}

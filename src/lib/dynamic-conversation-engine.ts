@@ -216,7 +216,7 @@ First, can you hear me clearly?`;
       const responseText = data.message || data;
       
       // Update conversation state based on response content
-      this.updateStateBasedOnConversation(userInput, responseText);
+      this.updateStateBasedOnConversation(userInput);
       
       return responseText;
       
@@ -286,9 +286,8 @@ First, can you hear me clearly?`;
     }
   }
 
-  private updateStateBasedOnConversation(userInput: string, aiResponse: string): void {
+  private updateStateBasedOnConversation(userInput: string): void {
     const input = userInput.toLowerCase();
-    const response = aiResponse.toLowerCase();
     
     switch (this.state) {
       case 'welcome':

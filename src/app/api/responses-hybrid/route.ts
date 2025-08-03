@@ -3,6 +3,42 @@ import OpenAI from 'openai';
 import { createClient } from '@supabase/supabase-js';
 import { HybridRAGService } from '@/lib/hybrid-rag-service';
 
+// Define interfaces for better type safety
+interface ClinicData {
+  id: number;
+  clinic_name: string;
+  website_url?: string;
+  [key: string]: unknown;
+}
+
+interface ProviderData {
+  id: number;
+  name: string;
+  title?: string;
+  specialties?: string[];
+  clinics?: ClinicData;
+  [key: string]: unknown;
+}
+
+interface ClinicContextData {
+  contact_info?: {
+    phone_numbers?: { main?: string };
+    address?: { full_address?: string };
+    website?: string;
+  };
+  hours_info?: {
+    regular_hours?: Record<string, string>;
+  };
+  services_info?: {
+    medical_services?: string[];
+    conditions_treated?: string[];
+  };
+  insurance_info?: {
+    accepted_plans?: string[];
+  };
+  [key: string]: unknown;
+}
+
 // Initialize OpenAI client with latest SDK
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -239,8 +275,8 @@ export async function POST(request: NextRequest) {
  * Build comprehensive system prompt
  */
 async function buildSystemPrompt(
-  clinic: any,
-  provider: any,
+  clinic: ClinicData,
+  provider: ProviderData | null,
   language: string
 ): Promise<string> {
   const clinicName = clinic.clinic_name || 'the clinic';
@@ -260,7 +296,7 @@ async function buildSystemPrompt(
     if (existingData) {
       clinicContext = buildClinicContext(existingData);
     }
-  } catch (error) {
+  } catch {
     console.log('No existing clinic data found, using basic info');
   }
 
@@ -322,7 +358,7 @@ Remember: This is for educational and informational purposes only. Patients shou
 /**
  * Build clinic context from existing data
  */
-function buildClinicContext(clinicData: any): string {
+function buildClinicContext(clinicData: ClinicContextData): string {
   let context = '\n--- CURRENT CLINIC INFORMATION ---\n';
   
   if (clinicData.contact_info) {
@@ -347,15 +383,15 @@ function buildClinicContext(clinicData: any): string {
   
   if (clinicData.services_info) {
     const services = clinicData.services_info;
-    if (services.medical_services?.length > 0) {
+    if (services.medical_services && services.medical_services.length > 0) {
       context += `\nMedical Services: ${services.medical_services.join(', ')}\n`;
     }
-    if (services.conditions_treated?.length > 0) {
+    if (services.conditions_treated && services.conditions_treated.length > 0) {
       context += `Conditions Treated: ${services.conditions_treated.join(', ')}\n`;
     }
   }
   
-  if (clinicData.insurance_info?.accepted_plans?.length > 0) {
+  if (clinicData.insurance_info?.accepted_plans && clinicData.insurance_info.accepted_plans.length > 0) {
     context += `\nInsurance Accepted: ${clinicData.insurance_info.accepted_plans.join(', ')}\n`;
   }
   

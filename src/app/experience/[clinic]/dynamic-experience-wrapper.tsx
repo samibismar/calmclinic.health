@@ -18,6 +18,14 @@ interface Provider {
   specialty?: string;
 }
 
+interface ApiProvider {
+  id: string;
+  name: string;
+  specialty?: string;
+  is_active: boolean;
+  [key: string]: unknown;
+}
+
 export default function DynamicExperienceWrapper({ clinicSlug }: DynamicExperienceWrapperProps) {
   const [clinicData, setClinicData] = useState<ClinicData | null>(null);
   const [conversationState, setConversationState] = useState<ConversationState>('initializing');
@@ -60,9 +68,9 @@ export default function DynamicExperienceWrapper({ clinicSlug }: DynamicExperien
           // Load providers for this clinic
           if (data.providers && Array.isArray(data.providers)) {
             const activeProviders = data.providers
-              .filter((p: any) => p.is_active)
+              .filter((p: ApiProvider) => p.is_active)
               .slice(0, 4) // Limit to 4 options
-              .map((p: any) => ({
+              .map((p: ApiProvider) => ({
                 id: p.id,
                 name: p.name,
                 specialty: p.specialty
@@ -156,31 +164,31 @@ export default function DynamicExperienceWrapper({ clinicSlug }: DynamicExperien
     
     switch (state) {
       case 'welcome':
-        return ['Yes, I can hear you clearly', 'I\'m ready to start'];
+        return ['Yes, I can hear you clearly', 'I&apos;m ready to start'];
         
       case 'explaining_study':
-        return ['That sounds helpful', 'I\'d like to try it', 'I have questions'];
+        return ['That sounds helpful', 'I&apos;d like to try it', 'I have questions'];
         
       case 'getting_consent':
-        return ['Yes, let\'s try it', 'Sure, I\'ll participate', 'I have questions first'];
+        return ['Yes, let&apos;s try it', 'Sure, I&apos;ll participate', 'I have questions first'];
         
       case 'answering_questions':
-        return ['I\'m ready to try it', 'Let\'s begin', 'I understand now'];
+        return ['I&apos;m ready to try it', 'Let&apos;s begin', 'I understand now'];
         
       case 'assistant_demo':
         // Support proactive value demonstration flow
         if (userInteractionCount === 0) {
           // First interaction - encourage engagement or trigger demo
-          return ['I don\'t really have anything to ask', 'What should I expect at my appointment?', 'How can you help me?'];
+          return ['I don&apos;t really have anything to ask', 'What should I expect at my appointment?', 'How can you help me?'];
         } else if (lastAIMessage.toLowerCase().includes('show you') || lastAIMessage.toLowerCase().includes('demonstrate')) {
           // AI is offering to demonstrate capabilities
           return ['Yes, show me that', 'That sounds helpful', 'What else can you do?'];
         } else if (lastAIMessage.toLowerCase().includes('anything else') || lastAIMessage.toLowerCase().includes('other')) {
           // AI is checking if they need more help
-          return ['No, I think I\'m prepared', 'Yes, one more thing', 'That was really helpful'];
+          return ['No, I think I&apos;m prepared', 'Yes, one more thing', 'That was really helpful'];
         } else if (lastAIMessage.toLowerCase().includes('questions for') || lastAIMessage.toLowerCase().includes('discuss with')) {
           // AI suggested questions for the doctor
-          return ['That\'s a good suggestion', 'What other questions should I ask?', 'I\'ll remember to ask that'];
+          return ['That&apos;s a good suggestion', 'What other questions should I ask?', 'I&apos;ll remember to ask that'];
         } else {
           // General walkthrough responses
           return ['Tell me more about that', 'What else should I know?', 'How does that work?'];
@@ -191,12 +199,12 @@ export default function DynamicExperienceWrapper({ clinicSlug }: DynamicExperien
         if (lastAIMessage.toLowerCase().includes('helpful today')) {
           return ['Yes, very helpful', 'It was somewhat helpful', 'Not really helpful'];
         } else if (lastAIMessage.toLowerCase().includes('use this again')) {
-          return ['Yes, I\'d definitely use it again', 'Maybe, depending on the situation', 'Probably not'];
+          return ['Yes, I&apos;d definitely use it again', 'Maybe, depending on the situation', 'Probably not'];
         } else if (lastAIMessage.toLowerCase().includes('do better') || lastAIMessage.toLowerCase().includes('improve')) {
           return ['It was great as is', 'Maybe respond faster', 'More personalized advice'];
         } else {
           // General feedback responses
-          return ['It was easy to use', 'This would reduce my anxiety', 'I\'d recommend this to others'];
+          return ['It was easy to use', 'This would reduce my anxiety', 'I&apos;d recommend this to others'];
         }
         
       default:
@@ -232,7 +240,7 @@ export default function DynamicExperienceWrapper({ clinicSlug }: DynamicExperien
               Welcome to {clinicData?.name || 'your clinic'}
             </h1>
             <p className="text-gray-600">
-              I'm your AI assistant, here to help guide you through your visit today
+              I&apos;m your AI assistant, here to help guide you through your visit today
             </p>
           </div>
 
@@ -252,8 +260,8 @@ export default function DynamicExperienceWrapper({ clinicSlug }: DynamicExperien
               </label>
               <p className="text-sm text-gray-500 mt-2">
                 {isVoiceEnabled 
-                  ? 'We\'ll have a natural voice conversation together' 
-                  : 'We\'ll chat by typing back and forth'}
+                  ? 'We&apos;ll have a natural voice conversation together' 
+                  : 'We&apos;ll chat by typing back and forth'}
               </p>
             </div>
           </div>
@@ -330,7 +338,7 @@ export default function DynamicExperienceWrapper({ clinicSlug }: DynamicExperien
                 </svg>
               </div>
               <h2 className="text-xl font-bold text-gray-800 mb-2">Hello there!</h2>
-              <p className="text-gray-600 mb-4">I'm here to help you with your visit today</p>
+              <p className="text-gray-600 mb-4">I&apos;m here to help you with your visit today</p>
               <div className="text-sm text-gray-500">
                 {isVoiceEnabled ? "🎤 I can hear you when you speak" : "💬 Type to chat with me"}
               </div>
@@ -413,8 +421,8 @@ export default function DynamicExperienceWrapper({ clinicSlug }: DynamicExperien
                   onClick={() => selectProvider('your healthcare provider')}
                   className="w-full p-4 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl text-left transition-colors"
                 >
-                  <p className="font-medium text-gray-700">I'm not sure</p>
-                  <p className="text-sm text-gray-500">I'll figure it out during my visit</p>
+                  <p className="font-medium text-gray-700">I&apos;m not sure</p>
+                  <p className="text-sm text-gray-500">I&apos;ll figure it out during my visit</p>
                 </button>
               </div>
             </div>
