@@ -49,6 +49,8 @@ export class DynamicConversationEngine {
   private audioContext: AudioContext | null = null;
   private recognition: SpeechRecognition | null = null;
   private autoListenAfterSpeaking = false;
+  private clinicId: number | null = null;
+  private clinicInfo: { id?: number; name?: string; [key: string]: unknown } | null = null;
 
   constructor(config: ConversationConfig) {
     this.config = config;
@@ -59,6 +61,61 @@ export class DynamicConversationEngine {
       demoCompleted: false,
       feedbackGiven: false,
     };
+    // Fetch clinic information for personalized responses
+    this.fetchClinicInfo();
+  }
+
+  /**
+   * Fetch contextual clinic information for personalized demonstrations
+   */
+  private async fetchClinicInfo(): Promise<void> {
+    try {
+      // Try to get clinic ID first
+      const clinicResponse = await fetch(`/api/providers/${this.config.clinicSlug}`);
+      if (clinicResponse.ok) {
+        const clinicData = await clinicResponse.json();
+        this.clinicId = clinicData.clinic?.id;
+        this.clinicInfo = clinicData.clinic;
+        console.log('Clinic info loaded for personalization:', this.clinicInfo?.name);
+      }
+    } catch (error) {
+      console.log('Could not fetch clinic info for personalization:', error);
+    }
+  }
+
+  /**
+   * Get personalized information using hybrid RAG for specific queries
+   */
+  private async getPersonalizedInfo(query: string): Promise<string> {
+    if (!this.clinicId) {
+      return 'I can help you prepare for your appointment and think of great questions to ask your provider.';
+    }
+
+    try {
+      const response = await fetch('/api/responses-hybrid', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [
+            { role: 'user', content: query }
+          ],
+          clinicId: this.clinicId,
+          useHybridRAG: true,
+          maxWebPages: 2
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.message || 'I can help you prepare for your appointment.';
+      }
+    } catch (error) {
+      console.log('Could not get personalized info:', error);
+    }
+
+    return 'I can help you prepare for your appointment and answer questions about your visit.';
   }
 
   async initialize(): Promise<void> {
@@ -148,12 +205,12 @@ export class DynamicConversationEngine {
   private async startConversation(): Promise<void> {
     this.setState('welcome');
     
-    // Engaging welcome with mini-onboarding
-    const welcomeMessage = `Hi there! Welcome to ${this.context.clinicName}. I'm your AI assistant, and you're about to experience something pretty amazing - a live conversation with artificial intelligence that's specifically designed to help patients prepare for their appointments.
+    // Natural, human-like welcome
+    const welcomeMessage = `Hey! I'm so glad you're here at ${this.context.clinicName}. I'm your AI assistant - think of me as your friendly prep buddy who's here to help make your visit go smoothly.
 
-This is like having a knowledgeable healthcare assistant right here with you while you wait. I'll guide you through everything step by step, and it's completely optional. But I think you'll find this really interesting!
+I know waiting for appointments can be a bit nerve-wracking, so I'm here to chat with you, answer questions, and help you feel totally prepared. No pressure at all - we can keep this super casual.
 
-First, can you hear me clearly?`;
+Can you hear me okay?`;
     
     await this.speak(welcomeMessage);
     
@@ -186,6 +243,19 @@ First, can you hear me clearly?`;
     
     try {
       console.log('🧠 Generating contextual response for state:', this.state);
+      
+      // For the critical "nothing to ask" moment in assistant demo, provide immediate personalized value
+      if (this.state === 'assistant_demo' && 
+          (userInput.toLowerCase().includes('nothing') || 
+           userInput.toLowerCase().includes('don\'t know') || 
+           userInput.toLowerCase().includes('not sure'))) {
+        
+        const personalizedInfo = await this.getPersonalizedInfo(
+          `What should a patient expect during their appointment and what are good questions to ask the provider?`
+        );
+        
+        return `Actually, that's perfect because I can show you some really useful stuff! Let me start with something super practical: ${personalizedInfo} See? That's exactly the kind of helpful information I can provide. What else would be useful for you?`;
+      }
       
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -234,55 +304,54 @@ First, can you hear me clearly?`;
 
     switch (this.state) {
       case 'welcome':
-        return basePrompt + `Welcome the patient warmly. Confirm they can hear you clearly. Explain: "I'm here to help you prepare for your visit today through a quick AI study. It takes just a few minutes and could be really helpful." Ask if they'd like to continue.`;
+        return basePrompt + `You're greeting someone like a friendly healthcare assistant would. Keep it warm and conversational. Once they confirm they can hear you, casually mention: "Perfect! I'm here to help you prep for today's visit - just think of me as your friendly assistant. Should take like 5 minutes and I promise it'll be worth it." Then naturally ask if they'd like to continue.`;
       
       case 'selecting_provider':
-        return basePrompt + `Ask which healthcare provider they're here to see. Explain that knowing their provider helps you give more relevant information. Be friendly and patient.`;
+        return basePrompt + `Ask about their provider in a casual, friendly way: "So who are you here to see today?" or "Which doctor has the pleasure of your company today?" Keep it light and conversational. Briefly mention this helps you give better, more relevant tips.`;
       
       case 'explaining_study':
-        // This state is now skipped - explanation happens in selectProvider method
-        return basePrompt + `Explain the study briefly and ask for consent.`;
+        return basePrompt + `You're casually explaining what you do, like telling a friend about something cool: "So here's the deal - I'm basically like having a smart healthcare buddy who can help you prep for appointments. I can answer questions, help you think of things to ask your doctor, that kind of stuff. Pretty neat, right?" Keep it conversational and not clinical.`;
       
       case 'getting_consent':
-        return basePrompt + `They've heard the explanation. Ask for their consent: "Would you like to try the AI assistant? It's completely optional, but I think it could help you prepare for your appointment." Wait for a clear yes/no response.`;
+        return basePrompt + `Ask for consent like you're inviting them to try something fun: "Want to give it a shot? No pressure at all - totally up to you. But I think you might find it pretty helpful!" Keep it light and friendly, not formal.`;
       
       case 'answering_questions':
-        return basePrompt + `Answer any questions they have about the AI assistant or what they'll experience. Be reassuring and thorough. When they seem ready, offer to begin the demo.`;
+        return basePrompt + `Answer their questions like a helpful friend would - be reassuring and genuine. If they ask what it's like, you might say "It's just like chatting with someone who knows a lot about healthcare stuff. Nothing weird or complicated." When they seem comfortable, casually suggest: "Ready to dive in?"`;
       
       case 'demo_transition':
-        return basePrompt + `Create an engaging mini-onboarding moment: "Perfect! Now I'm going to show you something really cool. Think of this as your personal AI assistant preview - I'll walk you through exactly how I can help patients like you prepare for appointments. This takes about 2 minutes and I think you'll be impressed by what's possible. I'm going to demonstrate three specific ways I can help with your visit to ${providerName} today. Ready to see what AI can do for healthcare? Let's dive in!"`;
+        return basePrompt + `Transition naturally like you're about to show them something interesting: "Awesome! Okay, so now I get to show you some of the cool stuff I can do. Think of this like getting a sneak peek of having your own personal healthcare prep assistant. Ready? Let's jump in!"`;
       
       case 'assistant_demo':
         const interactionCount = this.context.questionsAsked.length;
         const lastUserInput = this.context.questionsAsked[this.context.questionsAsked.length - 1] || '';
         
-        // Handle the critical "nothing to say" moment
+        // Critical engagement moment - IMMEDIATELY demonstrate value instead of asking what they want
         if (lastUserInput.toLowerCase().includes('nothing') || lastUserInput.toLowerCase().includes('don\'t have') || 
             lastUserInput.toLowerCase().includes('not sure') || lastUserInput.toLowerCase().includes('no questions')) {
-          return `CRITICAL MOMENT: The user doesn't know what to ask. This is your chance to demonstrate value! Say something like: "No problem! A lot of patients don't know what to ask. Let me show you what I can help with..." Then proactively demonstrate 2-3 specific things you can do for their visit with ${providerName}. Examples: "I can explain what to expect during your appointment, help you prepare questions for Dr. ${providerName}, discuss any insurance or billing questions, or walk you through common procedures." Be enthusiastic and showcasing value, not just listing options.`;
+          return `IMMEDIATE VALUE DEMONSTRATION: Don't ask what they want - SHOW them what you can do right now! Respond like: "Actually, that's perfect because I can show you some really useful stuff! Let me start with something super practical..." Then IMMEDIATELY provide one specific, actionable piece of information about their visit with ${providerName}. For example: "Here's what typically happens in your appointment with ${providerName}: [specific appointment flow], and here's one question most patients wish they'd asked: [specific relevant question]". Then continue: "See? That's the kind of stuff I can help you with. What else would be helpful?" Be proactive and demonstrate rather than explain.`;
         }
         
         if (interactionCount === 0) {
-          return `You are demonstrating an AI medical assistant for ${providerName} at ${clinicName}. Your goal is to PROACTIVELY SHOWCASE VALUE. Start immediately with an enthusiastic demo: "Great! Let me show you exactly how I can help prepare you for your visit with ${providerName}. I'm going to walk you through three key things I can do for you..." Then demonstrate specific capabilities like: 1) Explaining what to expect during the appointment, 2) Helping prepare personalized questions for the doctor, 3) Providing relevant health education. Make it feel like an interactive walkthrough, not a Q&A session.`;
+          return `Start immediately with concrete value! Say: "Perfect! Let me jump right in and show you some really practical stuff for your visit with ${providerName}..." Then IMMEDIATELY provide specific, useful information. Examples: "Here's what usually happens in appointments with ${providerName}: [specific steps] and here's a smart question to ask: [specific question]." Or: "Based on what I know about ${providerName}'s practice, here are 3 things that would be really helpful to mention: [specific items]." Don't just promise to help - actively help right now!`;
         } else if (interactionCount < 3) {
-          return `Continue the WALKTHROUGH DEMONSTRATION. After each capability you show, immediately transition to the next one: "Now let me show you another way I can help..." or "Here's something else that might be valuable for your visit..." Keep the momentum going by actively demonstrating capabilities rather than waiting for their questions. Make them feel like they're discovering valuable features.`;
+          return `Continue actively helping with specific information! Transition naturally: "Oh, and here's something else that could be super useful for your visit..." Then immediately provide another concrete piece of value - like preparation tips specific to ${providerName}, common concerns to discuss, or helpful things to bring. Keep giving them actual useful information, not just describing what you could do.`;
         } else {
-          return `Complete the demo with enthusiasm: "And that's just a taste of how I can help patients prepare for their appointments! This gives you a sense of what's possible with AI assistance while you wait." Then smoothly transition to collecting feedback about their experience.`;
+          return `Wrap up by highlighting the value you just provided: "See how much more prepared you are now? That's exactly what I'm here for - turning that 'I don't know what to ask' feeling into 'I've got this!' confidence." Then transition warmly: "So, how did that feel? Was that actually helpful for you?" Keep it focused on the value they just experienced.`;
         }
       
       case 'collecting_feedback':
         const feedbackCount = this.context.questionsAsked.length;
         if (feedbackCount <= 3) {
-          return basePrompt + `You're collecting structured feedback. Ask ONE specific question at a time and wait for their response before asking the next. Ask these questions in this exact order: 1) First ask: "Was this helpful today?" 2) After they respond, ask: "Would you use this again while waiting for your doctor?" 3) Finally ask: "What could I do better?" Be genuinely interested in their answers and acknowledge each response before moving to the next question.`;
+          return basePrompt + `You're having a friendly chat about their experience. Ask questions like you genuinely care about their opinion: 1) "So, was that actually helpful for you?" 2) "Would you want to chat with me again before your next appointment?" 3) "Anything I could do better next time?" Respond to their answers like a real person would - with genuine interest and follow-up comments. Don't make it feel like a survey.`;
         } else {
-          return basePrompt + `Thank them for their detailed feedback and transition to wrapping up the experience. Show appreciation for their time and input.`;
+          return basePrompt + `Thank them warmly like you just had a great conversation: "This was really fun! Thanks for chatting with me and for the feedback - it honestly helps me get better at this." Keep it genuine and appreciative.`;
         }
       
       case 'wrapping_up':
-        return basePrompt + `Thank them sincerely: "Thank you for trying our AI assistant! Your feedback helps us improve this for all patients. You can now continue with your regular check-in for your appointment with ${providerName}."`;
+        return basePrompt + `Wrap up like you're saying goodbye to a friend: "Thanks so much for hanging out with me today! I really hope this helped you feel more ready for your visit with ${providerName}. You're all set to continue with your check-in now. Take care!"`;
       
       default:
-        return basePrompt + "Guide them naturally through the AI assistant experience, being helpful and conversational.";
+        return basePrompt + "You're having a friendly, natural conversation. Be genuinely helpful, curious about their needs, and enthusiastic about helping them prepare for their visit. Respond like a knowledgeable, caring friend would.";
     }
   }
 
@@ -541,14 +610,14 @@ First, can you hear me clearly?`;
     // Add confirmation message
     this.addMessage('user', `I'm here to see ${providerName}`);
     
-    // Create an engaging onboarding moment
-    const explanationMessage = `Excellent! You're seeing ${providerName} today - that's perfect for what I'm about to show you.
+    // Natural, conversational transition
+    const explanationMessage = `Perfect! ${providerName} - I've actually helped lots of people prep for visits with them. 
 
-Here's what's happening: You're about to experience the future of patient preparation. This is a quick AI study where I'll demonstrate how artificial intelligence can help patients like you get ready for appointments and feel more confident about their visit.
+So here's the fun part - I get to show you some of the ways I can help make your appointment go super smoothly. Think of me like that friend who always knows what questions to ask and what to expect.
 
-Think of me as your personal healthcare preparation assistant. In the next few minutes, I'll show you some pretty impressive ways AI can help you prepare for your visit with ${providerName}. You'll get to experience this firsthand, and then I'll ask for your honest feedback.
+I'll walk you through a few things that might be really helpful for your visit today. Takes just a couple minutes, and honestly, I think you'll be pretty impressed with what I can do.
 
-This is completely optional, but I think you'll be amazed by what's possible. Ready to see how AI can transform your healthcare experience? Would you like to give it a try?`;
+Sound good? Want to see what I've got?`;
     
     await this.speak(explanationMessage);
     
