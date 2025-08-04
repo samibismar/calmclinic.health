@@ -205,8 +205,8 @@ export class DynamicConversationEngine {
   private async startConversation(): Promise<void> {
     this.setState('welcome');
     
-    // Short, casual welcome
-    const welcomeMessage = `Hey! I'm your AI assistant here at ${this.context.clinicName}. Can you hear me okay?`;
+    // Engaging welcome that explains value
+    const welcomeMessage = `Hey! I'm your AI assistant here at ${this.context.clinicName}. I'm basically like having a smart friend who can help you prep for your visit, answer questions, or just chat to help you feel more relaxed while you wait. Can you hear me okay?`;
     
     await this.speak(welcomeMessage);
     
@@ -300,16 +300,16 @@ export class DynamicConversationEngine {
 
     switch (this.state) {
       case 'welcome':
-        return basePrompt + `Welcome them warmly. After they confirm they can hear you, briefly explain you're doing a quick AI study to help prep for appointments (takes 5 min). Ask if they want to try it.`;
-      
-      case 'selecting_provider':
-        return basePrompt + `Simply ask "Quick question - which doctor are you seeing today?" Keep it super casual and short.`;
+        return basePrompt + `Welcome them warmly and immediately explain what you are in an engaging way. Say something like: "Hey! I'm your AI assistant here at ${clinicName}. I'm basically like having a smart friend who can help you prep for your visit, answer questions, or just chat to help you feel more relaxed while you wait. Can you hear me okay?"`;
       
       case 'explaining_study':
-        return basePrompt + `Briefly explain: "Cool! So I'm basically like a smart prep buddy - I can help you think of questions, explain stuff, that kind of thing." Ask if they want to give it a shot.`;
+        return basePrompt + `Explain the value clearly: "Perfect! So here's the deal - I can be whatever you need right now. Want help preparing questions for your doctor? Need something explained? Or just want to chat to pass time? I'm doing a quick 5-minute study to show how AI can help patients. Want to give it a shot?"`;
       
       case 'getting_consent':
-        return basePrompt + `Casually ask: "Want to try it? Takes like 5 minutes and might be pretty helpful!" Keep it light and friendly.`;
+        return basePrompt + `Ask for consent to continue: "Cool! So want to try it? I promise it's actually pretty helpful - or at least fun to chat with!"`;
+      
+      case 'selecting_provider':
+        return basePrompt + `Now ask about their provider: "Quick question - which doctor are you seeing today? Helps me give you better tips!" Keep it casual.`;
       
       case 'answering_questions':
         return basePrompt + `Answer their questions casually and briefly. When they seem ready, ask "Ready to jump in?"`;
@@ -352,7 +352,7 @@ export class DynamicConversationEngine {
     switch (this.state) {
       case 'welcome':
         if (input.includes('yes') || input.includes('yeah') || input.includes('good') || input.includes('clear') || input.includes('ready') || input.includes('perfect') || input.includes('hear') || input.includes('fine') || input.includes('okay')) {
-          this.setState('selecting_provider');
+          this.setState('explaining_study');
         }
         break;
         
@@ -364,16 +364,15 @@ export class DynamicConversationEngine {
       case 'explaining_study':
         if (input.includes('no') || input.includes('question') || input.includes('how') || input.includes('what')) {
           this.setState('answering_questions');
-        } else {
-          // Auto-progress after explanation (most users just listen)
-          setTimeout(() => this.setState('getting_consent'), 2000);
+        } else if (input.includes('yes') || input.includes('yeah') || input.includes('sure') || input.includes('okay') || input.includes('try') || input.includes('shot')) {
+          this.setState('getting_consent');
         }
         break;
         
       case 'getting_consent':
         if (input.includes('yes') || input.includes('agree') || input.includes('okay') || input.includes('sure') || input.includes('try')) {
           this.context.hasConsent = true;
-          setTimeout(() => this.setState('demo_transition'), 1000);
+          this.setState('selecting_provider');
         }
         break;
         
@@ -554,9 +553,19 @@ export class DynamicConversationEngine {
     }
   }
 
+  private getProviderPronoun(providerName: string): string {
+    // Simple heuristic for pronoun - could be enhanced with a provider gender database
+    const lowerName = providerName.toLowerCase();
+    if (lowerName.includes('dr.') || lowerName.includes('doctor')) {
+      // Use 'them' as gender-neutral default for doctors
+      return 'them';
+    }
+    return 'them'; // Default to gender-neutral
+  }
+
   private addMessage(role: 'ai' | 'user' | 'system', content: string): void {
     const message: ConversationMessage = {
-      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
       role,
       content,
       timestamp: new Date()
@@ -601,19 +610,16 @@ export class DynamicConversationEngine {
     // Add confirmation message
     this.addMessage('user', `I'm here to see ${providerName}`);
     
+    // Determine proper pronoun for provider
+    const pronoun = this.getProviderPronoun(providerName);
+    
     // Natural, conversational transition
-    const explanationMessage = `Perfect! ${providerName} - I've actually helped lots of people prep for visits with them. 
-
-So here's the fun part - I get to show you some of the ways I can help make your appointment go super smoothly. Think of me like that friend who always knows what questions to ask and what to expect.
-
-I'll walk you through a few things that might be really helpful for your visit today. Takes just a couple minutes, and honestly, I think you'll be pretty impressed with what I can do.
-
-Sound good? Want to see what I've got?`;
+    const explanationMessage = `Perfect! ${providerName} - I've actually helped lots of people prep for visits with ${pronoun}. Ready to see what I can do to help you get ready?`;
     
     await this.speak(explanationMessage);
     
-    // Move to getting consent (skip the separate explaining_study state)
-    this.setState('getting_consent');
+    // Move directly to demo
+    this.setState('demo_transition');
   }
 
   public stop(): void {
