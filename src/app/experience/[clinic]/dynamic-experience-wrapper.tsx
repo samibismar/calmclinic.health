@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { DynamicConversationEngine, ConversationState, ConversationMessage, ConversationConfig } from '@/lib/dynamic-conversation-engine';
+import { SimpleConversationEngine, SimpleConversationState, SimpleConversationMessage, SimpleConversationConfig } from '@/lib/simple-conversation-engine';
 
 interface DynamicExperienceWrapperProps {
   clinicSlug: string;
@@ -28,8 +28,8 @@ interface ApiProvider {
 
 export default function DynamicExperienceWrapper({ clinicSlug }: DynamicExperienceWrapperProps) {
   const [clinicData, setClinicData] = useState<ClinicData | null>(null);
-  const [conversationState, setConversationState] = useState<ConversationState>('initializing');
-  const [messages, setMessages] = useState<ConversationMessage[]>([]);
+  const [conversationState, setConversationState] = useState<SimpleConversationState>('welcome');
+  const [messages, setMessages] = useState<SimpleConversationMessage[]>([]);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +37,7 @@ export default function DynamicExperienceWrapper({ clinicSlug }: DynamicExperien
   const [isVoiceEnabled, setIsVoiceEnabled] = useState(false);
   const [providers, setProviders] = useState<Provider[]>([]);
   
-  const conversationEngine = useRef<DynamicConversationEngine | null>(null);
+  const conversationEngine = useRef<SimpleConversationEngine | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Voice toggle logic
@@ -96,7 +96,7 @@ export default function DynamicExperienceWrapper({ clinicSlug }: DynamicExperien
 
     console.log('🏥 Initializing conversation engine with clinic:', clinicData.name);
     
-    const config: ConversationConfig = {
+    const config: SimpleConversationConfig = {
       clinicSlug,
       clinicName: clinicData.name || 'your clinic',
       enableVoice: isVoiceEnabled,
@@ -114,7 +114,7 @@ export default function DynamicExperienceWrapper({ clinicSlug }: DynamicExperien
       onError: setError
     };
 
-    conversationEngine.current = new DynamicConversationEngine(config);
+    conversationEngine.current = new SimpleConversationEngine(config);
     
     return () => {
       conversationEngine.current?.stop();
@@ -157,7 +157,7 @@ export default function DynamicExperienceWrapper({ clinicSlug }: DynamicExperien
     }
   };
 
-  const getQuickResponses = (state: ConversationState): string[] => {
+  const getQuickResponses = (state: SimpleConversationState): string[] => {
     // Get the last AI message to make responses more contextual
     const lastAIMessage = messages.filter(m => m.role === 'ai').slice(-1)[0]?.content || '';
     const userInteractionCount = messages.filter(m => m.role === 'user' && m.content.trim()).length;
@@ -166,18 +166,15 @@ export default function DynamicExperienceWrapper({ clinicSlug }: DynamicExperien
       case 'welcome':
         return ['Yeah, I can hear you perfectly!', 'Yep, sounds good', 'I can hear you'];
         
-      case 'selecting_provider':
-        return ['Let me pick from the list', 'I\'ll choose my doctor', 'Show me the options'];
-        
       case 'explaining_study':
         return ['Yeah, let\'s try it!', 'Sure, sounds good', 'I\'m interested', 'Let\'s do it'];
         
-      case 'answering_questions':
-        return ['I\'m ready', 'Let\'s go', 'Sounds good', 'Let\'s start'];
+      case 'selecting_provider':
+        return ['Let me pick from the list', 'I\'ll choose my doctor', 'Show me the options'];
         
       case 'assistant_demo':
         // Support proactive value demonstration flow
-        if (userInteractionCount === 0) {
+        if (userInteractionCount <= 1) {
           // First interaction - encourage engagement or trigger demo
           return ['I don\'t really know what to ask', 'What should I expect?', 'I\'m not sure', 'Not really sure what I need'];
         } else if (lastAIMessage.toLowerCase().includes('what else') || lastAIMessage.toLowerCase().includes('help')) {
@@ -202,9 +199,9 @@ export default function DynamicExperienceWrapper({ clinicSlug }: DynamicExperien
     }
   };
 
-  const selectProvider = (providerName: string, providerId?: string) => {
+  const selectProvider = (providerName: string) => {
     if (conversationEngine.current) {
-      conversationEngine.current.selectProvider(providerName, providerId);
+      conversationEngine.current.selectProvider(providerName);
     }
   };
 
@@ -329,10 +326,9 @@ export default function DynamicExperienceWrapper({ clinicSlug }: DynamicExperien
           <div className="flex items-center space-x-4">
             <div className="w-4 h-4 bg-gradient-to-r from-blue-500 to-green-500 rounded-full animate-pulse shadow-sm"></div>
             <span className="font-semibold text-gray-800 text-lg">
-              {conversationState === 'selecting_provider' ? '👥 Selecting Your Provider' : 
+              {conversationState === 'welcome' ? '👋 Welcome' :
                conversationState === 'explaining_study' ? '📝 Explaining the Study' :
-               conversationState === 'getting_consent' ? '✅ Getting Your Consent' :
-               conversationState === 'answering_questions' ? '❓ Answering Your Questions' :
+               conversationState === 'selecting_provider' ? '👥 Selecting Your Provider' : 
                conversationState === 'assistant_demo' ? '🤖 AI Assistant Demo' :
                conversationState === 'collecting_feedback' ? '💬 Collecting Your Feedback' :
                conversationState === 'complete' ? '🎉 Experience Complete' : '💬 In Conversation'}
@@ -448,7 +444,7 @@ export default function DynamicExperienceWrapper({ clinicSlug }: DynamicExperien
                 {providers.map((provider, index) => (
                   <button
                     key={provider.id}
-                    onClick={() => selectProvider(provider.name, provider.id)}
+                    onClick={() => selectProvider(provider.name)}
                     className="w-full p-5 bg-white hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 border border-gray-200 hover:border-blue-300 rounded-2xl text-left transition-all duration-300 shadow-sm hover:shadow-md transform hover:scale-105 animate-slideUp"
                     style={{animationDelay: `${index * 0.1}s`}}
                   >
