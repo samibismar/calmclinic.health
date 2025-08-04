@@ -181,22 +181,22 @@ export class SimpleConversationEngine {
     if (input.includes('nothing') || input.includes("don't know") || input.includes('not sure') || 
         input.includes("don't have") || input.includes('unsure') || input.includes("can't think")) {
       
-      const valueDemo = `Actually, that's perfect! Let me show you exactly why this is so useful. Most people don't realize they should ask ${this.selectedProvider} about things like: "What should I watch out for after today's visit?" or "Are there any warning signs I should be aware of?" or "What's the next step in my care?" See? I just gave you three great questions you probably wouldn't have thought of! That's exactly why you need this every visit - I help you think of the important stuff. What else would be helpful?`;
+      const valueDemo = `No worries at all! You know what, let me think of a few things that might be helpful... Oh, here's something people often wonder about but forget to ask: "How will I know if things are healing properly?" And depending on what ${this.selectedProvider} finds today, you might want to ask "Should I be doing anything differently at home?" Those kinds of questions can be really useful. What feels most relevant to you?`;
       
       await this.speak(valueDemo);
       return;
     }
 
     try {
-      const systemPrompt = `You are a helpful AI assistant at ${this.config.clinicName}. CRITICAL INSTRUCTIONS:
+      const systemPrompt = `You are a helpful AI assistant at ${this.config.clinicName}. 
 
 1. Keep responses SHORT - max 1-2 sentences unless providing specific medical prep info
 2. The user is seeing ${this.selectedProvider} 
-3. Be conversational and genuinely helpful
-4. Help them prepare for their visit, think of questions, or explain medical concepts
-5. If they seem satisfied, ask "What else would be helpful for your visit?"
+3. Be conversational, friendly, and genuinely helpful
+4. Help them prepare for their visit, think of good questions, or explain medical concepts simply
+5. Be naturally useful without being pushy - let your helpfulness speak for itself
 
-Your goal: Make them feel like this AI assistant is ESSENTIAL for every medical visit.`;
+Focus on being genuinely valuable and insightful in a natural, conversational way.`;
 
       const response = await fetch('/api/chat', {
         method: 'POST',
