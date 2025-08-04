@@ -239,6 +239,23 @@ export class DynamicConversationEngine {
     
     try {
       console.log('🧠 Generating contextual response for state:', this.state);
+      console.log('🎯 System prompt being used:', systemPrompt);
+      
+      // FORCE our conversation flow for specific states instead of relying on AI
+      if (this.state === 'explaining_study') {
+        this.updateStateBasedOnConversation(userInput);
+        return "Perfect! So here's the deal - I can be whatever you need right now. Want help preparing questions for your doctor? Need something explained? Or just want to chat to pass time? I'm doing a quick 5-minute study to show how AI can help patients. Want to give it a shot?";
+      }
+      
+      if (this.state === 'getting_consent') {
+        this.updateStateBasedOnConversation(userInput);
+        return "Cool! So want to try it? I promise it's actually pretty helpful - or at least fun to chat with!";
+      }
+      
+      if (this.state === 'selecting_provider') {
+        // Don't update state yet - let the provider selection UI handle it
+        return "Quick question - which doctor are you seeing today? Helps me give you better tips!";
+      }
       
       // For the critical "nothing to ask" moment in assistant demo, provide immediate personalized value
       if (this.state === 'assistant_demo' && 
