@@ -164,34 +164,34 @@ export default function DynamicExperienceWrapper({ clinicSlug }: DynamicExperien
     
     switch (state) {
       case 'welcome':
-        return ['Yeah, I can hear you perfectly!', 'Sounds great, let&apos;s do this', 'I&apos;m ready to start'];
+        return ['Yeah, I can hear you perfectly!', 'Sounds great, let\'s do this', 'I\'m ready to start'];
         
       case 'explaining_study':
-        return ['That sounds really helpful', 'I&apos;m interested', 'Tell me more', 'I have a quick question'];
+        return ['That sounds really helpful', 'I\'m interested', 'Tell me more', 'I have a quick question'];
         
       case 'getting_consent':
-        return ['Yeah, let&apos;s try it!', 'Sure, sounds good', 'I&apos;m in', 'Actually, I have a question first'];
+        return ['Yeah, let\'s try it!', 'Sure, sounds good', 'I\'m in', 'Actually, I have a question first'];
         
       case 'answering_questions':
-        return ['Okay, I&apos;m ready now', 'Let&apos;s do this', 'Got it, let&apos;s start', 'Sounds good to me'];
+        return ['Okay, I\'m ready now', 'Let\'s do this', 'Got it, let\'s start', 'Sounds good to me'];
         
       case 'assistant_demo':
         // Support proactive value demonstration flow
         if (userInteractionCount === 0) {
           // First interaction - encourage engagement or trigger demo
-          return ['I honestly don&apos;t know what to ask', 'What should I expect today?', 'How does this work?', 'I&apos;m not sure what I need to know'];
+          return ['I honestly don\'t know what to ask', 'What should I expect today?', 'How does this work?', 'I\'m not sure what I need to know'];
         } else if (lastAIMessage.toLowerCase().includes('show you') || lastAIMessage.toLowerCase().includes('demonstrate')) {
           // AI is offering to demonstrate capabilities
-          return ['Yes, show me!', 'That would be great', 'I&apos;d love to see that', 'What else can you do?'];
+          return ['Yes, show me!', 'That would be great', 'I\'d love to see that', 'What else can you do?'];
         } else if (lastAIMessage.toLowerCase().includes('anything else') || lastAIMessage.toLowerCase().includes('other')) {
           // AI is checking if they need more help
-          return ['No, I think I&apos;m all set', 'Actually, yes - one more thing', 'This has been so helpful', 'I feel much more prepared now'];
+          return ['No, I think I\'m all set', 'Actually, yes - one more thing', 'This has been so helpful', 'I feel much more prepared now'];
         } else if (lastAIMessage.toLowerCase().includes('questions for') || lastAIMessage.toLowerCase().includes('discuss with')) {
           // AI suggested questions for the doctor
-          return ['That&apos;s a really good point', 'What else should I ask?', 'I&apos;ll definitely bring that up', 'I wouldn&apos;t have thought of that'];
+          return ['That\'s a really good point', 'What else should I ask?', 'I\'ll definitely bring that up', 'I wouldn\'t have thought of that'];
         } else {
           // General walkthrough responses
-          return ['Tell me more', 'That&apos;s interesting', 'What else should I know?', 'How does that work?', 'Really?'];
+          return ['Tell me more', 'That\'s interesting', 'What else should I know?', 'How does that work?', 'Really?'];
         }
         
       case 'collecting_feedback':
@@ -199,12 +199,12 @@ export default function DynamicExperienceWrapper({ clinicSlug }: DynamicExperien
         if (lastAIMessage.toLowerCase().includes('helpful today')) {
           return ['Yes, super helpful!', 'Yeah, it was really useful', 'It was okay', 'Honestly, not as much as I hoped'];
         } else if (lastAIMessage.toLowerCase().includes('use this again')) {
-          return ['Absolutely, I&apos;d love this!', 'Yeah, this was great', 'Maybe for bigger appointments', 'Probably not for routine visits'];
+          return ['Absolutely, I\'d love this!', 'Yeah, this was great', 'Maybe for bigger appointments', 'Probably not for routine visits'];
         } else if (lastAIMessage.toLowerCase().includes('do better') || lastAIMessage.toLowerCase().includes('improve')) {
           return ['Honestly, it was pretty great', 'Maybe be a bit faster?', 'More specific to my situation', 'Nothing major - this was good'];
         } else {
           // General feedback responses
-          return ['This was really easy to use', 'I feel way less anxious now', 'I&apos;d definitely recommend this', 'This is actually pretty cool'];
+          return ['This was really easy to use', 'I feel way less anxious now', 'I\'d definitely recommend this', 'This is actually pretty cool'];
         }
         
       default:
@@ -263,8 +263,8 @@ export default function DynamicExperienceWrapper({ clinicSlug }: DynamicExperien
               </label>
               <p className="text-sm text-gray-600 mt-3 text-center">
                 {isVoiceEnabled 
-                  ? 'We&apos;ll have a natural voice conversation together ✨' 
-                  : 'We&apos;ll chat by typing back and forth ✍️'}
+                  ? 'We\'ll have a natural voice conversation together ✨' 
+                  : 'We\'ll chat by typing back and forth ✍️'}
               </p>
             </div>
           </div>
@@ -452,33 +452,36 @@ export default function DynamicExperienceWrapper({ clinicSlug }: DynamicExperien
 
           {/* Provider Selection */}
           {conversationState === 'selecting_provider' && (
-            <div className="space-y-4">
-              <div className="text-center mb-4">
-                <h3 className="text-lg font-medium text-gray-800">
-                  Which provider are you here to see?
+            <div className="space-y-6 animate-slideUp">
+              <div className="text-center mb-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-2">
+                  👩‍⚕️ Which provider are you here to see?
                 </h3>
+                <p className="text-gray-600">This helps me give you the most relevant prep tips!</p>
               </div>
               
-              <div className="space-y-2">
-                {providers.map((provider) => (
+              <div className="space-y-3">
+                {providers.map((provider, index) => (
                   <button
                     key={provider.id}
                     onClick={() => selectProvider(provider.name, provider.id)}
-                    className="w-full p-4 bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl text-left transition-colors"
+                    className="w-full p-5 bg-white hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 border border-gray-200 hover:border-blue-300 rounded-2xl text-left transition-all duration-300 shadow-sm hover:shadow-md transform hover:scale-105 animate-slideUp"
+                    style={{animationDelay: `${index * 0.1}s`}}
                   >
-                    <p className="font-medium text-gray-800">{provider.name}</p>
+                    <p className="font-bold text-gray-800 text-lg">{provider.name}</p>
                     {provider.specialty && (
-                      <p className="text-sm text-gray-600">{provider.specialty}</p>
+                      <p className="text-sm text-gray-600 mt-1">🩺 {provider.specialty}</p>
                     )}
                   </button>
                 ))}
                 
                 <button
                   onClick={() => selectProvider('your healthcare provider')}
-                  className="w-full p-4 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl text-left transition-colors"
+                  className="w-full p-5 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 border border-gray-200 hover:border-gray-300 rounded-2xl text-left transition-all duration-300 shadow-sm hover:shadow-md transform hover:scale-105 animate-slideUp"
+                  style={{animationDelay: `${providers.length * 0.1}s`}}
                 >
-                  <p className="font-medium text-gray-700">I&apos;m not sure</p>
-                  <p className="text-sm text-gray-500">I&apos;ll figure it out during my visit</p>
+                  <p className="font-bold text-gray-700">🤔 I&apos;m not sure</p>
+                  <p className="text-sm text-gray-500 mt-1">I&apos;ll figure it out during my visit</p>
                 </button>
               </div>
             </div>
@@ -540,19 +543,19 @@ export default function DynamicExperienceWrapper({ clinicSlug }: DynamicExperien
 
           {/* Completion State */}
           {conversationState === 'complete' && (
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-green-500 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <div className="text-center animate-fadeIn">
+              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-xl animate-bounce">
+                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecapRound strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">All done!</h3>
-              <p className="text-gray-600 mb-6">Thank you for chatting with me today</p>
+              <h3 className="text-3xl font-bold text-gray-800 mb-3">🎉 All done!</h3>
+              <p className="text-gray-700 mb-8 text-lg">Thanks for chatting with me - you&apos;re all set!</p>
               <button
                 onClick={() => window.location.href = `/${clinicSlug}`}
-                className="px-8 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl transition-colors"
+                className="px-10 py-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
               >
-                Continue to your visit
+                ✨ Continue to your visit
               </button>
             </div>
           )}
