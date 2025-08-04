@@ -158,8 +158,8 @@ export class SimpleConversationEngine {
     this.selectedProvider = providerName;
     this.addMessage('user', `I'm here to see ${providerName}`);
     
-    const confirmationMessage = `Perfect! ${providerName} - ready to see what I can do to help you get ready?`;
-    await this.speak(confirmationMessage);
+    const transitionMessage = `Perfect! ${providerName} - awesome choice. So here's how this works: just ask me anything about your visit, your condition, what to expect, or even if you're not sure what to ask - I'll help you get the most out of your appointment. What's on your mind?`;
+    await this.speak(transitionMessage);
     this.setState('assistant_demo');
   }
 
@@ -176,7 +176,28 @@ export class SimpleConversationEngine {
   private async handleAIResponse(userInput: string): Promise<void> {
     this.addMessage('user', userInput);
 
+    // CRITICAL: Handle "nothing to ask" moments with immediate value demonstration
+    const input = userInput.toLowerCase();
+    if (input.includes('nothing') || input.includes("don't know") || input.includes('not sure') || 
+        input.includes("don't have") || input.includes('unsure') || input.includes("can't think")) {
+      
+      const valueDemo = `Actually, that's perfect! Let me show you exactly why this is so useful. Most people don't realize they should ask ${this.selectedProvider} about things like: "What should I watch out for after today's visit?" or "Are there any warning signs I should be aware of?" or "What's the next step in my care?" See? I just gave you three great questions you probably wouldn't have thought of! That's exactly why you need this every visit - I help you think of the important stuff. What else would be helpful?`;
+      
+      await this.speak(valueDemo);
+      return;
+    }
+
     try {
+      const systemPrompt = `You are a helpful AI assistant at ${this.config.clinicName}. CRITICAL INSTRUCTIONS:
+
+1. Keep responses SHORT - max 1-2 sentences unless providing specific medical prep info
+2. The user is seeing ${this.selectedProvider} 
+3. Be conversational and genuinely helpful
+4. Help them prepare for their visit, think of questions, or explain medical concepts
+5. If they seem satisfied, ask "What else would be helpful for your visit?"
+
+Your goal: Make them feel like this AI assistant is ESSENTIAL for every medical visit.`;
+
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
@@ -184,10 +205,7 @@ export class SimpleConversationEngine {
         },
         body: JSON.stringify({
           messages: [
-            { 
-              role: 'system', 
-              content: `You are a helpful AI assistant at ${this.config.clinicName}. Keep responses SHORT - max 1-2 sentences. Be conversational and helpful. The user is seeing ${this.selectedProvider}. Help them prepare for their visit or answer their questions.`
-            },
+            { role: 'system', content: systemPrompt },
             ...this.messages.slice(-4).map(msg => ({
               role: msg.role === 'ai' ? 'assistant' : msg.role,
               content: msg.content
@@ -205,7 +223,7 @@ export class SimpleConversationEngine {
       }
     } catch (error) {
       console.error('AI response error:', error);
-      await this.speak("I'm here to help! What would you like to know about your visit?");
+      await this.speak("I'm here to help you get the most out of your visit! What would you like to know?");
     }
   }
 
