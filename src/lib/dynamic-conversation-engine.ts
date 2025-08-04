@@ -205,12 +205,8 @@ export class DynamicConversationEngine {
   private async startConversation(): Promise<void> {
     this.setState('welcome');
     
-    // Natural, human-like welcome
-    const welcomeMessage = `Hey! I'm so glad you're here at ${this.context.clinicName}. I'm your AI assistant - think of me as your friendly prep buddy who's here to help make your visit go smoothly.
-
-I know waiting for appointments can be a bit nerve-wracking, so I'm here to chat with you, answer questions, and help you feel totally prepared. No pressure at all - we can keep this super casual.
-
-Can you hear me okay?`;
+    // Short, casual welcome
+    const welcomeMessage = `Hey! I'm your AI assistant here at ${this.context.clinicName}. Can you hear me okay?`;
     
     await this.speak(welcomeMessage);
     
@@ -300,58 +296,53 @@ Can you hear me okay?`;
     const providerName = this.context.selectedProvider || 'your healthcare provider';
     const clinicName = this.context.clinicName;
     
-    const basePrompt = `You are a helpful AI assistant at ${clinicName}. You're conducting a brief study to show patients how AI can help them prepare for appointments. Be natural, conversational, and genuinely helpful. Keep responses concise but complete. `;
+    const basePrompt = `You are a friendly AI assistant at ${clinicName}. CRITICAL: Keep responses SHORT - max 1-2 sentences. Match the user's casual energy. Be conversational like talking to a friend, not formal. `;
 
     switch (this.state) {
       case 'welcome':
-        return basePrompt + `You're greeting someone like a friendly healthcare assistant would. Keep it warm and conversational. Once they confirm they can hear you, casually mention: "Perfect! I'm here to help you prep for today's visit - just think of me as your friendly assistant. Should take like 5 minutes and I promise it'll be worth it." Then naturally ask if they'd like to continue.`;
+        return basePrompt + `Welcome them warmly. After they confirm they can hear you, briefly explain you're doing a quick AI study to help prep for appointments (takes 5 min). Ask if they want to try it.`;
       
       case 'selecting_provider':
-        return basePrompt + `Ask about their provider in a casual, friendly way: "So who are you here to see today?" or "Which doctor has the pleasure of your company today?" Keep it light and conversational. Briefly mention this helps you give better, more relevant tips.`;
+        return basePrompt + `Simply ask "Quick question - which doctor are you seeing today?" Keep it super casual and short.`;
       
       case 'explaining_study':
-        return basePrompt + `You're casually explaining what you do, like telling a friend about something cool: "So here's the deal - I'm basically like having a smart healthcare buddy who can help you prep for appointments. I can answer questions, help you think of things to ask your doctor, that kind of stuff. Pretty neat, right?" Keep it conversational and not clinical.`;
+        return basePrompt + `Briefly explain: "Cool! So I'm basically like a smart prep buddy - I can help you think of questions, explain stuff, that kind of thing." Ask if they want to give it a shot.`;
       
       case 'getting_consent':
-        return basePrompt + `Ask for consent like you're inviting them to try something fun: "Want to give it a shot? No pressure at all - totally up to you. But I think you might find it pretty helpful!" Keep it light and friendly, not formal.`;
+        return basePrompt + `Casually ask: "Want to try it? Takes like 5 minutes and might be pretty helpful!" Keep it light and friendly.`;
       
       case 'answering_questions':
-        return basePrompt + `Answer their questions like a helpful friend would - be reassuring and genuine. If they ask what it's like, you might say "It's just like chatting with someone who knows a lot about healthcare stuff. Nothing weird or complicated." When they seem comfortable, casually suggest: "Ready to dive in?"`;
+        return basePrompt + `Answer their questions casually and briefly. When they seem ready, ask "Ready to jump in?"`;
       
       case 'demo_transition':
-        return basePrompt + `Transition naturally like you're about to show them something interesting: "Awesome! Okay, so now I get to show you some of the cool stuff I can do. Think of this like getting a sneak peek of having your own personal healthcare prep assistant. Ready? Let's jump in!"`;
+        return basePrompt + `Say something like "Awesome! Let me show you what I can do - think of it like having your own health prep assistant."`;
       
       case 'assistant_demo':
         const interactionCount = this.context.questionsAsked.length;
         const lastUserInput = this.context.questionsAsked[this.context.questionsAsked.length - 1] || '';
         
-        // Critical engagement moment - IMMEDIATELY demonstrate value instead of asking what they want
-        if (lastUserInput.toLowerCase().includes('nothing') || lastUserInput.toLowerCase().includes('don\'t have') || 
-            lastUserInput.toLowerCase().includes('not sure') || lastUserInput.toLowerCase().includes('no questions')) {
-          return `IMMEDIATE VALUE DEMONSTRATION: Don't ask what they want - SHOW them what you can do right now! Respond like: "Actually, that's perfect because I can show you some really useful stuff! Let me start with something super practical..." Then IMMEDIATELY provide one specific, actionable piece of information about their visit with ${providerName}. For example: "Here's what typically happens in your appointment with ${providerName}: [specific appointment flow], and here's one question most patients wish they'd asked: [specific relevant question]". Then continue: "See? That's the kind of stuff I can help you with. What else would be helpful?" Be proactive and demonstrate rather than explain.`;
+        // Critical engagement moment - IMMEDIATELY demonstrate value
+        if (lastUserInput.toLowerCase().includes('nothing') || lastUserInput.toLowerCase().includes('don\'t') || 
+            lastUserInput.toLowerCase().includes('not sure') || lastUserInput.toLowerCase().includes('not really')) {
+          return `User said they don't know what to ask. IMMEDIATELY give them one specific, practical tip about their visit with ${providerName}. Keep it short - just 1-2 sentences of actual helpful info, then ask "What else would help?"`;
         }
         
         if (interactionCount === 0) {
-          return `Start immediately with concrete value! Say: "Perfect! Let me jump right in and show you some really practical stuff for your visit with ${providerName}..." Then IMMEDIATELY provide specific, useful information. Examples: "Here's what usually happens in appointments with ${providerName}: [specific steps] and here's a smart question to ask: [specific question]." Or: "Based on what I know about ${providerName}'s practice, here are 3 things that would be really helpful to mention: [specific items]." Don't just promise to help - actively help right now!`;
+          return `Jump right in with one specific helpful tip about visiting ${providerName}. Keep it short and practical, then ask what else they want to know.`;
         } else if (interactionCount < 3) {
-          return `Continue actively helping with specific information! Transition naturally: "Oh, and here's something else that could be super useful for your visit..." Then immediately provide another concrete piece of value - like preparation tips specific to ${providerName}, common concerns to discuss, or helpful things to bring. Keep giving them actual useful information, not just describing what you could do.`;
+          return `Give another quick, practical tip about their visit. Keep responses short - match their energy level.`;
         } else {
-          return `Wrap up by highlighting the value you just provided: "See how much more prepared you are now? That's exactly what I'm here for - turning that 'I don't know what to ask' feeling into 'I've got this!' confidence." Then transition warmly: "So, how did that feel? Was that actually helpful for you?" Keep it focused on the value they just experienced.`;
+          return `Wrap up warmly: "Hope that helps you feel more prepared!" Ask how it was for them.`;
         }
       
       case 'collecting_feedback':
-        const feedbackCount = this.context.questionsAsked.length;
-        if (feedbackCount <= 3) {
-          return basePrompt + `You're having a friendly chat about their experience. Ask questions like you genuinely care about their opinion: 1) "So, was that actually helpful for you?" 2) "Would you want to chat with me again before your next appointment?" 3) "Anything I could do better next time?" Respond to their answers like a real person would - with genuine interest and follow-up comments. Don't make it feel like a survey.`;
-        } else {
-          return basePrompt + `Thank them warmly like you just had a great conversation: "This was really fun! Thanks for chatting with me and for the feedback - it honestly helps me get better at this." Keep it genuine and appreciative.`;
-        }
+        return basePrompt + `Ask casually: "So how was that? Pretty helpful?" Keep it conversational, not like a survey.`;
       
       case 'wrapping_up':
-        return basePrompt + `Wrap up like you're saying goodbye to a friend: "Thanks so much for hanging out with me today! I really hope this helped you feel more ready for your visit with ${providerName}. You're all set to continue with your check-in now. Take care!"`;
+        return basePrompt + `Thank them briefly: "Thanks for trying that out! Hope it helps with your visit." Keep it short and friendly.`;
       
       default:
-        return basePrompt + "You're having a friendly, natural conversation. Be genuinely helpful, curious about their needs, and enthusiastic about helping them prepare for their visit. Respond like a knowledgeable, caring friend would.";
+        return basePrompt + "Have a natural, brief conversation. Match their energy and keep responses short.";
     }
   }
 
@@ -360,7 +351,7 @@ Can you hear me okay?`;
     
     switch (this.state) {
       case 'welcome':
-        if (input.includes('yes') || input.includes('good') || input.includes('clear') || input.includes('ready')) {
+        if (input.includes('yes') || input.includes('yeah') || input.includes('good') || input.includes('clear') || input.includes('ready') || input.includes('perfect') || input.includes('hear') || input.includes('fine') || input.includes('okay')) {
           this.setState('selecting_provider');
         }
         break;

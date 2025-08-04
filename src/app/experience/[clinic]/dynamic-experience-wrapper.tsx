@@ -164,51 +164,38 @@ export default function DynamicExperienceWrapper({ clinicSlug }: DynamicExperien
     
     switch (state) {
       case 'welcome':
-        return ['Yeah, I can hear you perfectly!', 'Sounds great, let\'s do this', 'I\'m ready to start'];
+        return ['Yeah, I can hear you perfectly!', 'Yep, sounds good', 'I can hear you'];
+        
+      case 'selecting_provider':
+        return ['Let me pick from the list', 'I\'ll choose my doctor', 'Show me the options'];
         
       case 'explaining_study':
-        return ['That sounds really helpful', 'I\'m interested', 'Tell me more', 'I have a quick question'];
+        return ['That sounds cool', 'I\'m interested', 'Let\'s try it', 'Sure, why not?'];
         
       case 'getting_consent':
-        return ['Yeah, let\'s try it!', 'Sure, sounds good', 'I\'m in', 'Actually, I have a question first'];
+        return ['Yeah, let\'s try it!', 'Sure, sounds good', 'I\'m in', 'Let\'s do it'];
         
       case 'answering_questions':
-        return ['Okay, I\'m ready now', 'Let\'s do this', 'Got it, let\'s start', 'Sounds good to me'];
+        return ['I\'m ready', 'Let\'s go', 'Sounds good', 'Let\'s start'];
         
       case 'assistant_demo':
         // Support proactive value demonstration flow
         if (userInteractionCount === 0) {
           // First interaction - encourage engagement or trigger demo
-          return ['I honestly don\'t know what to ask', 'What should I expect today?', 'How does this work?', 'I\'m not sure what I need to know'];
-        } else if (lastAIMessage.toLowerCase().includes('show you') || lastAIMessage.toLowerCase().includes('demonstrate')) {
-          // AI is offering to demonstrate capabilities
-          return ['Yes, show me!', 'That would be great', 'I\'d love to see that', 'What else can you do?'];
-        } else if (lastAIMessage.toLowerCase().includes('anything else') || lastAIMessage.toLowerCase().includes('other')) {
-          // AI is checking if they need more help
-          return ['No, I think I\'m all set', 'Actually, yes - one more thing', 'This has been so helpful', 'I feel much more prepared now'];
-        } else if (lastAIMessage.toLowerCase().includes('questions for') || lastAIMessage.toLowerCase().includes('discuss with')) {
-          // AI suggested questions for the doctor
-          return ['That\'s a really good point', 'What else should I ask?', 'I\'ll definitely bring that up', 'I wouldn\'t have thought of that'];
+          return ['I don\'t really know what to ask', 'What should I expect?', 'I\'m not sure', 'Not really sure what I need'];
+        } else if (lastAIMessage.toLowerCase().includes('what else') || lastAIMessage.toLowerCase().includes('help')) {
+          // AI is asking what else they need
+          return ['That\'s helpful', 'What else?', 'Tell me more', 'Anything else?', 'Not really sure'];
         } else {
           // General walkthrough responses
-          return ['Tell me more', 'That\'s interesting', 'What else should I know?', 'How does that work?', 'Really?'];
+          return ['That makes sense', 'Good to know', 'What else?', 'Helpful', 'Cool'];
         }
         
       case 'collecting_feedback':
-        // Support specific feedback questions
-        if (lastAIMessage.toLowerCase().includes('helpful today')) {
-          return ['Yes, super helpful!', 'Yeah, it was really useful', 'It was okay', 'Honestly, not as much as I hoped'];
-        } else if (lastAIMessage.toLowerCase().includes('use this again')) {
-          return ['Absolutely, I\'d love this!', 'Yeah, this was great', 'Maybe for bigger appointments', 'Probably not for routine visits'];
-        } else if (lastAIMessage.toLowerCase().includes('do better') || lastAIMessage.toLowerCase().includes('improve')) {
-          return ['Honestly, it was pretty great', 'Maybe be a bit faster?', 'More specific to my situation', 'Nothing major - this was good'];
-        } else {
-          // General feedback responses
-          return ['This was really easy to use', 'I feel way less anxious now', 'I\'d definitely recommend this', 'This is actually pretty cool'];
-        }
+        return ['Pretty helpful', 'Yeah, it was good', 'It was okay', 'Really useful', 'Not bad'];
         
       default:
-        return ['Yes', 'No', 'Tell me more'];
+        return ['Yeah', 'Sure', 'Okay'];
     }
   };
 
