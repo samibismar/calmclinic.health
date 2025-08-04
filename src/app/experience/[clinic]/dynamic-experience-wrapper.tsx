@@ -170,10 +170,7 @@ export default function DynamicExperienceWrapper({ clinicSlug }: DynamicExperien
         return ['Let me pick from the list', 'I\'ll choose my doctor', 'Show me the options'];
         
       case 'explaining_study':
-        return ['That sounds cool', 'I\'m interested', 'Let\'s try it', 'Sure, why not?'];
-        
-      case 'getting_consent':
-        return ['Yeah, let\'s try it!', 'Sure, sounds good', 'I\'m in', 'Let\'s do it'];
+        return ['Yeah, let\'s try it!', 'Sure, sounds good', 'I\'m interested', 'Let\'s do it'];
         
       case 'answering_questions':
         return ['I\'m ready', 'Let\'s go', 'Sounds good', 'Let\'s start'];

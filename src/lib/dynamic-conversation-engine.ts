@@ -247,11 +247,6 @@ export class DynamicConversationEngine {
         return "Perfect! So here's the deal - I can be whatever you need right now. Want help preparing questions for your doctor? Need something explained? Or just want to chat to pass time? I'm doing a quick 5-minute study to show how AI can help patients. Want to give it a shot?";
       }
       
-      if (this.state === 'getting_consent') {
-        this.updateStateBasedOnConversation(userInput);
-        return "Cool! So want to try it? I promise it's actually pretty helpful - or at least fun to chat with!";
-      }
-      
       if (this.state === 'selecting_provider') {
         // Don't update state yet - let the provider selection UI handle it
         return "Quick question - which doctor are you seeing today? Helps me give you better tips!";
@@ -320,10 +315,7 @@ export class DynamicConversationEngine {
         return basePrompt + `Welcome them warmly and immediately explain what you are in an engaging way. Say something like: "Hey! I'm your AI assistant here at ${clinicName}. I'm basically like having a smart friend who can help you prep for your visit, answer questions, or just chat to help you feel more relaxed while you wait. Can you hear me okay?"`;
       
       case 'explaining_study':
-        return basePrompt + `Explain the value clearly: "Perfect! So here's the deal - I can be whatever you need right now. Want help preparing questions for your doctor? Need something explained? Or just want to chat to pass time? I'm doing a quick 5-minute study to show how AI can help patients. Want to give it a shot?"`;
-      
-      case 'getting_consent':
-        return basePrompt + `Ask for consent to continue: "Cool! So want to try it? I promise it's actually pretty helpful - or at least fun to chat with!"`;
+        return basePrompt + `Explain the value clearly and ask for consent in one message: "Perfect! So here's the deal - I can be whatever you need right now. Want help preparing questions for your doctor? Need something explained? Or just want to chat to pass time? I'm doing a quick 5-minute study to show how AI can help patients. Want to give it a shot?"`;
       
       case 'selecting_provider':
         return basePrompt + `Now ask about their provider: "Quick question - which doctor are you seeing today? Helps me give you better tips!" Keep it casual.`;
@@ -382,12 +374,6 @@ export class DynamicConversationEngine {
         if (input.includes('no') || input.includes('question') || input.includes('how') || input.includes('what')) {
           this.setState('answering_questions');
         } else if (input.includes('yes') || input.includes('yeah') || input.includes('sure') || input.includes('okay') || input.includes('try') || input.includes('shot')) {
-          this.setState('getting_consent');
-        }
-        break;
-        
-      case 'getting_consent':
-        if (input.includes('yes') || input.includes('agree') || input.includes('okay') || input.includes('sure') || input.includes('try')) {
           this.context.hasConsent = true;
           this.setState('selecting_provider');
         }
@@ -570,15 +556,6 @@ export class DynamicConversationEngine {
     }
   }
 
-  private getProviderPronoun(providerName: string): string {
-    // Simple heuristic for pronoun - could be enhanced with a provider gender database
-    const lowerName = providerName.toLowerCase();
-    if (lowerName.includes('dr.') || lowerName.includes('doctor')) {
-      // Use 'them' as gender-neutral default for doctors
-      return 'them';
-    }
-    return 'them'; // Default to gender-neutral
-  }
 
   private addMessage(role: 'ai' | 'user' | 'system', content: string): void {
     const message: ConversationMessage = {
@@ -627,16 +604,13 @@ export class DynamicConversationEngine {
     // Add confirmation message
     this.addMessage('user', `I'm here to see ${providerName}`);
     
-    // Determine proper pronoun for provider
-    const pronoun = this.getProviderPronoun(providerName);
+    // Short confirmation and move to assistant demo where AI can respond dynamically
+    const confirmationMessage = `Perfect! ${providerName} - ready to see what I can do to help you get ready?`;
     
-    // Natural, conversational transition
-    const explanationMessage = `Perfect! ${providerName} - I've actually helped lots of people prep for visits with ${pronoun}. Ready to see what I can do to help you get ready?`;
+    await this.speak(confirmationMessage);
     
-    await this.speak(explanationMessage);
-    
-    // Move directly to demo
-    this.setState('demo_transition');
+    // Move to assistant demo where AI can respond dynamically to questions
+    this.setState('assistant_demo');
   }
 
   public stop(): void {
