@@ -91,36 +91,22 @@ export class HybridRAGService {
     let usedWebSearch = false;
     let cacheHit = false;
     const sources: RAGSource[] = [];
-    const sessionId = `RAG_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
 
-    console.log('\n' + '='.repeat(80));
-    console.log(`🚀 RAG QUERY SESSION: ${sessionId}`);
-    console.log('='.repeat(80));
-    console.log(`📋 QUERY DETAILS:`);
-    console.log(`   Clinic ID: ${ragQuery.clinicId}`);
-    console.log(`   Question: "${ragQuery.query}"`);
-    console.log(`   Max Pages: ${ragQuery.maxWebPages || 3}`);
-    console.log(`   Force Web Search: ${ragQuery.forceWebSearch || false}`);
+    console.log('\n' + '='.repeat(60));
+    console.log(`🤖 AI ASSISTANT QUERY: "${ragQuery.query}"`);
+    console.log('='.repeat(60));
 
     try {
-      console.log(`\n⚙️  STEP 1: Getting Clinic Configuration`);
       // Step 1: Get clinic configuration
       const clinicConfig = await this.getClinicConfig(ragQuery.clinicId);
-      console.log(`   Cache TTL: ${clinicConfig.cacheExpiryHours} hours`);
-      console.log(`   Confidence Threshold: ${(clinicConfig.confidenceThreshold * 100).toFixed(1)}%`);
-      console.log(`   Web Search Enabled: ${clinicConfig.enableWebSearch ? '✅' : '❌'}`);
       
-      console.log(`\n🧮 STEP 2: Generating Query Embedding`);
       // Step 2: Generate query embedding
       const queryEmbedding = await this.generateQueryEmbedding(ragQuery.query);
-      console.log(`   Embedding Generated: ✅ (${queryEmbedding.length} dimensions)`);
       
-      console.log(`\n🧠 STEP 3: Classifying Query Intent`);
       // Step 3: Classify query intent
       const queryIntent = await this.classifyQueryIntent(ragQuery.query);
-      console.log(`   Intent Classification: "${queryIntent}"`);
+      console.log(`🧠 Query Intent: "${queryIntent}"`);
       
-      console.log(`\n🎯 STEP 4: Making RAG Decision`);
       // Step 4: Try hybrid RAG query (checks cache first, recommends web search if needed)
       const ragDecision = await this.makeRAGDecision(
         ragQuery.clinicId,
@@ -128,30 +114,30 @@ export class HybridRAGService {
         queryEmbedding,
         clinicConfig.confidenceThreshold
       );
-      console.log(`   Decision: ${!ragDecision.contentFound ? '🌐 Use Web Search' : '💾 Use Cache Only'}`);
+      
+      console.log(`🎯 SEARCH DECISION:`);
+      console.log(`   Strategy: ${!ragDecision.contentFound ? '🌐 WEB SEARCH (no good cache match)' : '💾 USE CACHED CONTENT'}`);
       console.log(`   Confidence: ${(ragDecision.confidenceScore * 100).toFixed(1)}%`);
-      console.log(`   Content Found: ${ragDecision.contentFound}`);
+      if (ragDecision.recommendedUrls.length > 0) {
+        console.log(`   URLs to search: ${ragDecision.recommendedUrls.length}`);
+      }
 
       let finalAnswer = '';
       let finalConfidence = 0;
 
       if (ragDecision.contentFound && !ragQuery.forceWebSearch) {
         // We have good cached content
-        console.log(`\n✅ STEP 5: Using Cached Content`);
-        console.log(`   Cache Hit: YES 🎯`);
-        console.log(`   Best Match: "${ragDecision.bestMatchTitle}"`);
-        console.log(`   URL: ${ragDecision.bestMatchUrl}`);
-        console.log(`   Confidence: ${(ragDecision.confidenceScore * 100).toFixed(1)}%`);
-        console.log(`   Summary Preview: ${ragDecision.bestMatchSummary.substring(0, 100)}...`);
+        console.log(`\n💾 USING CACHED CONTENT:`);
+        console.log(`   📄 Page: "${ragDecision.bestMatchTitle}"`);
+        console.log(`   🔗 Source: ${ragDecision.bestMatchUrl}`);
+        console.log(`   📊 Match Quality: ${(ragDecision.confidenceScore * 100).toFixed(1)}%`);
         
-        console.log(`\n🤖 STEP 6: Generating Answer from Cache`);
         finalAnswer = await this.generateAnswerFromCache(
           ragQuery.query,
           ragDecision.bestMatchSummary,
           ragDecision.bestMatchTitle,
           ragDecision.bestMatchUrl
         );
-        console.log(`   Answer Generated: ✅ (${finalAnswer.length} characters)`);
         
         finalConfidence = ragDecision.confidenceScore;
         cacheHit = true;
@@ -166,45 +152,38 @@ export class HybridRAGService {
 
       } else if (clinicConfig.enableWebSearch && ragDecision.recommendedUrls.length > 0) {
         // Need to fetch fresh content
-        console.log(`\n🌐 STEP 5: Web Search Required`);
-        console.log(`   Cache Hit: NO ❌`);
-        console.log(`   Recommended URLs: ${ragDecision.recommendedUrls.length}`);
+        console.log(`\n🌐 PERFORMING WEB SEARCH:`);
+        console.log(`   📋 URLs to check:`);
         ragDecision.recommendedUrls.forEach((url, idx) => {
-          console.log(`   ${idx + 1}. ${url}`);
+          console.log(`     ${idx + 1}. ${url}`);
         });
         
-        const maxPages = ragQuery.maxWebPages || clinicConfig.maxWebPagesPerQuery;
-        console.log(`   Max Pages to Fetch: ${maxPages}`);
-        
-        console.log(`\n🔍 STEP 6: Intelligent Content Fetching`);
         const fetchResult = await this.intelligentFetch.fetchRelevantContent(
           ragQuery.query,
           ragQuery.clinicId,
-          maxPages
+          ragQuery.maxWebPages || clinicConfig.maxWebPagesPerQuery
         );
         
-        console.log(`   Pages Fetched: ${fetchResult.summaries.length}`);
-        console.log(`   Cache Hits: ${fetchResult.cacheHits}`);
-        console.log(`   Fresh Fetches: ${fetchResult.summaries.length - fetchResult.cacheHits}`);
+        console.log(`\n📊 SEARCH RESULTS:`);
+        console.log(`   Total pages processed: ${fetchResult.summaries.length}`);
+        console.log(`   Fresh content fetched: ${fetchResult.newFetches}`);
+        console.log(`   Used cached summaries: ${fetchResult.cacheHits}`);
 
         if (fetchResult.summaries.length > 0) {
+          console.log(`\n📄 CONTENT SOURCES:`);
           fetchResult.summaries.forEach((summary, idx) => {
             const isCached = fetchResult.cacheHits > idx;
-            console.log(`   ${idx + 1}. ${isCached ? '💾' : '🌐'} "${summary.title}"`);
-            console.log(`      URL: ${summary.url}`);
-            console.log(`      Content: ${summary.summary.substring(0, 80)}...`);
+            console.log(`   ${idx + 1}. ${isCached ? '💾' : '🆕'} "${summary.title}"`);
+            console.log(`      🔗 ${summary.url}`);
           });
           
-          console.log(`\n🤖 STEP 7: Generating Answer from Fresh Content`);
           finalAnswer = await this.generateAnswerFromFreshContent(
             ragQuery.query,
             fetchResult.summaries
           );
-          console.log(`   Answer Generated: ✅ (${finalAnswer.length} characters)`);
           
           // Calculate confidence based on content relevance
           finalConfidence = Math.max(0.7, ragDecision.confidenceScore + 0.2);
-          console.log(`   Final Confidence: ${(finalConfidence * 100).toFixed(1)}%`);
           usedWebSearch = true;
           cacheHit = fetchResult.cacheHits > 0;
 
@@ -220,7 +199,7 @@ export class HybridRAGService {
           });
 
         } else {
-          console.log(`   ⚠️ No content fetched, using fallback`);
+          console.log(`   ⚠️ No content found - using fallback answer`);
           // Fallback to any cached content we have
           finalAnswer = await this.generateFallbackAnswer(ragQuery.query, queryIntent);
           finalConfidence = 0.3;
@@ -238,22 +217,15 @@ export class HybridRAGService {
       const responseTimeMs = Date.now() - startTime;
 
       // Final Summary
-      console.log(`\n📊 QUERY COMPLETION SUMMARY`);
-      console.log('─'.repeat(50));
-      console.log(`   Session ID: ${sessionId}`);
-      console.log(`   Total Time: ${responseTimeMs}ms`);
-      console.log(`   Cache Hit: ${cacheHit ? '✅ YES' : '❌ NO'}`);
-      console.log(`   Web Search Used: ${usedWebSearch ? '✅ YES' : '❌ NO'}`);
-      console.log(`   Sources Found: ${sources.length}`);
-      console.log(`   Final Confidence: ${(finalConfidence * 100).toFixed(1)}%`);
-      console.log(`   Answer Length: ${finalAnswer.length} characters`);
+      console.log(`\n✅ ANSWER READY (${responseTimeMs}ms)`);
       if (sources.length > 0) {
-        console.log(`   Sources Used:`);
+        console.log(`📚 Sources cited: ${sources.length}`);
         sources.forEach((source, idx) => {
-          console.log(`     ${idx + 1}. [${source.type.toUpperCase()}] ${source.title}`);
+          console.log(`   ${idx + 1}. ${source.title}`);
+          console.log(`      🔗 ${source.url}`);
         });
       }
-      console.log('='.repeat(80) + '\n');
+      console.log('─'.repeat(60));
 
       // Log the query for analytics
       await this.logRAGQuery({
@@ -480,6 +452,35 @@ Respond with just the category name.`
       }
 
       const result = data[0];
+      
+      // FALLBACK: If no URLs returned, try direct keyword search
+      let recommendedUrls = result.recommended_urls || [];
+      if (recommendedUrls.length === 0) {
+        console.log('🔍 Vector search found no URLs - trying keyword fallback...');
+        
+        // Simple keyword matching for medical terms
+        const keywords = query.toLowerCase().split(' ').filter(word => word.length > 2);
+        console.log(`   🔑 Keywords: ${keywords.join(', ')}`);
+        
+        const { data: fallbackUrls, error: fallbackError } = await supabase
+          .from('clinic_url_index')
+          .select('url, title')
+          .eq('clinic_id', clinicId)
+          .eq('is_accessible', true)
+          .or(keywords.map(keyword => `url.ilike.%${keyword}%,title.ilike.%${keyword}%`).join(','))
+          .limit(5);
+          
+        if (!fallbackError && fallbackUrls && fallbackUrls.length > 0) {
+          recommendedUrls = fallbackUrls.map(u => u.url);
+          console.log(`   ✅ Keyword search found ${recommendedUrls.length} URLs:`);
+          fallbackUrls.forEach((url, idx) => {
+            console.log(`      ${idx + 1}. ${url.title} -> ${url.url}`);
+          });
+        } else {
+          console.log(`   ❌ Keyword search found no URLs`);
+        }
+      }
+      
       return {
         source: result.source,
         contentFound: result.content_found,
@@ -487,7 +488,7 @@ Respond with just the category name.`
         bestMatchTitle: result.best_match_title || '',
         bestMatchSummary: result.best_match_summary || '',
         confidenceScore: result.confidence_score || 0,
-        recommendedUrls: result.recommended_urls || []
+        recommendedUrls: recommendedUrls
       };
 
     } catch (error) {
@@ -534,7 +535,10 @@ ${cachedSummary}
 
 Source URL: ${sourceUrl}
 
-Please provide a helpful answer based on this information. ALWAYS include the source URL at the end of your response.`
+Please provide a helpful answer based on this information. You MUST end your response with a clear source citation in this exact format:
+
+Source: ${pageTitle}
+Read more: ${sourceUrl}`
           }
         ],
         temperature: 0.3,
@@ -560,8 +564,6 @@ Please provide a helpful answer based on this information. ALWAYS include the so
       const combinedContent = summaries
         .map(s => `From ${s.title} (${s.url}): ${s.summary}`)
         .join('\n\n');
-      
-      const sourceUrls = summaries.map(s => s.url).join('\n');
 
       const response = await openai.chat.completions.create({
         model: "gpt-4o-mini",
@@ -581,10 +583,10 @@ Synthesize the information to give a comprehensive, accurate answer. Be patient-
 Information from clinic website:
 ${combinedContent}
 
-Source URLs:
-${sourceUrls}
+Please provide a comprehensive answer based on this information. You MUST end your response with source citations in this exact format:
 
-Please provide a comprehensive answer based on this information. ALWAYS include the source URLs at the end of your response.`
+Sources:
+${summaries.map(s => `- ${s.title}: ${s.url}`).join('\n')}`
           }
         ],
         temperature: 0.3,
