@@ -337,7 +337,7 @@ export async function POST(request: NextRequest) {
       input: `${contextString}${userInput}`,
       tools: responsesAPITools,
       temperature: 0.7,
-      max_output_tokens: 600,
+      max_output_tokens: 400, // Reduced for faster response
       store: true,
     });
 
@@ -434,7 +434,7 @@ export async function POST(request: NextRequest) {
         })),
         previous_response_id: (response as OpenAIResponsesAPIResult).id,
         temperature: 0.7,
-        max_output_tokens: 600,
+        max_output_tokens: 400, // Reduced for faster response
         store: true
       };
       

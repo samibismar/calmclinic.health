@@ -148,7 +148,8 @@ export class HybridRAGService {
         finalAnswer = await this.generateAnswerFromCache(
           ragQuery.query,
           ragDecision.bestMatchSummary,
-          ragDecision.bestMatchTitle
+          ragDecision.bestMatchTitle,
+          ragDecision.bestMatchUrl
         );
         console.log(`   Answer Generated: ✅ (${finalAnswer.length} characters)`);
         
@@ -509,7 +510,8 @@ Respond with just the category name.`
   private async generateAnswerFromCache(
     query: string,
     cachedSummary: string,
-    pageTitle: string
+    pageTitle: string,
+    sourceUrl: string
   ): Promise<string> {
     try {
       const response = await openai.chat.completions.create({
@@ -517,7 +519,11 @@ Respond with just the category name.`
         messages: [
           {
             role: "system",
-            content: `You are a helpful healthcare clinic assistant. Answer the patient's question using the provided information from the clinic's website. Be concise, accurate, and patient-friendly. If the information doesn't fully answer their question, acknowledge what you can help with and suggest they contact the clinic for specific details.`
+            content: `You are a helpful healthcare clinic assistant. Answer the patient's question using the provided information from the clinic's website. 
+
+IMPORTANT: Always cite your source by mentioning where the information came from and include the URL at the end of your response.
+
+Be concise, accurate, and patient-friendly. If the information doesn't fully answer their question, acknowledge what you can help with and suggest they contact the clinic for specific details.`
           },
           {
             role: "user",
@@ -526,11 +532,13 @@ Respond with just the category name.`
 Clinic Information (from ${pageTitle}):
 ${cachedSummary}
 
-Please provide a helpful answer based on this information.`
+Source URL: ${sourceUrl}
+
+Please provide a helpful answer based on this information. ALWAYS include the source URL at the end of your response.`
           }
         ],
         temperature: 0.3,
-        max_tokens: 300
+        max_tokens: 250 // Reduced for faster response
       });
 
       return response.choices[0].message.content || 'I found some information about your question. Please contact the clinic directly for the most current details.';
@@ -550,15 +558,21 @@ Please provide a helpful answer based on this information.`
   ): Promise<string> {
     try {
       const combinedContent = summaries
-        .map(s => `From ${s.title}: ${s.summary}`)
+        .map(s => `From ${s.title} (${s.url}): ${s.summary}`)
         .join('\n\n');
+      
+      const sourceUrls = summaries.map(s => s.url).join('\n');
 
       const response = await openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
           {
             role: "system",
-            content: `You are a helpful healthcare clinic assistant. Answer the patient's question using the provided information from multiple pages on the clinic's website. Synthesize the information to give a comprehensive, accurate answer. Be patient-friendly and mention if they should contact the clinic for the most up-to-date information.`
+            content: `You are a helpful healthcare clinic assistant. Answer the patient's question using the provided information from multiple pages on the clinic's website. 
+
+IMPORTANT: Always cite your sources by mentioning where the information came from and include ALL source URLs at the end of your response.
+
+Synthesize the information to give a comprehensive, accurate answer. Be patient-friendly and mention if they should contact the clinic for the most up-to-date information.`
           },
           {
             role: "user",
@@ -567,11 +581,14 @@ Please provide a helpful answer based on this information.`
 Information from clinic website:
 ${combinedContent}
 
-Please provide a comprehensive answer based on this information.`
+Source URLs:
+${sourceUrls}
+
+Please provide a comprehensive answer based on this information. ALWAYS include the source URLs at the end of your response.`
           }
         ],
         temperature: 0.3,
-        max_tokens: 400
+        max_tokens: 350 // Reduced for faster response
       });
 
       return response.choices[0].message.content || 'Based on the clinic\'s website, I found relevant information. Please contact the clinic directly for the most current details.';
