@@ -106,9 +106,9 @@ export class HybridRAGService {
       console.log(`\n⚙️  STEP 1: Getting Clinic Configuration`);
       // Step 1: Get clinic configuration
       const clinicConfig = await this.getClinicConfig(ragQuery.clinicId);
-      console.log(`   Cache TTL: ${clinicConfig.cache_ttl_hours} hours`);
-      console.log(`   Confidence Threshold: ${(clinicConfig.confidence_threshold * 100).toFixed(1)}%`);
-      console.log(`   Web Search Enabled: ${clinicConfig.enable_web_search ? '✅' : '❌'}`);
+      console.log(`   Cache TTL: ${clinicConfig.cacheExpiryHours} hours`);
+      console.log(`   Confidence Threshold: ${(clinicConfig.confidenceThreshold * 100).toFixed(1)}%`);
+      console.log(`   Web Search Enabled: ${clinicConfig.enableWebSearch ? '✅' : '❌'}`);
       
       console.log(`\n🧮 STEP 2: Generating Query Embedding`);
       // Step 2: Generate query embedding
@@ -128,9 +128,9 @@ export class HybridRAGService {
         queryEmbedding,
         clinicConfig.confidenceThreshold
       );
-      console.log(`   Decision: ${ragDecision.shouldUseWebSearch ? '🌐 Use Web Search' : '💾 Use Cache Only'}`);
-      console.log(`   Confidence: ${(ragDecision.confidence * 100).toFixed(1)}%`);
-      console.log(`   Reasoning: ${ragDecision.reasoning}`);
+      console.log(`   Decision: ${!ragDecision.contentFound ? '🌐 Use Web Search' : '💾 Use Cache Only'}`);
+      console.log(`   Confidence: ${(ragDecision.confidenceScore * 100).toFixed(1)}%`);
+      console.log(`   Content Found: ${ragDecision.contentFound}`);
 
       let finalAnswer = '';
       let finalConfidence = 0;

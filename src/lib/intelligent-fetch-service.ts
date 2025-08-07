@@ -619,7 +619,7 @@ Format your response as JSON:
     const rankedMatches = matches
       .map(match => ({
         ...match,
-        adjustedScore: this.calculateComprehensiveScore(match, queryLower)
+        adjustedScore: this.calculateComprehensiveScore(match)
       }))
       .sort((a, b) => b.adjustedScore - a.adjustedScore);
 
@@ -659,7 +659,7 @@ Format your response as JSON:
   /**
    * Calculate comprehensive score for broad queries
    */
-  private calculateComprehensiveScore(match: URLMatch, queryLower: string): number {
+  private calculateComprehensiveScore(match: URLMatch): number {
     let score = match.similarity * 0.4; // Base similarity (reduced weight)
 
     // Page Type Boost (most important for broad queries)

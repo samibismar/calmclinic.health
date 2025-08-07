@@ -39,6 +39,29 @@ interface ClinicContextData {
   [key: string]: unknown;
 }
 
+interface OpenAIResponseOutputItem {
+  type: string;
+  name?: string;
+  call_id?: string;
+  id?: string;
+  arguments?: string;
+  [key: string]: unknown;
+}
+
+interface ToolResult {
+  function_call_id: string;
+  result: unknown;
+}
+
+interface OpenAIResponsesAPIResult {
+  id: string;
+  output?: OpenAIResponseOutputItem[];
+  output_text?: string;
+  text?: string;
+  usage?: unknown;
+  [key: string]: unknown;
+}
+
 // Initialize OpenAI client with latest SDK
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -150,7 +173,6 @@ export async function POST(request: NextRequest) {
       clinicId,
       providerId,
       language = 'en',
-      useHybridRAG = true,
       maxWebPages = 3
     } = await request.json();
 
@@ -166,7 +188,7 @@ export async function POST(request: NextRequest) {
     let providerData = null;
     
     if (providerId) {
-      const { data: provider, error: providerError } = await supabase
+      const { data: provider } = await supabase
         .from('providers')
         .select('*, clinics!providers_clinic_id_fkey(*)')
         .eq('id', providerId)
@@ -177,7 +199,7 @@ export async function POST(request: NextRequest) {
         clinicData = provider.clinics;
       }
     } else if (clinicId) {
-      const { data: clinic, error: clinicError } = await supabase
+      const { data: clinic } = await supabase
         .from('clinics')
         .select('*')
         .eq('id', clinicId)
@@ -310,7 +332,7 @@ export async function POST(request: NextRequest) {
     ];
 
     // Use the actual Responses API
-    const response = await ((openai as unknown) as {responses: {create: (params: unknown) => Promise<unknown>}}).responses.create({
+    const response = await ((openai as unknown) as {responses: {create: (params: unknown) => Promise<OpenAIResponsesAPIResult>}}).responses.create({
       model: "gpt-4o",
       input: `${contextString}${userInput}`,
       tools: responsesAPITools,
@@ -320,13 +342,13 @@ export async function POST(request: NextRequest) {
     });
 
     // Check if the response contains function calls that need execution
-    const toolCalls = (response as any).output?.filter((item: any) => item.type === 'function_call') || [];
+    const toolCalls = (response as OpenAIResponsesAPIResult).output?.filter((item: OpenAIResponseOutputItem) => item.type === 'function_call') || [];
 
     if (toolCalls.length > 0) {
       console.log(`🔧 Found ${toolCalls.length} tool calls to execute`);
       
       // Execute the tools on our server
-      const toolResults: any[] = [];
+      const toolResults: ToolResult[] = [];
       for (const toolCall of toolCalls) {
         console.log('🔧 Processing tool call:', JSON.stringify(toolCall, null, 2));
         
@@ -410,7 +432,7 @@ export async function POST(request: NextRequest) {
           call_id: tr.function_call_id,
           output: JSON.stringify(tr.result)
         })),
-        previous_response_id: (response as any).id,
+        previous_response_id: (response as OpenAIResponsesAPIResult).id,
         temperature: 0.7,
         max_output_tokens: 600,
         store: true
@@ -419,12 +441,12 @@ export async function POST(request: NextRequest) {
       console.log('📤 Continue params:', JSON.stringify(continueParams, null, 2));
       
       // Continue the response by creating a new response with tool outputs
-      const followUpResponse = await ((openai as unknown) as {responses: {create: (params: unknown) => Promise<any>}}).responses.create(continueParams);
+      const followUpResponse = await ((openai as unknown) as {responses: {create: (params: unknown) => Promise<OpenAIResponsesAPIResult>}}).responses.create(continueParams);
       
       console.log('📥 Final response with tool results:', JSON.stringify(followUpResponse, null, 2));
 
       // Determine which type of tools were used
-      const toolsUsed = toolCalls.map((tc: any) => tc.name);
+      const toolsUsed = toolCalls.map((tc: OpenAIResponseOutputItem) => tc.name).filter((name): name is string => Boolean(name));
       const usedClinicIntelligence = toolsUsed.some((tool: string) => 
         ['get_clinic_services', 'get_clinic_hours', 'get_insurance_info', 'get_contact_info'].includes(tool)
       );
@@ -444,13 +466,13 @@ export async function POST(request: NextRequest) {
     } else {
       // No tool calls - return the direct response
       return NextResponse.json({
-        message: (response as any).output_text || (response as any).text,
+        message: (response as OpenAIResponsesAPIResult).output_text || (response as OpenAIResponsesAPIResult).text,
         model: "gpt-4o",
-        usage: (response as any).usage || {},
+        usage: (response as OpenAIResponsesAPIResult).usage || {},
         clinic_intelligence_used: false,
         hybrid_rag_used: false,
         tool_calls: 0,
-        response_id: (response as any).id
+        response_id: (response as OpenAIResponsesAPIResult).id
       });
     }
 

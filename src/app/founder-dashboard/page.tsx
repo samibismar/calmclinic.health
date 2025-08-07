@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface QueryLog {
   id: number;
@@ -46,7 +46,7 @@ export default function FounderDashboard() {
     }
   };
 
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     setLoading(true);
     try {
       // Get all clinic stats
@@ -67,13 +67,13 @@ export default function FounderDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedTimeframe]);
 
   useEffect(() => {
     if (isAuthenticated) {
       loadDashboardData();
     }
-  }, [selectedTimeframe, isAuthenticated]);
+  }, [isAuthenticated, loadDashboardData]);
 
   if (!isAuthenticated) {
     return (
