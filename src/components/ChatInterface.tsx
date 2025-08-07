@@ -28,8 +28,22 @@ type ChatInterfaceProps = {
 interface CommonQuestion {
   id: number;
   question_text: string;
+  is_active?: boolean;
+}
+
+interface FallbackProvider {
+  id: number;
+  name: string;
+  title?: string;
+  specialties?: string[];
+  bio?: string;
+  experience?: string;
+  languages?: string[];
+  avatar_url?: string;
   is_active: boolean;
+  is_default: boolean;
   category?: string;
+  [key: string]: unknown;
 }
 
 export default function ChatInterface({ clinic: clinicSlug, providerId, providerInfo }: ChatInterfaceProps) {
@@ -39,7 +53,6 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
   const [loading, setLoading] = useState(true);
   const [isAiTyping, setIsAiTyping] = useState(false);
   const [commonQuestions, setCommonQuestions] = useState<string[]>([]);
-  const [conversationResponseId, setConversationResponseId] = useState<string | null>(null);
   const [hasInitialized, setHasInitialized] = useState(false);
   
   // Interactive onboarding state
@@ -51,6 +64,8 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
   const [newMessageAppearing, setNewMessageAppearing] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState<string>("");
   const [showTransition, setShowTransition] = useState(true);
+  const [fallbackProvider, setFallbackProvider] = useState<FallbackProvider | null>(null);
+  
   
   // Get language from URL parameters
   const searchParams = useSearchParams();
@@ -59,6 +74,46 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
   
   // Feature flag for Response API (default enabled, disable with ?responses=false)
   const useResponseAPI = searchParams.get('responses') !== 'false';
+  
+  // Function to fetch fallback provider when provider info is missing
+  const fetchFallbackProvider = async (clinicId: number) => {
+    try {
+      // First try to get the default provider
+      const { data: defaultProviderData, error } = await supabase
+        .from('providers')
+        .select('*')
+        .eq('clinic_id', clinicId)
+        .eq('is_default', true)
+        .eq('is_active', true)
+        .single();
+
+      let defaultProvider = defaultProviderData;
+      
+      if (error || !defaultProvider) {
+        // If no default provider, get the first active provider
+        const { data: providers, error: providersError } = await supabase
+          .from('providers')
+          .select('*')
+          .eq('clinic_id', clinicId)
+          .eq('is_active', true)
+          .order('display_order', { ascending: true })
+          .limit(1);
+
+        if (!providersError && providers && providers.length > 0) {
+          defaultProvider = providers[0];
+        }
+      }
+
+      if (defaultProvider) {
+        setFallbackProvider(defaultProvider);
+        console.log('✅ Found fallback provider:', defaultProvider.name);
+      } else {
+        console.log('⚠️ No active providers found for clinic:', clinicId);
+      }
+    } catch (error) {
+      console.error('Error fetching fallback provider:', error);
+    }
+  };
   
   useEffect(() => {
     async function fetchClinic() {
@@ -86,7 +141,13 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
           }
           
           if (error) throw error;
-          if (data) setClinic(data);
+          if (data) {
+            setClinic(data);
+            // If no provider info is available, fetch fallback provider
+            if (!providerInfo && !data.doctor_name) {
+              await fetchFallbackProvider(data.id);
+            }
+          }
         } catch (error) {
           console.error('Error fetching clinic:', error);
         }
@@ -95,7 +156,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
     }
     
     fetchClinic();
-  }, [clinicSlug]);
+  }, [clinicSlug, providerInfo]);
 
   // Fetch common questions from database
   useEffect(() => {
@@ -137,7 +198,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
   useEffect(() => {
     if (onboardingStage === 'typing' && clinic) {
       const doctorName = providerInfo?.name || clinic?.doctor_name;
-      const formattedDoctorName = formatProviderName(doctorName || 'Assistant');
+      const formattedDoctorName = formatProviderName(doctorName || 'Doctor');
       
       // Get specialty for contextualized messaging
       const specialty = doctorConfig.specialty || 'medical';
@@ -186,7 +247,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
   useEffect(() => {
     if (hasInitialized && clinic) {
       const doctorName = providerInfo?.name || clinic?.doctor_name;
-      const formattedDoctorName = formatProviderName(doctorName || 'Assistant');
+      const formattedDoctorName = formatProviderName(doctorName || 'Doctor');
       
       // Get specialty for contextualized messaging
       const specialty = doctorConfig.specialty || 'medical';
@@ -243,7 +304,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
   
   // Helper function to format provider name properly
   const formatProviderName = (name: string) => {
-    if (!name) return 'Dr. Assistant';
+    if (!name) return 'Doctor'; // Generic fallback instead of hardcoded "Dr. Assistant"
     
     // Check if name already starts with Dr.
     if (name.toLowerCase().startsWith('dr.') || name.toLowerCase().startsWith('doctor')) {
@@ -256,7 +317,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
 
   // Helper function to format welcome message properly
   const formatWelcomeMessage = (name: string) => {
-    if (!name) return `${t.welcomePrefix} Assistant${t.welcomeSuffix}`;
+    if (!name) return `${t.welcomePrefix} Doctor${t.welcomeSuffix}`;
     
     // Check if name already starts with Dr.
     if (name.toLowerCase().startsWith('dr.') || name.toLowerCase().startsWith('doctor')) {
@@ -271,20 +332,23 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
     return `${t.welcomePrefix} ${name}${t.welcomeSuffix}`;
   };
 
-  // Use provider data if available, otherwise fallback to clinic data
+  // Use provider data if available, otherwise fallback to clinic data or database provider
+  const effectiveProvider = providerInfo || fallbackProvider;
+  const providerName = effectiveProvider?.name || clinic?.doctor_name;
+  
   const doctorConfig = {
-    name: providerInfo?.name || clinic?.doctor_name || 'Dr. Assistant',
-    title: formatProviderName(providerInfo?.name || clinic?.doctor_name || 'Assistant'),
-    welcomeMessage: clinic?.welcome_message || formatWelcomeMessage(providerInfo?.name || clinic?.doctor_name || 'Assistant'),
+    name: providerName || 'Doctor', // Use generic "Doctor" instead of "Dr. Assistant"
+    title: formatProviderName(providerName || 'Doctor'),
+    welcomeMessage: clinic?.welcome_message || formatWelcomeMessage(providerName || 'Doctor'),
     accentColor: clinic?.primary_color || '#5BBAD5',
     logoUrl: clinic?.logo_url || null,
-    specialty: (providerInfo?.specialties && providerInfo.specialties.length > 0) 
-      ? providerInfo.specialties[0] 
+    specialty: (effectiveProvider?.specialties && effectiveProvider.specialties.length > 0) 
+      ? effectiveProvider.specialties[0] 
       : clinic?.specialty || 'General Practice',
-    allSpecialties: providerInfo?.specialties || (clinic?.specialty ? [clinic.specialty] : ['General Practice']),
-    bio: providerInfo?.bio || null,
-    experience: providerInfo?.experience || null,
-    providerTitle: providerInfo?.title || 'Doctor'
+    allSpecialties: effectiveProvider?.specialties || (clinic?.specialty ? [clinic.specialty] : ['General Practice']),
+    bio: effectiveProvider?.bio || null,
+    experience: effectiveProvider?.experience || null,
+    providerTitle: effectiveProvider?.title || 'Doctor'
   };
 
 
@@ -361,27 +425,24 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
 
       // Set loading message for Response API users BEFORE making the call
       if (useResponseAPI) {
-        // We can't know if tools will be used yet, so show random message
-        const normalMessages = ["Thinking...", "Composing response..."];
-        setLoadingMessage(normalMessages[Math.floor(Math.random() * normalMessages.length)]);
+        // Start with thinking message
+        setLoadingMessage("Understanding your question...");
       }
 
       try {
-        // Choose API endpoint based on feature flag
-        const apiEndpoint = useResponseAPI ? "/api/responses" : "/api/chat";
+        // Choose API endpoint based on feature flag - using hybrid RAG for smarter responses
+        const apiEndpoint = useResponseAPI ? "/api/responses-hybrid" : "/api/chat";
         
-        const requestBody: {
-          messages: Array<{role: string, content: string}>;
-          doctorName: string;
-          specialty: string;
-          language: string;
-          aiInstructions: string | null;
-          providerId: number | null | undefined;
-          providerSpecialties: string[];
-          providerTitle: string;
-          clinicName: string | undefined;
-          previousResponseId?: string;
-        } = {
+        const requestBody = useResponseAPI ? {
+          // Hybrid RAG API format
+          messages: updatedMessages,
+          clinicId: clinic?.id,
+          providerId: providerId,
+          language,
+          useHybridRAG: true,
+          maxWebPages: 3
+        } : {
+          // Legacy chat API format
           messages: updatedMessages,
           doctorName: doctorConfig.name,
           specialty: doctorConfig.specialty,
@@ -393,9 +454,25 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
           clinicName: clinic?.slug,
         };
 
-        // Add conversation continuity for Responses API
-        if (useResponseAPI && conversationResponseId) {
-          requestBody.previousResponseId = conversationResponseId;
+        // Chain of Thought loading progression
+        let loadingStep = 0;
+        const loadingMessages = [
+          "Understanding your question...",
+          "Checking clinic information...",
+          "Searching for relevant details...",
+          "Generating your answer..."
+        ];
+        
+        if (useResponseAPI) {
+          const loadingInterval = setInterval(() => {
+            if (loadingStep < loadingMessages.length - 1) {
+              loadingStep++;
+              setLoadingMessage(loadingMessages[loadingStep]);
+            }
+          }, 800); // Progress every 800ms
+          
+          // Clear interval when response comes back
+          setTimeout(() => clearInterval(loadingInterval), 4000);
         }
 
         const response = await fetch(apiEndpoint, {
@@ -404,21 +481,26 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
           body: JSON.stringify(requestBody),
         });
 
-        if (!response.ok) throw new Error("Failed to get response");
+        if (!response.ok) {
+          const errorData = await response.text();
+          console.error(`API Error (${response.status}):`, errorData);
+          throw new Error(`API Error (${response.status}): ${errorData.substring(0, 200)}`);
+        }
 
         const data = await response.json();
 
-        // Store response ID for conversation continuity (Responses API)
-        if (useResponseAPI && data.response_id) {
-          setConversationResponseId(data.response_id);
-          console.log('🔗 Stored conversation response ID:', data.response_id);
-        }
-
-        // Update loading message if tools were used and add delay for user to see it
-        if (useResponseAPI && data.tools_used && data.tools_used.length > 0) {
-          setLoadingMessage("Gathering information...");
-          // Add 1.2 second delay so user can see the "Gathering information..." message
-          await new Promise(resolve => setTimeout(resolve, 1200));
+        // Enhanced loading messages based on what the system actually did
+        if (useResponseAPI) {
+          if (data.clinic_intelligence_used) {
+            setLoadingMessage("Found structured clinic data, preparing response...");
+            await new Promise(resolve => setTimeout(resolve, 600));
+          } else if (data.hybrid_rag_used && data.tool_calls > 0) {
+            setLoadingMessage("Searched website content, crafting response...");
+            await new Promise(resolve => setTimeout(resolve, 800));
+          } else {
+            setLoadingMessage("Preparing response...");
+            await new Promise(resolve => setTimeout(resolve, 400));
+          }
         }
 
         // Add empty assistant message first with animation
@@ -712,7 +794,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
                 onClick={() => {
                   // Reset to just the opening message
                   const doctorName = providerInfo?.name || clinic?.doctor_name;
-                  const formattedDoctorName = formatProviderName(doctorName || 'Assistant');
+                  const formattedDoctorName = formatProviderName(doctorName || 'Doctor');
                   
                   // Get specialty for contextualized messaging
                   const specialty = doctorConfig.specialty || 'medical';
@@ -735,7 +817,6 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
                     }
                   }
                   setMessages([{ role: "assistant", content: openingContent }]);
-                  setConversationResponseId(null); // Reset conversation for fresh start
                   setHasInitialized(true); // Mark as initialized since we just set the opening message
                 }}
                 className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 text-xs font-medium"
@@ -747,11 +828,11 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
               </button>
             )}
             
-            {/* Response API Indicator */}
+            {/* Hybrid RAG Indicator */}
             {useResponseAPI && (
-              <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-green-100 text-green-700 text-xs font-medium">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span>Smart</span>
+              <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-100 text-blue-700 text-xs font-medium">
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                <span>RAG</span>
               </div>
             )}
             

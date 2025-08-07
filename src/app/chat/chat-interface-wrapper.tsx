@@ -75,6 +75,9 @@ export default function ChatInterfaceWrapper() {
           const defaultProvider = data.providers.find((p: Provider) => p.is_default);
           if (defaultProvider) {
             setSelectedProvider(defaultProvider.id);
+          } else if (data.providers.length > 0) {
+            // Fallback to first provider if no default is set
+            setSelectedProvider(data.providers[0].id);
           }
         }
         // Multi-provider case: show provider selection
