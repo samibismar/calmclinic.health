@@ -50,7 +50,7 @@ export default function FounderDashboard() {
     setLoading(true);
     try {
       // Get all clinic stats
-      const clinics = [41, 44, 45]; // Your test clinics
+      const clinics = [41, 45, 44]; // Your test clinics (prioritizing ENT clinic 45)
       const clinicData = await Promise.all(
         clinics.map(async (clinicId) => {
           const response = await fetch(`/api/debug/clinic-stats?clinicId=${clinicId}&days=${selectedTimeframe}`);

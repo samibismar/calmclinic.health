@@ -6,7 +6,7 @@ import { Download, Copy, Eye, EyeOff } from "lucide-react";
 
 export default function PromptViewerPage() {
   const [assembledPrompt, setAssembledPrompt] = useState("");
-  const [clinicId, setClinicId] = useState("44"); // Default to Fort Worth Eye
+  const [clinicId, setClinicId] = useState("45"); // Default to ENT clinic
   const [providerId, setProviderId] = useState("72"); // Default provider
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");

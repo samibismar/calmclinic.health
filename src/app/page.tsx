@@ -95,7 +95,7 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
-            White-labeled assistant that helps patients feel heard in your waiting room.
+            White-labeled assistant that helps patients feel heard—in your waiting room and beyond.
           </motion.p>
           
           <motion.div 
@@ -140,7 +140,8 @@ export default function HomePage() {
           <div className="max-w-4xl mx-auto mb-8">
             <p className="text-xl text-gray-300 leading-relaxed mb-6">
               Every clinic gets their own branded AI health assistant. Patients scan a QR code, get instant help, 
-              and feel more confident about their care—while your front desk focuses on what matters most.
+              and feel more confident about their care—while your front desk focuses on what matters most. 
+              <span className="text-cyan-300"> Plus ongoing SMS support coming soon.</span>
             </p>
             <div className="grid md:grid-cols-3 gap-6 text-center">
               <div className="bg-gray-800/50 rounded-lg p-4">
@@ -203,14 +204,14 @@ export default function HomePage() {
               description: "Patients scan, chat, and get help instantly. No apps, no accounts, no complexity"
             },
             {
-              icon: "⚡",
-              title: "Live in Minutes",
-              description: "Deploy your AI assistant in under 10 minutes with our simple setup process"
-            },
-            {
               icon: "📊",
               title: "Real Results",
               description: "Track patient interactions, common questions, and front desk call reduction"
+            },
+            {
+              icon: "💬",
+              title: "Full Circle Care",
+              description: "QR code conversations today, SMS follow-up support coming soon for complete patient journeys"
             },
             {
               icon: "🔒",
@@ -341,7 +342,7 @@ export default function HomePage() {
             </span>
           </h2>
           <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
-            Join clinics already using CalmClinic to improve patient satisfaction and reduce staff workload.
+            Join healthcare practices already using CalmClinic to improve patient satisfaction and reduce staff workload.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link href="/signup-unavailable">
@@ -366,82 +367,21 @@ export default function HomePage() {
         </motion.div>
       </section>
 
-      {/* Why Clinics Love CalmClinic */}
-      <section id="value" className="px-6 py-20 bg-gray-950 border-t border-gray-800">
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            className="text-center mb-16"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Proven results that matter
-            </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Real outcomes from clinics using CalmClinic to improve patient care
-            </p>
-          </motion.div>
-          
-          <div className="grid md:grid-cols-2 gap-8">
-            {[
-              {
-                metric: "24/7",
-                title: "Always Available",
-                description: "Your AI assistant is ready to help patients any time, even after hours"
-              },
-              {
-                metric: "Zero",
-                title: "App Downloads Required", 
-                description: "Patients just scan a QR code—no installations, accounts, or complexity"
-              },
-              {
-                metric: "Minutes",
-                title: "To Get Started",
-                description: "Quick setup process gets your clinic's AI assistant live fast"
-              },
-              {
-                metric: "Fully",
-                title: "HIPAA Compliant",
-                description: "Built specifically for healthcare with security and privacy as priorities"
-              }
-            ].map((item, index) => (
-              <motion.div
-                key={index}
-                className="bg-gray-800/30 border border-gray-700 rounded-xl p-8 text-center hover:bg-gray-800/50 transition-all duration-300"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                whileHover={{ y: -5 }}
-              >
-                <div className="text-4xl md:text-5xl font-bold text-cyan-400 mb-4">
-                  {item.metric}
-                </div>
-                <h3 className="text-xl font-semibold text-white mb-3">
-                  {item.title}
-                </h3>
-                <p className="text-gray-300 leading-relaxed">
-                  {item.description}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Who It's For */}
       <section id="audience" className="px-6 py-20 bg-black border-t border-gray-800">
-        <div className="max-w-5xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-cyan-400 mb-8">Who It&apos;s For</h2>
-          <div className="grid sm:grid-cols-3 gap-8 text-left text-gray-300 text-lg">
+        <div className="max-w-6xl mx-auto text-center">
+          <h2 className="text-3xl font-bold text-cyan-400 mb-8">Perfect for Healthcare Practices</h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 text-left text-gray-300 text-lg">
             <div>
-              <h3 className="text-xl font-semibold text-cyan-300 mb-2">Primary Care Clinics</h3>
+              <h3 className="text-xl font-semibold text-cyan-300 mb-2">Primary Care</h3>
               <p>Improve communication, triage better, and prep patients for common visit types.</p>
             </div>
             <div>
-              <h3 className="text-xl font-semibold text-cyan-300 mb-2">Urgent Care Centers</h3>
+              <h3 className="text-xl font-semibold text-cyan-300 mb-2">Dental Practices</h3>
+              <p>Explain procedures, ease anxiety, and provide post-treatment care instructions.</p>
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold text-cyan-300 mb-2">Urgent Care</h3>
               <p>Help patients get care faster by reducing repetitive questions and confusion in busy lobbies.</p>
             </div>
             <div>
