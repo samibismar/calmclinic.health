@@ -1,22 +1,46 @@
 import { supabase } from '@/lib/supabase';
 
-// Tool definitions and instructions
+// Tool definitions and instructions for Hybrid RAG system
 export function buildToolInstructions(): string {
   return `
 TOOL USAGE RULES
-    • Use tools (listed below) for clinic-specific facts only.
-    • DO NOT over-rely on tools for questions that can be answered with general GPT knowledge (e.g., "What are common major health insurance providers?").
-    • For follow-up questions, evaluate whether to use general knowledge vs. recalling the tool again. Prioritize fluidity and relevance over rigid repetition.
+    • Use tools to get clinic-specific information, then BLEND that with your medical knowledge for comprehensive answers
+    • DO NOT over-rely on tools for questions that can be answered with general GPT knowledge (e.g., "What are common major health insurance providers?")
+    • For follow-up questions, evaluate whether to use general knowledge vs. recalling the tool again. Prioritize fluidity and relevance over rigid repetition
 
 AVAILABLE TOOLS:
-    • get_clinic_services
-    • get_clinic_hours
-    • get_insurance_info
-    • get_contact_info
-    • get_appointment_policies
-    • get_conditions_treated
-    • get_provider_info
-    • web_search_preview`;
+    • get_clinic_services - Get the complete list of services offered by the clinic - USE THIS for questions about 'services', 'treatments offered', 'what do you do', etc.
+    • get_clinic_hours - Get clinic operating hours and scheduling information
+    • get_insurance_info - Get accepted insurance plans and coverage information
+    • get_contact_info - Get clinic contact information like phone numbers and addresses
+    • clinic_rag_search - REQUIRED for questions about specific medical procedures, treatments, or conditions (balloon sinuplasty, sleep apnea, hearing aids, etc.). Searches clinic website for detailed procedure information, preparation instructions, and clinic-specific approach.
+
+TOOL USAGE STRATEGY:
+    • For "services", "treatments", "what do you do" → use get_clinic_services
+    • For "hours", "schedule", "when open" → use get_clinic_hours  
+    • For "insurance", "coverage", "accepted plans" → use get_insurance_info
+    • For "contact", "phone", "address", "location" → use get_contact_info
+    • For medical procedures → use clinic_rag_search to get clinic-specific info, then combine with your medical knowledge
+
+APPROACH FOR MEDICAL QUESTIONS:
+1. Use clinic_rag_search to get the clinic's specific information and approach
+2. Combine that clinic-specific content with your comprehensive medical knowledge
+3. Provide a detailed, educational answer that includes both general medical info AND clinic-specific details
+4. ALWAYS include source citations when using clinic_rag_search results
+
+SOURCE CITATION REQUIREMENTS:
+    • When using clinic_rag_search results, ALWAYS end your response with proper source citations
+    • Use this format: "Source: [Page Title] - [URL]" or "Sources: [Multiple sources listed]"
+    • The hybrid RAG system will provide sources in the tool results - you MUST include them
+    • For general medical knowledge, no citation needed, but for clinic-specific info, citation is MANDATORY
+
+EXAMPLES:
+    • "What is balloon sinuplasty?" → Search clinic info + your medical knowledge = comprehensive explanation with clinic's specific approach + "Source: Balloon Sinuplasty - https://clinic.com/procedures"
+    • "What services do you offer?" → MUST use get_clinic_services only (no citation needed for structured data)
+
+    • Always provide thorough, educational medical information
+    • Always cite sources when using clinic_rag_search information
+    • Always mention consulting with the doctor for personalized advice`;
 }
 
 // Conversation management rules

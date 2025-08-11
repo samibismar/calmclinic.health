@@ -469,10 +469,10 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
               loadingStep++;
               setLoadingMessage(loadingMessages[loadingStep]);
             }
-          }, 800); // Progress every 800ms
+          }, 600); // Faster progress every 600ms
           
           // Clear interval when response comes back
-          setTimeout(() => clearInterval(loadingInterval), 4000);
+          setTimeout(() => clearInterval(loadingInterval), 3000); // Reduced timeout
         }
 
         const response = await fetch(apiEndpoint, {
@@ -521,7 +521,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
         
         let index = 0;
         const responseContent = data.message;
-        const typingSpeed = 15; // Much faster for responses
+        const typingSpeed = 10; // Even faster for responses
         
         const typeResponse = () => {
           if (index < responseContent.length) {

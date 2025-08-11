@@ -57,8 +57,8 @@ interface DatabaseURLMatch {
 }
 
 export class IntelligentFetchService {
-  private readonly maxConcurrentFetches = 3;
-  private readonly fetchTimeout = 15000; // 15 seconds
+  private readonly maxConcurrentFetches = 5; // Increased from 3
+  private readonly fetchTimeout = 8000; // Reduced from 15 seconds to 8 seconds
   private readonly cacheExpiryHours = 24;
 
   /**
