@@ -54,9 +54,9 @@ export default function DynamicExperienceWrapper({ clinicSlug }: DynamicExperien
     });
   };
 
-  // Fetch clinic data
+  // Fetch clinic data and track QR scan
   useEffect(() => {
-    async function fetchClinicData() {
+    async function fetchClinicDataAndTrackScan() {
       try {
         console.log('🏥 Fetching clinic data for:', clinicSlug);
         const response = await fetch(`/api/providers/${clinicSlug}`);
@@ -64,6 +64,8 @@ export default function DynamicExperienceWrapper({ clinicSlug }: DynamicExperien
           const data = await response.json();
           console.log('✅ Clinic data loaded:', data.clinic?.name);
           setClinicData(data.clinic);
+          
+          // Experience page is for testing only - no analytics tracking needed
           
           // Load providers for this clinic
           if (data.providers && Array.isArray(data.providers)) {
@@ -87,7 +89,7 @@ export default function DynamicExperienceWrapper({ clinicSlug }: DynamicExperien
       }
     }
     
-    fetchClinicData();
+    fetchClinicDataAndTrackScan();
   }, [clinicSlug]);
 
   // Initialize conversation engine when clinic data is ready

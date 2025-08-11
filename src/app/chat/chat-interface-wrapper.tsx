@@ -58,6 +58,28 @@ export default function ChatInterfaceWrapper() {
         setProviders(data.providers || []);
         setClinicInfo(data.clinic);
 
+        // Track QR scan analytics when user accesses the real chat interface
+        if (data.clinic?.id) {
+          console.log('📊 Tracking QR scan for chat access - Clinic ID:', data.clinic.id);
+          try {
+            await fetch('/api/analytics/qr-scan', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                clinicId: data.clinic.id,
+                scanSource: new URLSearchParams(window.location.search).get('source') || 'chat_access',
+                referrer: document.referrer || undefined
+              })
+            });
+            console.log('✅ QR scan tracked for real chat access');
+          } catch (scanError) {
+            console.warn('⚠️ Failed to track QR scan:', scanError);
+            // Don't block the chat if analytics fails
+          }
+        }
+
         // Handle provider selection logic
         if (providerId) {
           // Provider specified in URL

@@ -30,6 +30,9 @@ export class SimpleConversationEngine {
   private isListening = false;
   private isSpeaking = false;
   private recognition: SpeechRecognition | null = null;
+  private analyticsSessionId: string | null = null;
+  private clinicId: number | null = null;
+  private messageOrderCounter = 0;
 
   constructor(config: SimpleConversationConfig) {
     this.config = config;
@@ -37,16 +40,57 @@ export class SimpleConversationEngine {
   }
 
   private async fetchClinicInfo(): Promise<void> {
-    // This could be used for future clinic-specific functionality
     try {
-      await fetch(`/api/providers/${this.config.clinicSlug}`);
+      const response = await fetch(`/api/providers/${this.config.clinicSlug}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.clinic?.id) {
+          this.clinicId = data.clinic.id;
+          console.log('✅ Clinic ID loaded:', this.clinicId);
+        }
+      }
     } catch (error) {
       console.log('Could not fetch clinic info:', error);
     }
   }
 
+  private async createAnalyticsSession(): Promise<void> {
+    if (!this.clinicId) {
+      console.warn('⚠️ Cannot create analytics session without clinic ID');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/analytics/session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          clinicId: this.clinicId,
+          clinicSlug: this.config.clinicSlug,
+          language: 'en'
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        this.analyticsSessionId = data.sessionId;
+        console.log('✅ Analytics session created:', this.analyticsSessionId);
+      } else {
+        console.warn('⚠️ Failed to create analytics session');
+      }
+    } catch (error) {
+      console.warn('⚠️ Analytics session creation failed:', error);
+      // Don't block the conversation if analytics fails
+    }
+  }
+
   async initialize(): Promise<void> {
     try {
+      // Create analytics session when conversation starts
+      await this.createAnalyticsSession();
+      
       if (this.config.enableVoice) {
         await navigator.mediaDevices.getUserMedia({ audio: true });
         this.setupSpeechRecognition();
@@ -188,31 +232,25 @@ export class SimpleConversationEngine {
     }
 
     try {
-      const systemPrompt = `You are a helpful AI assistant at ${this.config.clinicName}. 
-
-1. Keep responses SHORT - max 1-2 sentences unless providing specific medical prep info
-2. The user is seeing ${this.selectedProvider} 
-3. Be conversational, friendly, and genuinely helpful
-4. Help them prepare for their visit, think of good questions, or explain medical concepts simply
-5. Be naturally useful without being pushy - let your helpfulness speak for itself
-
-Focus on being genuinely valuable and insightful in a natural, conversational way.`;
-
-      const response = await fetch('/api/chat', {
+      // Increment message counter for user message
+      this.messageOrderCounter++;
+      
+      const response = await fetch('/api/responses-hybrid', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           messages: [
-            { role: 'system', content: systemPrompt },
             ...this.messages.slice(-4).map(msg => ({
               role: msg.role === 'ai' ? 'assistant' : msg.role,
               content: msg.content
             })),
             { role: 'user', content: userInput }
           ],
-          clinic: this.config.clinicSlug,
+          clinicId: this.clinicId,
+          sessionId: this.analyticsSessionId,
+          messageOrder: this.messageOrderCounter
         }),
       });
 

@@ -13,6 +13,8 @@ export async function GET() {
       .select(`
         id,
         practice_name,
+        slug,
+        specialty,
         website_url,
         rag_confidence_threshold,
         rag_cache_ttl_hours,
@@ -27,7 +29,7 @@ export async function GET() {
       throw error;
     }
 
-    // Add some helpful metadata
+    // Add some helpful metadata for both analytics and debug purposes
     const enrichedClinics = clinics?.map(clinic => ({
       ...clinic,
       hasWebsiteUrl: !!clinic.website_url,
@@ -35,7 +37,7 @@ export async function GET() {
       lastDiscovery: clinic.last_url_discovery ? new Date(clinic.last_url_discovery).toLocaleDateString() : 'Never'
     })) || [];
 
-    return NextResponse.json(enrichedClinics);
+    return NextResponse.json({ clinics: enrichedClinics });
 
   } catch (error) {
     console.error('Failed to fetch clinics:', error);

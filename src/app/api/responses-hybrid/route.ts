@@ -136,11 +136,14 @@ async function getContactInfo(clinicId: number) {
 }
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now();
   try {
     const { 
       messages, 
       clinicId,
       providerId,
+      sessionId, // Analytics session ID
+      messageOrder, // Position of this message in conversation
       // language = 'en', // Removed unused parameter
       maxWebPages = 2 // Reduced from 3 for faster response
     } = await request.json();
@@ -274,9 +277,8 @@ export async function POST(request: NextRequest) {
     const lastUserMessage = messages[messages.length - 1];
     const userInput = lastUserMessage?.content || "";
 
-    // DEMO MODE: Hardcoded responses for ENT clinic demo
-    // TODO: SET TO FALSE AFTER DEMO IS COMPLETE!
-    const isDemoMode = true; // Set to false after demo
+    // DEMO MODE: DISABLED - Demo is complete
+    const isDemoMode = false; // Demo mode disabled
     console.log(`🎭 DEMO CHECK: isDemoMode=${isDemoMode}, clinicId=${clinicData.id}, query="${userInput}"`);
     
     if (isDemoMode && (clinicData.id === 44 || clinicData.id === 45)) { // Fort Worth ENT clinic (both IDs)
@@ -289,8 +291,53 @@ export async function POST(request: NextRequest) {
           query.includes('what is balloon') ||
           query.includes('balloon procedure')) {
         console.log(`🚀 DEMO: Returning hardcoded Balloon Sinuplasty response!`);
+        
+        const demoResponse = "Balloon sinuplasty is a minimally invasive procedure designed to relieve symptoms of chronic sinusitis. It's performed on an outpatient basis and is particularly beneficial for adults who haven't found relief from medications and experience frequent sinus infections. One of the main advantages of this procedure is its quick recovery time, allowing patients to resume normal activities soon after.\n\nIf you're considering this treatment, it's best to consult with a healthcare professional to determine if it's suitable for your specific condition. For more detailed information, you can contact the clinic directly.\n\nSources: [Balloon Sinuplasty Surgery - Fort Worth, Texas Sinus Surgeons](https://fortworthent.net/fort-worth-sinus-center/balloon-sinuplasty/)";
+        const responseTime = Date.now() - startTime;
+
+        // Log demo response analytics
+        if (sessionId) {
+          try {
+            // Log user message
+            if (messageOrder && messages.length > 0) {
+              const userMessage = messages[messages.length - 1];
+              await fetch(`${request.nextUrl.origin}/api/analytics/message`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  sessionId,
+                  clinicId: clinicData.id,
+                  role: 'user',
+                  content: userMessage.content,
+                  messageOrder: messageOrder
+                })
+              });
+            }
+            
+            // Log AI demo response
+            await fetch(`${request.nextUrl.origin}/api/analytics/message`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                sessionId,
+                clinicId: clinicData.id,
+                role: 'assistant',
+                content: demoResponse,
+                messageOrder: (messageOrder || 0) + 1,
+                responseTimeMs: responseTime,
+                toolsUsed: ["clinic_rag_search"],
+                ragConfidence: 1.0, // Demo responses are perfectly confident
+                messageIntent: 'medical_question',
+                containsMedicalTerms: true
+              })
+            });
+          } catch (analyticsError) {
+            console.warn('⚠️ Demo analytics logging failed:', analyticsError);
+          }
+        }
+        
         return NextResponse.json({
-          message: "Balloon sinuplasty is a minimally invasive procedure designed to relieve symptoms of chronic sinusitis. It's performed on an outpatient basis and is particularly beneficial for adults who haven't found relief from medications and experience frequent sinus infections. One of the main advantages of this procedure is its quick recovery time, allowing patients to resume normal activities soon after.\n\nIf you're considering this treatment, it's best to consult with a healthcare professional to determine if it's suitable for your specific condition. For more detailed information, you can contact the clinic directly.\n\nSources: [Balloon Sinuplasty Surgery - Fort Worth, Texas Sinus Surgeons](https://fortworthent.net/fort-worth-sinus-center/balloon-sinuplasty/)",
+          message: demoResponse,
           model: "gpt-4o",
           usage: {},
           clinic_intelligence_used: false,
@@ -308,8 +355,53 @@ export async function POST(request: NextRequest) {
           query.includes('what actually is a nasal polyp') ||
           query.includes('what are nasal polyps')) {
         console.log(`🚀 DEMO: Returning hardcoded Nasal Polyp response!`);
+        
+        const demoResponse = "Nasal polyps are non-cancerous growths that occur in the nasal passages. They can cause symptoms such as nasal congestion and frequent sinus infections. Treatment options vary depending on their severity and may include medications, lifestyle changes, or surgery. Surgery is usually performed on an outpatient basis and can be done under local or general anesthesia.\n\nIf you experience symptoms for more than 10 days, it's advisable to consult an ENT specialist for evaluation and to discuss potential treatments. Follow-up appointments are important to ensure effective ongoing treatment.\n\nFor more detailed information or to schedule an appointment, you can contact our clinic at 817-221-8848.\n\nSources:\n\n[Nasal Polyp Surgery - Fort Worth ENT & Sinus](https://fortworthent.net/nasal-polyps-3/nasal-polyp-surgery/)\n[Nasal Polyps and Treatment - Fort Worth ENT & Sinus](https://fortworthent.net/nasal-polyps-3/)\n[Nasal Polyps Treatment - Polyposis Relief - Fort Worth ENT & Sinus](https://fortworthent.net/nasal-polyps-treatment/)";
+        const responseTime = Date.now() - startTime;
+
+        // Log demo response analytics
+        if (sessionId) {
+          try {
+            // Log user message
+            if (messageOrder && messages.length > 0) {
+              const userMessage = messages[messages.length - 1];
+              await fetch(`${request.nextUrl.origin}/api/analytics/message`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  sessionId,
+                  clinicId: clinicData.id,
+                  role: 'user',
+                  content: userMessage.content,
+                  messageOrder: messageOrder
+                })
+              });
+            }
+            
+            // Log AI demo response
+            await fetch(`${request.nextUrl.origin}/api/analytics/message`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                sessionId,
+                clinicId: clinicData.id,
+                role: 'assistant',
+                content: demoResponse,
+                messageOrder: (messageOrder || 0) + 1,
+                responseTimeMs: responseTime,
+                toolsUsed: ["clinic_rag_search"],
+                ragConfidence: 1.0, // Demo responses are perfectly confident
+                messageIntent: 'medical_question',
+                containsMedicalTerms: true
+              })
+            });
+          } catch (analyticsError) {
+            console.warn('⚠️ Demo analytics logging failed:', analyticsError);
+          }
+        }
+        
         return NextResponse.json({
-          message: "Nasal polyps are non-cancerous growths that occur in the nasal passages. They can cause symptoms such as nasal congestion and frequent sinus infections. Treatment options vary depending on their severity and may include medications, lifestyle changes, or surgery. Surgery is usually performed on an outpatient basis and can be done under local or general anesthesia.\n\nIf you experience symptoms for more than 10 days, it's advisable to consult an ENT specialist for evaluation and to discuss potential treatments. Follow-up appointments are important to ensure effective ongoing treatment.\n\nFor more detailed information or to schedule an appointment, you can contact our clinic at 817-221-8848.\n\nSources:\n\n[Nasal Polyp Surgery - Fort Worth ENT & Sinus](https://fortworthent.net/nasal-polyps-3/nasal-polyp-surgery/)\n[Nasal Polyps and Treatment - Fort Worth ENT & Sinus](https://fortworthent.net/nasal-polyps-3/)\n[Nasal Polyps Treatment - Polyposis Relief - Fort Worth ENT & Sinus](https://fortworthent.net/nasal-polyps-treatment/)",
+          message: demoResponse,
           model: "gpt-4o",
           usage: {},
           clinic_intelligence_used: false,
@@ -466,8 +558,53 @@ export async function POST(request: NextRequest) {
       );
       const usedHybridRAG = toolsUsed.includes('clinic_rag_search');
 
+      const responseText = followUpResponse.output_text || followUpResponse.text || '';
+      const responseTime = Date.now() - startTime;
+
+      // Log analytics for both user message and AI response
+      if (sessionId) {
+        try {
+          // Log user message if this is the first message in sequence
+          if (messageOrder && messages.length > 0) {
+            const userMessage = messages[messages.length - 1];
+            await fetch(`${request.nextUrl.origin}/api/analytics/message`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                sessionId,
+                clinicId: clinicData.id,
+                role: 'user',
+                content: userMessage.content,
+                messageOrder: messageOrder
+              })
+            });
+          }
+
+          // Log AI response message
+          await fetch(`${request.nextUrl.origin}/api/analytics/message`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              sessionId,
+              clinicId: clinicData.id,
+              role: 'assistant',
+              content: responseText,
+              messageOrder: (messageOrder || 0) + 1,
+              responseTimeMs: responseTime,
+              toolsUsed: toolsUsed,
+              ragConfidence: usedHybridRAG ? 0.8 : null, // Estimate confidence
+              messageIntent: usedClinicIntelligence ? 'information_request' : 'medical_question',
+              containsMedicalTerms: /\b(symptom|treatment|procedure|diagnosis|medication|therapy|surgery|pain|infection|disease)\b/i.test(responseText)
+            })
+          });
+        } catch (analyticsError) {
+          console.warn('⚠️ Analytics logging failed:', analyticsError);
+          // Don't block the response if analytics fails
+        }
+      }
+
       return NextResponse.json({
-        message: followUpResponse.output_text || followUpResponse.text,
+        message: responseText,
         model: "gpt-4o",
         usage: followUpResponse.usage || {},
         clinic_intelligence_used: usedClinicIntelligence,
@@ -479,8 +616,53 @@ export async function POST(request: NextRequest) {
 
     } else {
       // No tool calls - return the direct response
+      const responseText = (response as OpenAIResponsesAPIResult).output_text || (response as OpenAIResponsesAPIResult).text || '';
+      const responseTime = Date.now() - startTime;
+
+      // Log analytics for both user message and AI response (no tools case)
+      if (sessionId) {
+        try {
+          // Log user message if this is the first message in sequence
+          if (messageOrder && messages.length > 0) {
+            const userMessage = messages[messages.length - 1];
+            await fetch(`${request.nextUrl.origin}/api/analytics/message`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                sessionId,
+                clinicId: clinicData.id,
+                role: 'user',
+                content: userMessage.content,
+                messageOrder: messageOrder
+              })
+            });
+          }
+
+          // Log AI response message
+          await fetch(`${request.nextUrl.origin}/api/analytics/message`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              sessionId,
+              clinicId: clinicData.id,
+              role: 'assistant',
+              content: responseText,
+              messageOrder: (messageOrder || 0) + 1,
+              responseTimeMs: responseTime,
+              toolsUsed: [],
+              ragConfidence: null,
+              messageIntent: 'general_response',
+              containsMedicalTerms: /\b(symptom|treatment|procedure|diagnosis|medication|therapy|surgery|pain|infection|disease)\b/i.test(responseText)
+            })
+          });
+        } catch (analyticsError) {
+          console.warn('⚠️ Analytics logging failed:', analyticsError);
+          // Don't block the response if analytics fails
+        }
+      }
+
       return NextResponse.json({
-        message: (response as OpenAIResponsesAPIResult).output_text || (response as OpenAIResponsesAPIResult).text,
+        message: responseText,
         model: "gpt-4o",
         usage: (response as OpenAIResponsesAPIResult).usage || {},
         clinic_intelligence_used: false,

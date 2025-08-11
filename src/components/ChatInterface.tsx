@@ -66,6 +66,9 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
   const [showTransition, setShowTransition] = useState(true);
   const [fallbackProvider, setFallbackProvider] = useState<FallbackProvider | null>(null);
   
+  // Analytics session tracking
+  const [analyticsSessionId, setAnalyticsSessionId] = useState<string | null>(null);
+  const [messageOrderCounter, setMessageOrderCounter] = useState(0);
   
   // Get language from URL parameters
   const searchParams = useSearchParams();
@@ -143,6 +146,34 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
           if (error) throw error;
           if (data) {
             setClinic(data);
+            
+            // Create analytics session when clinic loads
+            if (useResponseAPI && !analyticsSessionId) {
+              try {
+                const response = await fetch('/api/analytics/session', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    clinicId: data.id,
+                    clinicSlug: data.slug,
+                    language: language,
+                    providerId: providerId
+                  })
+                });
+                
+                if (response.ok) {
+                  const sessionData = await response.json();
+                  setAnalyticsSessionId(sessionData.sessionId);
+                  console.log('✅ Analytics session created:', sessionData.sessionId);
+                } else {
+                  console.warn('⚠️ Failed to create analytics session');
+                }
+              } catch (error) {
+                console.warn('⚠️ Analytics session creation failed:', error);
+                // Don't block the chat if analytics fails
+              }
+            }
+            
             // If no provider info is available, fetch fallback provider
             if (!providerInfo && !data.doctor_name) {
               await fetchFallbackProvider(data.id);
@@ -422,6 +453,9 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
       setMessages(updatedMessages);
       setMessage("");
       setIsAiTyping(true);
+      
+      // Increment message counter for analytics
+      setMessageOrderCounter(prev => prev + 1);
 
       // Set loading message for Response API users BEFORE making the call
       if (useResponseAPI) {
@@ -438,6 +472,8 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
           messages: updatedMessages,
           clinicId: clinic?.id,
           providerId: providerId,
+          sessionId: analyticsSessionId,
+          messageOrder: messageOrderCounter + 1,
           language,
           useHybridRAG: true,
           maxWebPages: 3
