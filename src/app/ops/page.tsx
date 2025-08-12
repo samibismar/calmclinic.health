@@ -165,14 +165,14 @@ export default function OpsPage() {
                   {selectedClinic.specialty} • Slug: {selectedClinic.slug}
                 </p>
               </div>
-              <Link
+              {/* <Link
                 href={`/experience/${selectedClinic.slug}`}
                 target="_blank"
                 className="flex items-center gap-2 text-blue-600 hover:text-blue-800"
               >
                 <ExternalLink className="w-4 h-4" />
                 View Live Chat
-              </Link>
+              </Link> */}
             </div>
           </div>
         )}
@@ -303,13 +303,13 @@ export default function OpsPage() {
                   >
                     Repeated Questions
                   </Link>
-                  <Link 
+                  {/* <Link 
                     href={`/experience/${selectedClinic?.slug}`}
                     target="_blank"
                     className="block w-full bg-green-50 text-green-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-100 transition-colors"
                   >
                     Test Live Chat
-                  </Link>
+                  </Link> */}
                 </div>
               </div>
             </div>
