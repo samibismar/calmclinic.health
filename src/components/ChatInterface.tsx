@@ -71,6 +71,10 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
   const [messageOrderCounter, setMessageOrderCounter] = useState(0);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
   
+  // Wait time countdown
+  const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
+  const [showWaitTimer, setShowWaitTimer] = useState(true);
+  
   // Get language from URL parameters
   const searchParams = useSearchParams();
   const langParam = searchParams.get('lang');
@@ -79,6 +83,23 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
   // Feature flag for Response API (default enabled, disable with ?responses=false)
   const useResponseAPI = searchParams.get('responses') !== 'false';
   
+  // Function to fetch wait time for a provider
+  const fetchWaitTime = async (providerId: number) => {
+    try {
+      const response = await fetch(`/api/providers/wait-time?providerId=${providerId}`);
+      if (response.ok) {
+        const data = await response.json();
+        const waitMinutes = data.wait_time_minutes;
+        if (waitMinutes && waitMinutes > 0) {
+          setRemainingSeconds(waitMinutes * 60);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching wait time:', error);
+      // Don't show error to user, just don't show timer
+    }
+  };
+
   // Function to fetch fallback provider when provider info is missing
   const fetchFallbackProvider = async (clinicId: number) => {
     try {
@@ -178,6 +199,11 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
             // If no provider info is available, fetch fallback provider
             if (!providerInfo && !data.doctor_name) {
               await fetchFallbackProvider(data.id);
+            }
+            
+            // Fetch wait time for the provider
+            if (providerId) {
+              await fetchWaitTime(providerId);
             }
           }
         } catch (error) {
@@ -333,6 +359,22 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
       el.scrollTop = el.scrollHeight;
     }
   }, [messages, typingContent, typingMessageIndex, isAiTyping, onboardingStage]);
+
+  // Countdown timer effect
+  useEffect(() => {
+    if (remainingSeconds === null || remainingSeconds <= 0) return;
+
+    const timer = setInterval(() => {
+      setRemainingSeconds(prev => {
+        if (prev === null || prev <= 1) {
+          return 0; // Timer finished
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [remainingSeconds]);
   
   // Translations
   const translations = {
@@ -367,6 +409,13 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
     
     // Add Dr. prefix if not present
     return `Dr. ${name}`;
+  };
+
+  // Helper function to format countdown time (minutes only)
+  const formatCountdown = (totalSeconds: number) => {
+    if (totalSeconds <= 0) return "0m";
+    const minutes = Math.ceil(totalSeconds / 60); // Round up so we don't show 0m when there's still time
+    return `${minutes}m`;
   };
 
   // Helper function to format welcome message properly
@@ -678,6 +727,43 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
             <div className={`flex items-center space-x-2 transition-all duration-1500 delay-1800 ease-out ${
               onboardingStage === 'loading' ? 'opacity-0' : 'opacity-100'
             }`}>
+              {/* Wait Time Countdown */}
+              {remainingSeconds !== null && remainingSeconds > 0 && (
+                <div className="relative">
+                  {showWaitTimer ? (
+                    <div className="group relative">
+                      <button
+                        onClick={() => setShowWaitTimer(false)}
+                        className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-700 text-xs font-medium transition-colors touch-manipulation"
+                      >
+                        <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <polyline points="12,6 12,12 16,14"></polyline>
+                        </svg>
+                        <span className="font-semibold">{formatCountdown(remainingSeconds)}</span>
+                        <span className="hidden sm:inline text-blue-600">wait</span>
+                      </button>
+                      {/* Tooltip - hidden on mobile, visible on desktop hover */}
+                      <div className="hidden sm:block absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20">
+                        {language === 'es' ? 'Tiempo de espera estimado • Toca para ocultar' : 'Estimated wait time • Tap to hide'}
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setShowWaitTimer(true)}
+                      className="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors touch-manipulation"
+                      title={language === 'es' ? 'Mostrar tiempo de espera' : 'Show wait time'}
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12,6 12,12 16,14"></polyline>
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              )}
+              
               <button
                 onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 text-xs font-medium"
@@ -897,6 +983,43 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
             
             {/* Hybrid RAG Indicator removed for cleaner UI */}
             
+            {/* Wait Time Countdown */}
+            {remainingSeconds !== null && remainingSeconds > 0 && (
+              <div className="relative">
+                {showWaitTimer ? (
+                  <div className="group relative">
+                    <button
+                      onClick={() => setShowWaitTimer(false)}
+                      className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-700 text-xs font-medium transition-colors touch-manipulation"
+                    >
+                      <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12,6 12,12 16,14"></polyline>
+                      </svg>
+                      <span className="font-semibold">{formatCountdown(remainingSeconds)}</span>
+                      <span className="hidden sm:inline text-blue-600">wait</span>
+                    </button>
+                    {/* Tooltip - hidden on mobile, visible on desktop hover */}
+                    <div className="hidden sm:block absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20">
+                      {language === 'es' ? 'Tiempo de espera estimado • Toca para ocultar' : 'Estimated wait time • Tap to hide'}
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowWaitTimer(true)}
+                    className="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors touch-manipulation"
+                    title={language === 'es' ? 'Mostrar tiempo de espera' : 'Show wait time'}
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <polyline points="12,6 12,12 16,14"></polyline>
+                    </svg>
+                  </button>
+                )}
+              </div>
+            )}
+
             {/* Feedback Button */}
             <a
               href="https://forms.gle/aGKvuwzUwrH7HuEy8"

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowLeft, BarChart3, Building2, Users, Stethoscope, CreditCard, Heart, Bot, HelpCircle, FileText } from "lucide-react";
+import { ArrowLeft, BarChart3, Building2, Users, Stethoscope, CreditCard, Heart, Bot, HelpCircle, FileText, Clock } from "lucide-react";
 import Link from "next/link";
 
 // Tab components (we'll create these)
@@ -13,6 +13,7 @@ import InsuranceTab from "@/components/clinic-intelligence/InsuranceTab";
 import PatientExperienceTab from "@/components/clinic-intelligence/PatientExperienceTab";
 import CommonQuestionsTab from "@/components/clinic-intelligence/CommonQuestionsTab";
 import AdditionalInfoTab from "@/components/clinic-intelligence/AdditionalInfoTab";
+import WaitTimesTab from "@/components/clinic-intelligence/WaitTimesTab";
 import AIAssistantTab from "@/components/clinic-intelligence/AIAssistantTab";
 
 interface ClinicData {
@@ -82,6 +83,12 @@ const tabs = [
     description: 'Extra clinic information'
   },
   {
+    id: 'wait-times',
+    name: 'Wait Times',
+    icon: Clock,
+    description: 'Set expected wait times per provider'
+  },
+  {
     id: 'ai-assistant',
     name: 'AI Assistant',
     icon: Bot,
@@ -148,6 +155,8 @@ export default function ClinicIntelligencePage() {
         return <CommonQuestionsTab />;
       case 'additional-info':
         return <AdditionalInfoTab />;
+      case 'wait-times':
+        return <WaitTimesTab />;
       case 'ai-assistant':
         return <AIAssistantTab clinicData={clinicData} />;
       default:
