@@ -139,7 +139,7 @@ export default function SessionDetailPage() {
     );
   }
 
-  const { session, ragLogs } = sessionData;
+  const { session } = sessionData;
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -188,7 +188,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
     }
     
     fetchClinic();
-  }, [clinicSlug, providerInfo]);
+  }, [clinicSlug, providerInfo, analyticsSessionId, language, providerId, useResponseAPI]);
 
   // Fetch common questions from database
   useEffect(() => {

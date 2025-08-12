@@ -6,7 +6,6 @@ import {
   BarChart3, 
   Users, 
   MessageSquare, 
-  Clock, 
   ThumbsUp, 
   ThumbsDown,
   ExternalLink,

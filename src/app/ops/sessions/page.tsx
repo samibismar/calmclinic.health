@@ -7,7 +7,6 @@ import {
   ArrowLeft,
   MessageSquare, 
   Users, 
-  Clock, 
   ChevronRight,
   RefreshCw,
   Search,
@@ -127,19 +126,6 @@ function SessionsPageContent() {
     setPagination(prev => ({ ...prev, offset: newOffset }));
   };
 
-  const formatDuration = (startTime: string, endTime: string | null) => {
-    const start = new Date(startTime);
-    const end = endTime ? new Date(endTime) : new Date();
-    const durationMs = end.getTime() - start.getTime();
-    const minutes = Math.floor(durationMs / 60000);
-    const seconds = Math.floor((durationMs % 60000) / 1000);
-    return minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
-  };
-
-  const formatResponseTime = (timeMs: number | null) => {
-    if (!timeMs) return 'N/A';
-    return timeMs < 1000 ? `${timeMs}ms` : `${(timeMs / 1000).toFixed(1)}s`;
-  };
 
   // Filter sessions based on search and status
   const filteredSessions = sessions.filter(session => {
