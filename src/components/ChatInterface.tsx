@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase, type Clinic } from "@/lib/supabase";
 import Image from "next/image";
@@ -69,6 +69,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
   // Analytics session tracking
   const [analyticsSessionId, setAnalyticsSessionId] = useState<string | null>(null);
   const [messageOrderCounter, setMessageOrderCounter] = useState(0);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
   
   // Get language from URL parameters
   const searchParams = useSearchParams();
@@ -658,10 +659,18 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
               </div>
             </div>
             
-            {/* Right side controls (moved to bottom input for mobile) */}
-            <div className={`transition-all duration-1500 delay-1800 ease-out ${
+            {/* Right side controls */}
+            <div className={`flex items-center space-x-2 transition-all duration-1500 delay-1800 ease-out ${
               onboardingStage === 'loading' ? 'opacity-0' : 'opacity-100'
-            }`} />
+            }`}>
+              <button
+                onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 text-xs font-medium"
+                aria-label="Toggle language"
+              >
+                <span>{language === 'en' ? 'EN' : 'ES'}</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -690,7 +699,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
               <div className={`flex justify-start transition-all duration-800 ease-out ${
                 onboardingStage === 'typing' ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'
               }`}>
-                <div className="bg-blue-50 border border-blue-200 rounded-2xl rounded-bl-md px-6 py-4 shadow-lg max-w-[85%]">
+                <div className="w-full">
                   <MessageContent 
                     content={typedMessage}
                     isTyping={true}
@@ -706,7 +715,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
               <div className="space-y-4">
                 {/* Show the completed message */}
                 <div className={`flex justify-start transition-all duration-800 ease-out opacity-100`}>
-                  <div className="bg-blue-50 border border-blue-200 rounded-2xl rounded-bl-md px-6 py-4 shadow-lg max-w-[85%]">
+                  <div className="w-full">
                     <MessageContent 
                       content={messages[0]?.content || ""}
                       className="text-base leading-relaxed text-gray-900 font-medium"
@@ -743,34 +752,33 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
           </div>
         </div>
         
-        {/* Fixed bottom input area */}
-        <div className="sticky bottom-0 flex-shrink-0 px-6 py-4 bg-white border-t border-gray-100">
-          <div className="flex gap-3 items-end">
-            <button
-              onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
-              className="px-3 py-2 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 text-xs font-medium"
-              aria-label="Toggle language"
-            >
-              {language === 'en' ? 'EN' : 'ES'}
-            </button>
-            <input
-              type="text"
-              inputMode="text"
-              autoComplete="off"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder={language === 'es' ? "Escribe tu mensaje aquí..." : "Type your message here..."}
-              className="flex-1 px-4 py-3 border-2 border-blue-200 rounded-2xl focus:outline-none focus:border-blue-500 bg-white shadow-sm text-base text-gray-900 placeholder-gray-600 font-medium"
-              disabled={isAiTyping}
-            />
-            <button
-              onClick={handleSend}
-              disabled={isAiTyping || !message.trim()}
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl transition-all duration-200 font-semibold text-base shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed min-w-[80px]"
-            >
-              {language === 'es' ? 'Enviar' : 'Send'}
-            </button>
+        {/* Fixed bottom input area - component style like ChatGPT */}
+        <div className="sticky bottom-0 flex-shrink-0 px-4 py-4 bg-white/90 backdrop-blur border-t border-gray-100">
+          <div className="w-full max-w-3xl mx-auto rounded-2xl border border-gray-200 shadow-sm p-2 bg-white">
+            <div className="flex gap-3 items-end">
+              <textarea
+                ref={inputRef}
+                rows={1}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
+                placeholder={language === 'es' ? "Escribe tu mensaje aquí..." : "Type your message here..."}
+                className="flex-1 px-4 py-3 border-none focus:outline-none bg-transparent text-base text-gray-900 placeholder-gray-600 resize-none max-h-48 overflow-y-auto"
+                disabled={isAiTyping}
+              />
+              <button
+                onClick={handleSend}
+                disabled={isAiTyping || !message.trim()}
+                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all duration-200 font-semibold text-base shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {language === 'es' ? 'Enviar' : 'Send'}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -885,7 +893,13 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
               <span>💬</span>
               <span>Feedback</span>
             </a>
-            {/* Language toggle moved to bottom input area for mobile */}
+            {/* Language Toggle */}
+            <button
+              onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 text-xs font-medium"
+            >
+              <span>{language === 'en' ? 'EN' : 'ES'}</span>
+            </button>
           </div>
         </div>
       </div>
