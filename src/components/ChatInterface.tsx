@@ -312,12 +312,27 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [language]); // Only re-run when language changes (intentionally limited dependencies)
   
-  // Auto-scroll when new messages or typing content changes
+  // Auto-resize input as user types
   useEffect(() => {
-    const el = document.querySelector('.chat-scroll') as HTMLDivElement | null;
-    if (!el) return;
-    el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
-  }, [messages, typingContent, typingMessageIndex, isAiTyping]);
+    if (!inputRef.current) return;
+    const el = inputRef.current;
+    el.style.height = '0px';
+    const newHeight = Math.min(el.scrollHeight, 220);
+    el.style.height = newHeight + 'px';
+  }, [message]);
+
+  // Auto-scroll to bottom on new content or typing
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    // Prefer anchor scroll; fallback to container
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    } else if (scrollContainerRef.current) {
+      const el = scrollContainerRef.current;
+      el.scrollTop = el.scrollHeight;
+    }
+  }, [messages, typingContent, typingMessageIndex, isAiTyping, onboardingStage]);
   
   // Translations
   const translations = {
@@ -675,7 +690,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
         </div>
 
         {/* Interactive typing area - seamlessly flows from header */}
-        <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4 min-h-0 chat-scroll">
+        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-6 pt-4 pb-4 min-h-0 chat-scroll">
           <div className="space-y-4">
             
             {/* Loading state */}
@@ -905,7 +920,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
       </div>
 
       {/* Chat Messages Area - seamlessly integrated with proper scrolling */}
-      <div className={`flex-1 overflow-y-auto px-6 pt-4 pb-4 min-h-0 transition-all duration-600 delay-300 ${
+      <div ref={scrollContainerRef} className={`flex-1 overflow-y-auto px-6 pt-4 pb-4 min-h-0 transition-all duration-600 delay-300 ${
         showInterface ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-4'
       }`}>
         
@@ -982,44 +997,12 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
               </div>
             </div>
           )}
+          {/* Scroll anchor for smooth bottom snapping */}
+          <div ref={messagesEndRef} />
         </div>
       </div>
 
-      {/* Fixed Input Area - always visible */}
-      <div className={`sticky bottom-0 flex-shrink-0 px-6 py-4 bg-white border-t border-gray-100 transition-all duration-600 delay-400 ${
-        showInterface ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-4'
-      }`}>
-        <div className="flex gap-3 items-end">
-          <button
-            onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
-            className="px-3 py-2 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 text-xs font-medium"
-            aria-label="Toggle language"
-          >
-            {language === 'en' ? 'EN' : 'ES'}
-          </button>
-          <input
-            type="text"
-            inputMode="text"
-            autoComplete="off"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder={t.placeholder}
-            className="flex-1 px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm text-base text-gray-900 placeholder-gray-500"
-            disabled={isAiTyping}
-          />
-          <button
-            onClick={handleSend}
-            disabled={isAiTyping || !message.trim()}
-            className="px-4 py-3 text-white rounded-2xl transition-all duration-200 font-medium text-base shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed min-w-[60px]"
-            style={{ 
-              backgroundColor: doctorConfig.accentColor,
-            }}
-          >
-            {t.send}
-          </button>
-        </div>
-      </div>
+      {/* Fixed Input Area - replaced with ChatGPT-like card above */}
       </div>
     </>
   );
