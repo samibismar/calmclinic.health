@@ -12,10 +12,7 @@ import {
   RefreshCw,
   ThumbsUp,
   ThumbsDown,
-  Search,
-  Database,
-  Zap,
-  Activity
+  Search
 } from 'lucide-react';
 
 interface Message {
@@ -99,16 +96,6 @@ export default function SessionDetailPage() {
     }
   };
 
-  const formatDuration = (durationMs: number) => {
-    const minutes = Math.floor(durationMs / 60000);
-    const seconds = Math.floor((durationMs % 60000) / 1000);
-    return minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
-  };
-
-  const formatResponseTime = (timeMs: number | null) => {
-    if (!timeMs) return 'N/A';
-    return timeMs < 1000 ? `${timeMs}ms` : `${(timeMs / 1000).toFixed(1)}s`;
-  };
 
   const formatTimestamp = (timestamp: string) => {
     return new Date(timestamp).toLocaleTimeString('en-US', {
@@ -202,32 +189,25 @@ export default function SessionDetailPage() {
         {/* Session Overview */}
         <div className="bg-white rounded-lg shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Session Overview</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">{session.totalMessages}</div>
               <div className="text-sm text-gray-600">Total Messages</div>
-              <div className="text-xs text-gray-500 mt-1">{session.userMessages}👤 {session.aiMessages}🤖</div>
+              <div className="text-xs text-gray-500 mt-1">{session.userMessages} from patient</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{formatDuration(session.sessionDurationMs)}</div>
-              <div className="text-sm text-gray-600">Session Duration</div>
+              <div className="text-2xl font-bold text-green-600">
+                {session.status === 'active' ? 'In Progress' : 'Completed'}
+              </div>
+              <div className="text-sm text-gray-600">Status</div>
               <div className="text-xs text-gray-500 mt-1">
-                {session.endedAt ? 'Completed' : 'Active'}
+                Started {new Date(session.startedAt).toLocaleDateString()}
               </div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">
-                {formatResponseTime(session.firstResponseTimeMs)}
-              </div>
-              <div className="text-sm text-gray-600">First Response</div>
-              <div className="text-xs text-gray-500 mt-1">Initial engagement</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">
-                {formatResponseTime(session.avgResponseTimeMs)}
-              </div>
-              <div className="text-sm text-gray-600">Avg Response</div>
-              <div className="text-xs text-gray-500 mt-1">Overall performance</div>
+              <div className="text-2xl font-bold text-purple-600">{session.language.toUpperCase()}</div>
+              <div className="text-sm text-gray-600">Language</div>
+              <div className="text-xs text-gray-500 mt-1">Patient preference</div>
             </div>
           </div>
 
@@ -314,11 +294,6 @@ export default function SessionDetailPage() {
                       <span className="text-sm text-gray-500">
                         {formatTimestamp(message.timestamp)}
                       </span>
-                      {message.responseTimeMs && (
-                        <span className="text-sm text-gray-500">
-                          Response: {formatResponseTime(message.responseTimeMs)}
-                        </span>
-                      )}
                     </div>
 
                     {/* Message Content */}
@@ -328,32 +303,12 @@ export default function SessionDetailPage() {
                       </div>
                     </div>
 
-                    {/* Message Metadata */}
-                    {message.role === 'assistant' && (
-                      <div className="flex items-center gap-4 text-xs text-gray-500 mb-2">
-                        {message.toolsUsed && message.toolsUsed.length > 0 && (
-                          <div className="flex items-center gap-1">
-                            <Zap className="w-3 h-3" />
-                            <span>Tools: {message.toolsUsed.join(', ')}</span>
-                          </div>
-                        )}
-                        {message.ragConfidence && (
-                          <div className="flex items-center gap-1">
-                            <Database className="w-3 h-3" />
-                            <span>RAG confidence: {(message.ragConfidence * 100).toFixed(1)}%</span>
-                          </div>
-                        )}
-                        {message.messageIntent && (
-                          <div className="flex items-center gap-1">
-                            <Activity className="w-3 h-3" />
-                            <span>Intent: {message.messageIntent}</span>
-                          </div>
-                        )}
-                        {message.containsMedicalTerms && (
-                          <div className="inline-flex items-center px-2 py-1 bg-red-50 text-red-700 rounded text-xs">
-                            Medical terms detected
-                          </div>
-                        )}
+                    {/* Keep only important medical terms indicator for office managers */}
+                    {message.role === 'assistant' && message.containsMedicalTerms && (
+                      <div className="mb-2">
+                        <div className="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs">
+                          Contains medical information
+                        </div>
                       </div>
                     )}
 
@@ -389,38 +344,6 @@ export default function SessionDetailPage() {
           </div>
         </div>
 
-        {/* RAG Logs */}
-        {ragLogs.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm">
-            <div className="border-b p-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                RAG Query Logs ({ragLogs.length} queries)
-              </h3>
-            </div>
-            
-            <div className="divide-y divide-gray-100">
-              {ragLogs.map((log) => (
-                <div key={log.id} className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="text-sm font-medium text-gray-900">
-                      &quot;{log.query}&quot;
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {formatTimestamp(log.created_at)}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4 text-xs text-gray-600">
-                    <span>{log.results_count} results</span>
-                    {log.confidence_score && (
-                      <span>Confidence: {(log.confidence_score * 100).toFixed(1)}%</span>
-                    )}
-                    <span>Processing: {log.processing_time_ms}ms</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

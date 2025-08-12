@@ -223,16 +223,16 @@ export default function OpsPage() {
                 </div>
               </div>
 
-              {/* Response Time */}
+              {/* Activation Rate */}
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <div className="flex items-center">
                   <div className="p-2 bg-orange-100 rounded-lg">
-                    <Clock className="w-6 h-6 text-orange-600" />
+                    <Users className="w-6 h-6 text-orange-600" />
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Avg Response</p>
-                    <p className="text-2xl font-bold text-gray-900">{(dashboardData.metrics.avgResponseTime / 1000).toFixed(1)}s</p>
-                    <p className="text-xs text-gray-500">First: {(dashboardData.metrics.avgFirstResponseTime / 1000).toFixed(1)}s</p>
+                    <p className="text-sm font-medium text-gray-600">Activation Rate</p>
+                    <p className="text-2xl font-bold text-gray-900">{dashboardData.metrics.activationRate}%</p>
+                    <p className="text-xs text-gray-500">Visitors who start chatting</p>
                   </div>
                 </div>
               </div>
@@ -267,15 +267,24 @@ export default function OpsPage() {
                 </div>
               </div>
 
-              {/* Activation Rate */}
+              {/* Patient Engagement Summary */}
               <div className="bg-white rounded-lg shadow-sm p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Conversion</h3>
-                <div className="text-center">
-                  <p className="text-3xl font-bold text-blue-600">{dashboardData.metrics.activationRate}%</p>
-                  <p className="text-sm text-gray-600">Activation Rate</p>
-                  <p className="text-xs text-gray-500 mt-2">
-                    {dashboardData.metrics.totalSessions} sessions from {dashboardData.metrics.qrScans} QR scans
-                  </p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Patient Engagement</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">QR Code Scans</span>
+                    <span className="text-sm font-medium">{dashboardData.metrics.qrScans}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Started Conversations</span>
+                    <span className="text-sm font-medium">{dashboardData.metrics.totalSessions}</span>
+                  </div>
+                  <div className="pt-2 border-t">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Engagement Rate</span>
+                      <span className="text-sm font-medium text-blue-600">{dashboardData.metrics.activationRate}%</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 

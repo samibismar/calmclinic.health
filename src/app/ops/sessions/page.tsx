@@ -299,22 +299,20 @@ function SessionsPageContent() {
                       <div className="flex items-center gap-6 text-sm text-gray-600">
                         <div className="flex items-center gap-1">
                           <MessageSquare className="w-4 h-4" />
-                          <span>{session.total_messages} messages ({session.user_messages}👤 {session.ai_messages}🤖)</span>
+                          <span>{session.total_messages} messages ({session.user_messages} from patient)</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <Clock className="w-4 h-4" />
-                          <span>Duration: {formatDuration(session.started_at, session.ended_at)}</span>
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${
+                            session.session_status === 'active' 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {session.session_status === 'active' ? 'Active Conversation' : 'Completed'}
+                          </span>
                         </div>
-                        {session.first_response_time_ms && (
-                          <div>
-                            <span>First response: {formatResponseTime(session.first_response_time_ms)}</span>
-                          </div>
-                        )}
-                        {session.avg_response_time_ms && (
-                          <div>
-                            <span>Avg response: {formatResponseTime(session.avg_response_time_ms)}</span>
-                          </div>
-                        )}
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs">Language: {session.language.toUpperCase()}</span>
+                        </div>
                       </div>
                     </div>
 
@@ -378,14 +376,9 @@ function SessionsPageContent() {
           </div>
           <div className="bg-white rounded-lg shadow-sm p-4">
             <div className="text-2xl font-bold text-orange-600">
-              {filteredSessions.length > 0 
-                ? Math.round(filteredSessions
-                    .filter(s => s.avg_response_time_ms)
-                    .reduce((sum, s) => sum + (s.avg_response_time_ms || 0), 0) / 
-                  filteredSessions.filter(s => s.avg_response_time_ms).length / 1000 * 10) / 10
-                : 0}s
+              {Math.round((filteredSessions.reduce((sum, s) => sum + s.total_messages, 0) / filteredSessions.length) * 10) / 10 || 0}
             </div>
-            <div className="text-sm text-gray-600">Avg Response Time</div>
+            <div className="text-sm text-gray-600">Avg Messages per Session</div>
           </div>
         </div>
       </div>

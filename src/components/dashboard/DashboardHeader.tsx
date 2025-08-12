@@ -57,7 +57,7 @@ export default function DashboardHeader({ practiceName }: DashboardHeaderProps) 
 
             {/* Engage */}
             <a
-              href="/dashboard/engage"
+              href="/ops"
               className="flex items-center space-x-2 text-blue-200 hover:text-white transition-colors"
             >
               <TrendingUp className="w-5 h-5" />
