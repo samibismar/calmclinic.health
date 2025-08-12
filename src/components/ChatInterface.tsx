@@ -1002,7 +1002,35 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
         </div>
       </div>
 
-      {/* Fixed Input Area - replaced with ChatGPT-like card above */}
+      {/* Fixed bottom input area - ChatGPT style card */}
+      <div className="sticky bottom-0 flex-shrink-0 px-4 py-4 bg-white/90 backdrop-blur border-t border-gray-100">
+        <div className="w-full max-w-3xl mx-auto rounded-2xl border border-gray-200 shadow-sm p-2 bg-white">
+          <div className="flex gap-3 items-end">
+            <textarea
+              ref={inputRef}
+              rows={1}
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+              placeholder={language === 'es' ? "Escribe tu mensaje aquí..." : "Type your message here..."}
+              className="flex-1 px-4 py-3 border-none focus:outline-none bg-transparent text-base text-gray-900 placeholder-gray-600 resize-none max-h-48 overflow-y-auto"
+              disabled={isAiTyping}
+            />
+            <button
+              onClick={handleSend}
+              disabled={isAiTyping || !message.trim()}
+              className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all duration-200 font-semibold text-base shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {language === 'es' ? 'Enviar' : 'Send'}
+            </button>
+          </div>
+        </div>
+      </div>
       </div>
     </>
   );
