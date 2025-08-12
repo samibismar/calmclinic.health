@@ -311,6 +311,13 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [language]); // Only re-run when language changes (intentionally limited dependencies)
   
+  // Auto-scroll when new messages or typing content changes
+  useEffect(() => {
+    const el = document.querySelector('.chat-scroll') as HTMLDivElement | null;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+  }, [messages, typingContent, typingMessageIndex, isAiTyping]);
+  
   // Translations
   const translations = {
     en: {
@@ -651,23 +658,15 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
               </div>
             </div>
             
-            {/* Right side controls */}
-            <div className={`flex items-center space-x-2 transition-all duration-1500 delay-1800 ease-out ${
+            {/* Right side controls (moved to bottom input for mobile) */}
+            <div className={`transition-all duration-1500 delay-1800 ease-out ${
               onboardingStage === 'loading' ? 'opacity-0' : 'opacity-100'
-            }`}>
-              <button
-                onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 text-xs font-medium"
-              >
-                <span>{language === 'en' ? '🇺🇸' : '🇪🇸'}</span>
-                <span>{language === 'en' ? 'EN' : 'ES'}</span>
-              </button>
-            </div>
+            }`} />
           </div>
         </div>
 
         {/* Interactive typing area - seamlessly flows from header */}
-        <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4 min-h-0">
+        <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4 min-h-0 chat-scroll">
           <div className="space-y-4">
             
             {/* Loading state */}
@@ -747,8 +746,17 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
         {/* Fixed bottom input area */}
         <div className="sticky bottom-0 flex-shrink-0 px-6 py-4 bg-white border-t border-gray-100">
           <div className="flex gap-3 items-end">
+            <button
+              onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
+              className="px-3 py-2 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 text-xs font-medium"
+              aria-label="Toggle language"
+            >
+              {language === 'en' ? 'EN' : 'ES'}
+            </button>
             <input
               type="text"
+              inputMode="text"
+              autoComplete="off"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
@@ -864,13 +872,7 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
               </button>
             )}
             
-            {/* Hybrid RAG Indicator */}
-            {useResponseAPI && (
-              <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-100 text-blue-700 text-xs font-medium">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                <span>RAG</span>
-              </div>
-            )}
+            {/* Hybrid RAG Indicator removed for cleaner UI */}
             
             {/* Feedback Button */}
             <a
@@ -883,21 +885,13 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
               <span>💬</span>
               <span>Feedback</span>
             </a>
-            
-            {/* Language Toggle */}
-            <button
-              onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 text-xs font-medium"
-            >
-              <span>{language === 'en' ? '🇺🇸' : '🇪🇸'}</span>
-              <span>{language === 'en' ? 'EN' : 'ES'}</span>
-            </button>
+            {/* Language toggle moved to bottom input area for mobile */}
           </div>
         </div>
       </div>
 
       {/* Chat Messages Area - seamlessly integrated with proper scrolling */}
-      <div className={`flex-1 overflow-y-auto px-6 pt-4 pb-4 min-h-0 chat-scroll transition-all duration-600 delay-300 ${
+      <div className={`flex-1 overflow-y-auto px-6 pt-4 pb-4 min-h-0 transition-all duration-600 delay-300 ${
         showInterface ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-4'
       }`}>
         
@@ -913,21 +907,28 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
                   isNewMessage ? 'message-combo' : ''
                 }`}
               >
-              <div 
-                className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-sm ${
-                  msg.role === 'user' 
-                    ? 'text-white rounded-br-md' 
-                    : 'bg-gray-100 text-gray-800 rounded-bl-md'
-                }`}
-                style={msg.role === 'user' ? { backgroundColor: doctorConfig.accentColor } : {}}
-              >
-                <MessageContent 
-                  content={msg.content}
-                  isTyping={typingMessageIndex === index && msg.role === 'assistant'}
-                  typingContent={typingContent}
-                  className="text-sm leading-relaxed"
-                />
-              </div>
+                {msg.role === 'user' ? (
+                  <div 
+                    className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-sm text-white rounded-br-md`}
+                    style={{ backgroundColor: doctorConfig.accentColor }}
+                  >
+                    <MessageContent 
+                      content={msg.content}
+                      isTyping={false}
+                      typingContent={""}
+                      className="text-base leading-relaxed"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-full">
+                    <MessageContent 
+                      content={msg.content}
+                      isTyping={typingMessageIndex === index}
+                      typingContent={typingContent}
+                      className="text-base leading-relaxed text-gray-900"
+                    />
+                  </div>
+                )}
               </div>
             );
           })}
@@ -975,19 +976,28 @@ export default function ChatInterface({ clinic: clinicSlug, providerId, provider
         showInterface ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-4'
       }`}>
         <div className="flex gap-3 items-end">
+          <button
+            onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
+            className="px-3 py-2 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 text-xs font-medium"
+            aria-label="Toggle language"
+          >
+            {language === 'en' ? 'EN' : 'ES'}
+          </button>
           <input
             type="text"
+            inputMode="text"
+            autoComplete="off"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             placeholder={t.placeholder}
-            className="flex-1 px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm text-sm text-gray-900 placeholder-gray-500"
+            className="flex-1 px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm text-base text-gray-900 placeholder-gray-500"
             disabled={isAiTyping}
           />
           <button
             onClick={handleSend}
             disabled={isAiTyping || !message.trim()}
-            className="px-4 py-3 text-white rounded-2xl transition-all duration-200 font-medium text-sm shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed min-w-[60px]"
+            className="px-4 py-3 text-white rounded-2xl transition-all duration-200 font-medium text-base shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed min-w-[60px]"
             style={{ 
               backgroundColor: doctorConfig.accentColor,
             }}
