@@ -9,7 +9,7 @@ import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import QRCodeCard from "@/components/dashboard/QRCodeCard";
 import ReminderMessageCard from "@/components/dashboard/ReminderMessageCard";
 import EmbedCodeCard from "@/components/dashboard/EmbedCodeCard";
-import BillingCard from "@/components/dashboard/BillingCard";
+// import BillingCard from "@/components/dashboard/BillingCard";
 import ProviderManagement from "@/components/dashboard/ProviderManagement";
 import ClinicIntelligenceCard from "@/components/dashboard/ClinicIntelligenceCard";
 import AIConfigurationCard from "@/components/dashboard/AIConfigurationCard";
@@ -209,9 +209,9 @@ export default function DashboardPage() {
         )}
 
         {/* Billing Card (always above optional links) */}
-        <div className="grid grid-cols-1 gap-6">
+        {/* <div className="grid grid-cols-1 gap-6">
           <BillingCard clinic={data.clinic} />
-        </div>
+        </div> */}
 
         {/* Optional Links Section (always at the very bottom) */}
         <OptionalLinksSection />
