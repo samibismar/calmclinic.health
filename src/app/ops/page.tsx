@@ -8,7 +8,6 @@ import {
   MessageSquare, 
   ThumbsUp, 
   ThumbsDown,
-  ExternalLink,
   RefreshCw
 } from 'lucide-react';
 
